@@ -131,7 +131,7 @@ export const AdminControlsStep: React.FC<AdminControlsStepProps> = ({
       .from('tournament_matches')
       .update({
         winner_id: newWinner,
-        admin_notes: 'Admin override for testing purposes',
+        notes: 'Admin override for testing purposes',
         updated_at: new Date().toISOString()
       })
       .eq('id', match.id);
@@ -243,7 +243,7 @@ export const AdminControlsStep: React.FC<AdminControlsStepProps> = ({
     // Bulk update match notes (safe operation)
     const { error } = await supabase
       .from('tournament_matches')
-      .update({ admin_notes: 'Bulk operation test - ' + new Date().toISOString() })
+      .update({ notes: 'Bulk operation test - ' + new Date().toISOString() })
       .in('id', matches.map(m => m.id));
 
     if (error) throw error;

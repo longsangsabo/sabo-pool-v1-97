@@ -161,7 +161,7 @@ export const DataCleanupStep: React.FC<DataCleanupStepProps> = ({
     const { data: testMatches } = await supabase
       .from('tournament_matches')
       .select('id')
-      .eq('admin_notes', 'Admin override for testing purposes')
+      .eq('notes', 'Admin override for testing purposes')
       .limit(50);
 
     if (!testMatches || testMatches.length === 0) {
@@ -171,7 +171,7 @@ export const DataCleanupStep: React.FC<DataCleanupStepProps> = ({
     // Reset admin override matches
     const { error } = await supabase
       .from('tournament_matches')
-      .update({ admin_notes: null })
+      .update({ notes: null })
       .in('id', testMatches.map(m => m.id));
 
     if (error) throw error;
