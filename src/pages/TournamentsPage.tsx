@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Trophy, Plus, Calendar, MapPin, Users, Eye, Settings, Check, Clock } from 'lucide-react';
+import { Trophy, Plus, Calendar, MapPin, Users, Eye, Settings, Check, Clock, Radio } from 'lucide-react';
 import { EnhancedTournamentCreator } from '@/components/tournament/EnhancedTournamentCreator';
+import TournamentBroadcasting from '@/components/tournament/TournamentBroadcasting';
 import { TournamentRegistrationDashboard } from '@/components/tournament/TournamentRegistrationDashboard';
 import TournamentCard from '@/components/tournament/TournamentCard';
 import { useTournaments } from '@/hooks/useTournaments';
@@ -34,6 +35,7 @@ const TournamentsPage: React.FC = () => {
   const [showTournamentCreator, setShowTournamentCreator] = useState(false);
   const [selectedTournament, setSelectedTournament] = useState<any>(null);
   const [showRegistrationDashboard, setShowRegistrationDashboard] = useState(false);
+  const [showLiveBroadcast, setShowLiveBroadcast] = useState(false);
 
   // Enhanced real-time sync with better state management
   // TODO: Implement specific tournament sync when needed
@@ -180,6 +182,26 @@ const TournamentsPage: React.FC = () => {
     );
   }
 
+  // Show Live Broadcast
+  if (showLiveBroadcast) {
+    return (
+      <div className='min-h-screen bg-gray-50'>
+        <div className='max-w-7xl mx-auto px-4 py-6'>
+          <div className="mb-4">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowLiveBroadcast(false)}
+              className="mb-4"
+            >
+              ← Back to Tournaments
+            </Button>
+          </div>
+          <TournamentBroadcasting />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className='min-h-screen bg-gray-50'>
       <div className='max-w-6xl mx-auto px-4 py-6'>
@@ -192,10 +214,20 @@ const TournamentsPage: React.FC = () => {
                 Tham gia các giải đấu và thi đấu với người chơi khác
               </p>
             </div>
-            <Button onClick={() => setShowTournamentCreator(true)}>
-              <Plus className='h-4 w-4 mr-2' />
-              Tạo giải đấu
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowLiveBroadcast(true)}
+                className="flex items-center gap-2"
+              >
+                <Radio className="h-4 w-4 text-red-500" />
+                Live Broadcast
+              </Button>
+              <Button onClick={() => setShowTournamentCreator(true)}>
+                <Plus className='h-4 w-4 mr-2' />
+                Tạo giải đấu
+              </Button>
+            </div>
           </div>
         </div>
 
