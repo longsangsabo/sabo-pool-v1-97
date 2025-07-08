@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Users, CheckCircle, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { DemoUserManager } from '../../DemoUserManager';
 
 interface DemoUserSetupStepProps {
   onComplete: (results: any) => void;
@@ -17,7 +18,6 @@ export const DemoUserSetupStep: React.FC<DemoUserSetupStepProps> = ({
   addLog
 }) => {
   const [isVerifying, setIsVerifying] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(false);
   const [verificationResults, setVerificationResults] = useState<any>(null);
 
   const verifyDemoUserSystem = async () => {
@@ -60,31 +60,6 @@ export const DemoUserSetupStep: React.FC<DemoUserSetupStepProps> = ({
     }
   };
 
-  const initializeDemoUsers = async () => {
-    setIsInitializing(true);
-    addLog('🔧 Initializing 32 demo users...');
-    
-    try {
-      const { data, error } = await supabase.rpc('seed_demo_users');
-      
-      if (error) {
-        addLog(`❌ Failed to seed demo users: ${error.message}`, 'error');
-        return;
-      }
-      
-      const result = data as { users_created: number; total_demo_users: number; message: string };
-      addLog(`✅ ${result.users_created} new demo users created! Total: ${result.total_demo_users}`, 'success');
-      
-      // Re-verify after initialization
-      await verifyDemoUserSystem();
-      
-    } catch (error: any) {
-      addLog(`❌ Error initializing demo users: ${error.message}`, 'error');
-    } finally {
-      setIsInitializing(false);
-    }
-  };
-
   const completeSetup = async () => {
     const completionResults = {
       demoUsersReady: verificationResults?.isSystemReady || false,
@@ -112,66 +87,41 @@ export const DemoUserSetupStep: React.FC<DemoUserSetupStepProps> = ({
         </p>
       </div>
 
-      {/* System Verification */}
+      {/* System Status */}
+      {verificationResults && (
+        <Alert>
+          {verificationResults.isSystemReady ? (
+            <>
+              <CheckCircle className="h-4 w-4" />
+              <AlertDescription>
+                <strong>✅ System Ready:</strong> {verificationResults.totalUsers}/32 demo users available and ready for testing.
+              </AlertDescription>
+            </>
+          ) : (
+            <>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                <strong>⚠️ Initialization Required:</strong> Only {verificationResults.totalUsers}/32 demo users found. 
+                Use the demo user manager below to initialize the missing users.
+              </AlertDescription>
+            </>
+          )}
+        </Alert>
+      )}
+
+      {/* Demo User Manager */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <CheckCircle className="h-5 w-5" />
-            System Verification & Setup
+            <Users className="h-5 w-5" />
+            Demo User Management
           </CardTitle>
           <CardDescription>
-            Check demo user system status and initialize if needed
+            Manage the 32 demo users for tournament testing
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-2">
-            <Button 
-              onClick={verifyDemoUserSystem}
-              disabled={isVerifying}
-              variant="outline"
-            >
-              {isVerifying ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <CheckCircle className="mr-2 h-4 w-4" />
-              )}
-              Verify System
-            </Button>
-            
-            <Button 
-              onClick={initializeDemoUsers}
-              disabled={isInitializing}
-              variant="default"
-            >
-              {isInitializing ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Users className="mr-2 h-4 w-4" />
-              )}
-              Initialize Demo Users
-            </Button>
-          </div>
-
-          {verificationResults && (
-            <div className="space-y-3">
-              {verificationResults.isSystemReady ? (
-                <Alert>
-                  <CheckCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    <strong>✅ System Ready:</strong> {verificationResults.totalUsers}/32 demo users available and ready for testing.
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <Alert>
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>
-                    <strong>⚠️ Initialization Required:</strong> Only {verificationResults.totalUsers}/32 demo users found. 
-                    Click "Initialize Demo Users" to create the missing users.
-                  </AlertDescription>
-                </Alert>
-              )}
-            </div>
-          )}
+        <CardContent>
+          <DemoUserManager addLog={addLog} />
         </CardContent>
       </Card>
 
@@ -202,6 +152,22 @@ export const DemoUserSetupStep: React.FC<DemoUserSetupStepProps> = ({
             <div>• Comprehensive testing scenarios</div>
           </div>
         </div>
+      </div>
+
+      {/* Refresh Button */}
+      <div className="flex gap-2">
+        <Button 
+          onClick={verifyDemoUserSystem}
+          disabled={isVerifying}
+          variant="outline"
+        >
+          {isVerifying ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <CheckCircle className="mr-2 h-4 w-4" />
+          )}
+          Refresh System Status
+        </Button>
       </div>
 
       {/* Completion */}
