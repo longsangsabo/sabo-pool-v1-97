@@ -117,9 +117,9 @@ const getStepDependencies = (stepNumber: number): number[] => {
     1: [], // Tournament Selection & Bracket Verification (no dependencies)
     2: [1], // Match Reporting Test (needs bracket from step 1)
     3: [1, 2], // Tournament Progression (needs bracket + match reporting)
-    4: [1], // Admin Controls (needs tournament selection)
-    5: [1], // User Experience Test (needs tournament selection)
-    6: [1, 2, 3], // Scale Testing (needs basic functionality)
+    4: [1, 2, 3], // Admin Controls (needs tournament + matches + progression)
+    5: [1, 2, 3, 4], // User Experience Test (needs all previous)
+    6: [1, 2, 3, 4, 5], // Scale Testing (needs all previous)
     7: [1, 2, 3, 4, 5, 6] // Data Cleanup (needs all previous steps)
   };
   return dependencies[stepNumber] || [];
