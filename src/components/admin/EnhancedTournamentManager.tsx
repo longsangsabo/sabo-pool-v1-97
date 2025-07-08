@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTournaments } from '@/hooks/useTournaments';
+import BracketGenerator from '@/components/tournament/BracketGenerator';
 
 interface Tournament {
   id: string;
@@ -44,6 +45,8 @@ const EnhancedTournamentManager = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showBracketModal, setShowBracketModal] = useState(false);
+  const [bracketTournamentId, setBracketTournamentId] = useState<string | null>(null);
   const [realTimeStats, setRealTimeStats] = useState({
     total: 0,
     active: 0,
@@ -186,26 +189,13 @@ const EnhancedTournamentManager = () => {
   };
 
   const handleGenerateBracket = async (tournamentId: string) => {
-    try {
-      // Call the bracket generation function
-      const { data, error } = await supabase.rpc('generate_advanced_tournament_bracket', {
-        p_tournament_id: tournamentId,
-        p_seeding_method: 'elo_ranking',
-        p_force_regenerate: false
-      });
+    setBracketTournamentId(tournamentId);
+    setShowBracketModal(true);
+  };
 
-      if (error) throw error;
-      
-      if (data && typeof data === 'object' && 'error' in data) {
-        toast.error(data.error as string);
-        return;
-      }
-
-      toast.success('Bảng đấu đã được tạo thành công!');
-    } catch (error) {
-      console.error('Error generating bracket:', error);
-      toast.error('Có lỗi khi tạo bảng đấu');
-    }
+  const handleBracketGenerated = () => {
+    setShowBracketModal(false);
+    setBracketTournamentId(null);
   };
 
   const filteredTournaments = tournaments?.filter(tournament => {
@@ -653,6 +643,21 @@ const EnhancedTournamentManager = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Bracket Generation Modal */}
+      <Dialog open={showBracketModal} onOpenChange={setShowBracketModal}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Tạo và xem bảng đấu</DialogTitle>
+          </DialogHeader>
+          {bracketTournamentId && (
+            <BracketGenerator 
+              tournamentId={bracketTournamentId} 
+              onBracketGenerated={handleBracketGenerated}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
