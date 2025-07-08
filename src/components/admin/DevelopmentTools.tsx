@@ -10,6 +10,7 @@ import TestDataPopulator from './TestDataPopulator';
 import DatabaseResetTools from './DatabaseResetTools';
 import TournamentTestingTools from './TournamentTestingTools';
 import QuickTournamentCreator from './QuickTournamentCreator';
+import { DemoUserManager } from './DemoUserManager';
 
 const DevelopmentTools = () => {
   const { t } = useLanguage();
@@ -29,8 +30,9 @@ const DevelopmentTools = () => {
       </Alert>
 
       <Tabs defaultValue="users" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="users">{t('admin.bulk_user_gen')}</TabsTrigger>
+          <TabsTrigger value="demo">Demo Users</TabsTrigger>
           <TabsTrigger value="clubs">{t('admin.quick_club')}</TabsTrigger>
           <TabsTrigger value="tournaments">Tournament Test</TabsTrigger>
           <TabsTrigger value="data">{t('admin.test_data')}</TabsTrigger>
@@ -39,6 +41,10 @@ const DevelopmentTools = () => {
         
         <TabsContent value="users" className="space-y-4">
           <QuickRealUserCreator />
+        </TabsContent>
+        
+        <TabsContent value="demo" className="space-y-4">
+          <DemoUserManager />
         </TabsContent>
         
         <TabsContent value="clubs" className="space-y-4">
