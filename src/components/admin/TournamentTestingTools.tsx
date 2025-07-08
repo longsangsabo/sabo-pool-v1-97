@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { TournamentPlayerManagement } from './TournamentPlayerManagement';
 
 // Import workflow components
 import { useTournamentWorkflow } from '@/hooks/useTournamentWorkflow';
@@ -2316,13 +2317,107 @@ const DeleteTestTournaments = () => {
   );
 };
 
+// Tournament Player Management Tab Component
+const TournamentPlayerManagementTab = () => {
+  const [selectedTournament, setSelectedTournament] = useState<any>(null);
+  const [tournaments, setTournaments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    loadTournaments();
+  }, []);
+
+  const loadTournaments = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('tournaments')
+        .select('id, name, max_participants, current_participants, status')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      setTournaments(data || []);
+    } catch (error) {
+      console.error('Error loading tournaments:', error);
+      toast.error('Không thể tải danh sách giải đấu');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Tournament Player Management
+          </CardTitle>
+          <CardDescription>
+            Quản lý và thêm người chơi vào các giải đấu
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Chọn giải đấu:</label>
+              <Select 
+                value={selectedTournament?.id || ''} 
+                onValueChange={(value) => {
+                  const tournament = tournaments.find(t => t.id === value);
+                  setSelectedTournament(tournament);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn một giải đấu..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {tournaments.map(tournament => (
+                    <SelectItem key={tournament.id} value={tournament.id}>
+                      {tournament.name} ({tournament.current_participants}/{tournament.max_participants})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {loading && (
+              <div className="text-center py-4">
+                <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                <p className="text-sm text-muted-foreground mt-2">Đang tải...</p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {selectedTournament && (
+        <TournamentPlayerManagement 
+          tournament={selectedTournament}
+          onParticipantsUpdated={() => {
+            // Reload tournament data
+            loadTournaments();
+            // Update selected tournament
+            const updatedTournament = tournaments.find(t => t.id === selectedTournament.id);
+            if (updatedTournament) {
+              setSelectedTournament(updatedTournament);
+            }
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
 // Main Export - Choose between Integrated Workflow or Legacy Tools
 const TournamentTestingToolsMain = () => {
   return (
     <Tabs defaultValue="integrated" className="w-full">
-      <TabsList className="grid w-full grid-cols-3">
+      <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="integrated">🚀 Integrated Workflow</TabsTrigger>
         <TabsTrigger value="legacy">📋 Legacy Tools</TabsTrigger>
+        <TabsTrigger value="players">👥 Players</TabsTrigger>
         <TabsTrigger value="cleanup">🗑️ Cleanup</TabsTrigger>
       </TabsList>
       
@@ -2332,6 +2427,10 @@ const TournamentTestingToolsMain = () => {
       
       <TabsContent value="legacy" className="mt-6">
         <TournamentTestingTools />
+      </TabsContent>
+
+      <TabsContent value="players" className="mt-6">
+        <TournamentPlayerManagementTab />
       </TabsContent>
 
       <TabsContent value="cleanup" className="mt-6">

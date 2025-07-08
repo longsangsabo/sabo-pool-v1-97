@@ -4363,6 +4363,8 @@ export type Database = {
       }
       tournament_registrations: {
         Row: {
+          added_by_admin: string | null
+          admin_notes: string | null
           created_at: string | null
           id: string
           notes: string | null
@@ -4375,6 +4377,8 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          added_by_admin?: string | null
+          admin_notes?: string | null
           created_at?: string | null
           id?: string
           notes?: string | null
@@ -4387,6 +4391,8 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          added_by_admin?: string | null
+          admin_notes?: string | null
           created_at?: string | null
           id?: string
           notes?: string | null
@@ -4399,6 +4405,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "tournament_registrations_added_by_admin_fkey"
+            columns: ["added_by_admin"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "tournament_registrations_tournament_id_fkey"
             columns: ["tournament_id"]
@@ -5071,6 +5084,15 @@ export type Database = {
       }
     }
     Functions: {
+      admin_add_users_to_tournament: {
+        Args: {
+          p_tournament_id: string
+          p_user_ids: string[]
+          p_admin_id: string
+          p_notes?: string
+        }
+        Returns: Json
+      }
       admin_create_test_users: {
         Args: { user_data: Json[] }
         Returns: Json
