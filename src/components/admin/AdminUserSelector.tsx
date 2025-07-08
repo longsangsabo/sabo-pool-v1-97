@@ -107,31 +107,52 @@ export const AdminUserSelector: React.FC<AdminUserSelectorProps> = ({
     
     setIsAdding(true);
     try {
+      console.log(`🚀 Starting to add ${selectedUsers.length} users to tournament...`);
+      console.log(`🎯 Tournament ID: ${tournamentId}`);
+      console.log(`👥 Selected users:`, selectedUsers.map(u => ({ id: u.id, name: u.display_name })));
+      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
+      
+      console.log(`👤 Admin user: ${user.id}`);
       
       const { data, error } = await supabase.rpc('admin_add_users_to_tournament', {
         p_tournament_id: tournamentId,
         p_user_ids: selectedUsers.map(u => u.id),
         p_admin_id: user.id,
-        p_notes: adminNotes || 'Added by admin'
+        p_notes: adminNotes || 'Added by admin via bulk selection'
       });
       
-      if (error) throw error;
+      console.log(`📨 Function response:`, data);
+      
+      if (error) {
+        console.error(`❌ Supabase RPC error:`, error);
+        throw new Error(`Database function error: ${error.message}`);
+      }
+      
+      if (!data) {
+        console.error(`❌ No data returned from function`);
+        throw new Error('No response from database function');
+      }
       
       const result = data as any;
       if (result?.success) {
+        console.log(`✅ Successfully added ${result.added_count} users!`);
         toast.success(`✅ Đã thêm ${result.added_count} người chơi vào giải đấu!`);
         setSelectedUsers([]);
         setAdminNotes('');
         refreshUsers();
         onUsersAdded?.(result);
       } else {
+        console.error(`❌ Function returned error:`, result?.error);
+        if (result?.debug) {
+          console.log(`🔍 Debug info:`, result.debug);
+        }
         toast.error(`❌ ${result?.error || 'Unknown error'}`);
       }
       
     } catch (error) {
-      console.error('Error adding users:', error);
+      console.error('💥 Caught exception:', error);
       toast.error(`❌ Lỗi: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsAdding(false);

@@ -4413,6 +4413,13 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "tournament_registrations_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "tournament_registrations_tournament_id_fkey"
             columns: ["tournament_id"]
             isOneToOne: false

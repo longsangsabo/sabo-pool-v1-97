@@ -42,24 +42,20 @@ export const useAvailableUsers = (tournamentId: string) => {
       const excludedIds = existingRegistrations?.map(reg => reg.player_id) || [];
       console.log(`📋 Found ${excludedIds.length} users already registered`);
 
-      // Get demo users - simplified query without complex NOT IN
-      let demoUsersQuery = supabase
+      // Get all demo users first
+      const { data: allDemoUsers, error: demoError } = await supabase
         .from('profiles')
         .select('user_id, full_name, display_name, phone, skill_level, is_demo_user')
         .eq('is_demo_user', true)
         .eq('role', 'player');
 
-      // If there are excluded IDs, filter them out
-      if (excludedIds.length > 0) {
-        demoUsersQuery = demoUsersQuery.not('user_id', 'in', `(${excludedIds.map(id => `'${id}'`).join(',')})`);
-      }
-
-      const { data: demoUsers, error: demoError } = await demoUsersQuery;
-
       if (demoError) {
         console.error('❌ Demo users error:', demoError);
         throw demoError;
       }
+
+      // Filter out already registered users
+      const demoUsers = allDemoUsers?.filter(user => !excludedIds.includes(user.user_id)) || [];
 
       console.log(`👥 Found ${demoUsers?.length || 0} available demo users`);
 
