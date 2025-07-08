@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Plus, Calendar, Trophy, Users, Settings, Eye, Play, 
   Pause, SquareCheckBig, BarChart3, Edit, Trash2, 
-  Clock, MapPin, DollarSign, Medal, Activity 
+  Clock, MapPin, DollarSign, Medal, Activity, PlayCircle 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -146,6 +146,24 @@ const EnhancedTournamentManager = () => {
     } catch (error) {
       console.error('Error completing tournament:', error);
       toast.error('Có lỗi khi hoàn thành giải đấu');
+    }
+  };
+
+  const handleOpenRegistration = async (tournamentId: string) => {
+    try {
+      const { error } = await supabase
+        .from('tournaments')
+        .update({ 
+          status: 'registration_open',
+          management_status: 'open' 
+        })
+        .eq('id', tournamentId);
+
+      if (error) throw error;
+      toast.success('Đăng ký giải đấu đã được mở!');
+    } catch (error) {
+      console.error('Error opening registration:', error);
+      toast.error('Có lỗi khi mở đăng ký');
     }
   };
 
@@ -445,6 +463,18 @@ const EnhancedTournamentManager = () => {
 
                     {/* Tournament Control Buttons */}
                     <div className='flex gap-2'>
+                      {tournament.status === 'upcoming' && (
+                        <Button
+                          onClick={() => handleOpenRegistration(tournament.id)}
+                          variant='default'
+                          size='sm'
+                          className='flex-1'
+                        >
+                          <PlayCircle className='w-4 h-4 mr-2' />
+                          Mở đăng ký
+                        </Button>
+                      )}
+                      
                       {tournament.status === 'registration_open' && (
                         <>
                           <Button
