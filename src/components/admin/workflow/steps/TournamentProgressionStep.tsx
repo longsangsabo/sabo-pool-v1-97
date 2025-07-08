@@ -139,6 +139,20 @@ export const TournamentProgressionStep: React.FC<TournamentProgressionStepProps>
       // Reload data to see updates
       await loadTournamentData();
 
+      // Check if this completes the step (successful round simulation)
+      const stepResults = {
+        roundCompleted: currentRound,
+        matchesSimulated: availableMatches.length,
+        duration,
+        roundResults: roundResults,
+        testType: 'single_round',
+        completedAt: new Date().toISOString()
+      };
+
+      // Call onComplete to allow advancement to next step
+      onComplete(stepResults);
+      toast.success(`🎉 Round ${currentRound} simulation completed! You can now advance to Step 4.`);
+
     } catch (error: any) {
       addLog(`❌ Error simulating round: ${error.message}`, 'error');
     } finally {
@@ -197,6 +211,7 @@ export const TournamentProgressionStep: React.FC<TournamentProgressionStepProps>
         duration,
         simulationResults,
         tournamentCompleted: true,
+        testType: 'full_tournament',
         completedAt: new Date().toISOString()
       };
 
@@ -204,7 +219,7 @@ export const TournamentProgressionStep: React.FC<TournamentProgressionStepProps>
       addLog(`🏆 Tournament simulation completed! ${totalMatches} matches in ${results.totalRounds} rounds (${duration}ms)`, 'success');
 
       onComplete(results);
-      toast.success('🎉 Tournament progression test completed!');
+      toast.success('🎉 Full tournament progression test completed! You can now advance to Step 4.');
 
     } catch (error: any) {
       addLog(`❌ Error in tournament simulation: ${error.message}`, 'error');
