@@ -11,6 +11,7 @@ import DatabaseResetTools from './DatabaseResetTools';
 import TournamentTestingTools from './TournamentTestingTools';
 import QuickTournamentCreator from './QuickTournamentCreator';
 import { DemoUserManager } from './DemoUserManager';
+import SystemMonitoring from './SystemMonitoring';
 
 const DevelopmentTools = () => {
   const { t } = useLanguage();
@@ -30,11 +31,12 @@ const DevelopmentTools = () => {
       </Alert>
 
       <Tabs defaultValue="users" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="users">{t('admin.bulk_user_gen')}</TabsTrigger>
           <TabsTrigger value="demo">Demo Users</TabsTrigger>
           <TabsTrigger value="clubs">{t('admin.quick_club')}</TabsTrigger>
           <TabsTrigger value="tournaments">Tournament Test</TabsTrigger>
+          <TabsTrigger value="monitoring">System Monitor</TabsTrigger>
           <TabsTrigger value="data">{t('admin.test_data')}</TabsTrigger>
           <TabsTrigger value="reset">{t('admin.db_tools')}</TabsTrigger>
         </TabsList>
@@ -54,6 +56,10 @@ const DevelopmentTools = () => {
         <TabsContent value="tournaments" className="space-y-4">
           <QuickTournamentCreator />
           <TournamentTestingTools />
+        </TabsContent>
+        
+        <TabsContent value="monitoring" className="space-y-4">
+          <SystemMonitoring />
         </TabsContent>
         
         <TabsContent value="data" className="space-y-4">
