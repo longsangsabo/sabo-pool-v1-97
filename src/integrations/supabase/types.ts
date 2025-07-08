@@ -4185,6 +4185,7 @@ export type Database = {
           actual_end_time: string | null
           actual_start_time: string | null
           bracket_id: string | null
+          bracket_position: number | null
           created_at: string | null
           id: string
           live_stream_url: string | null
@@ -4192,9 +4193,12 @@ export type Database = {
           match_notes: string | null
           match_number: number
           metadata: Json | null
+          next_match: number | null
           notes: string | null
           player1_id: string | null
           player2_id: string | null
+          previous_match_1: number | null
+          previous_match_2: number | null
           referee_id: string | null
           round_number: number
           scheduled_time: string | null
@@ -4209,6 +4213,7 @@ export type Database = {
           actual_end_time?: string | null
           actual_start_time?: string | null
           bracket_id?: string | null
+          bracket_position?: number | null
           created_at?: string | null
           id?: string
           live_stream_url?: string | null
@@ -4216,9 +4221,12 @@ export type Database = {
           match_notes?: string | null
           match_number: number
           metadata?: Json | null
+          next_match?: number | null
           notes?: string | null
           player1_id?: string | null
           player2_id?: string | null
+          previous_match_1?: number | null
+          previous_match_2?: number | null
           referee_id?: string | null
           round_number: number
           scheduled_time?: string | null
@@ -4233,6 +4241,7 @@ export type Database = {
           actual_end_time?: string | null
           actual_start_time?: string | null
           bracket_id?: string | null
+          bracket_position?: number | null
           created_at?: string | null
           id?: string
           live_stream_url?: string | null
@@ -4240,9 +4249,12 @@ export type Database = {
           match_notes?: string | null
           match_number?: number
           metadata?: Json | null
+          next_match?: number | null
           notes?: string | null
           player1_id?: string | null
           player2_id?: string | null
+          previous_match_1?: number | null
+          previous_match_2?: number | null
           referee_id?: string | null
           round_number?: number
           scheduled_time?: string | null
