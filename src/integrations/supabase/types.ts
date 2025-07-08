@@ -2963,10 +2963,12 @@ export type Database = {
           district: string | null
           elo: number | null
           email: string | null
+          email_verified: boolean | null
           experience_years: number | null
           full_name: string | null
           id: string
           is_admin: boolean | null
+          is_demo_user: boolean | null
           last_activity_check: string | null
           member_since: string | null
           my_referral_code: string | null
@@ -2997,10 +2999,12 @@ export type Database = {
           district?: string | null
           elo?: number | null
           email?: string | null
+          email_verified?: boolean | null
           experience_years?: number | null
           full_name?: string | null
           id?: string
           is_admin?: boolean | null
+          is_demo_user?: boolean | null
           last_activity_check?: string | null
           member_since?: string | null
           my_referral_code?: string | null
@@ -3031,10 +3035,12 @@ export type Database = {
           district?: string | null
           elo?: number | null
           email?: string | null
+          email_verified?: boolean | null
           experience_years?: number | null
           full_name?: string | null
           id?: string
           is_admin?: boolean | null
+          is_demo_user?: boolean | null
           last_activity_check?: string | null
           member_since?: string | null
           my_referral_code?: string | null
