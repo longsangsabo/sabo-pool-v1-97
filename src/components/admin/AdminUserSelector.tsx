@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Loader2, Users, UserPlus } from 'lucide-react';
+import { CheckCircle, Loader2, Users, UserPlus, AlertCircle, Info } from 'lucide-react';
 import { useAvailableUsers, AvailableUser } from '@/hooks/useAvailableUsers';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -13,6 +13,14 @@ interface AdminUserSelectorProps {
   onClose?: () => void;
 }
 
+interface DiagnosticInfo {
+  totalDemoUsers: number;
+  usersInTournament: number;
+  adminRole: string;
+  isAdmin: boolean;
+  availableUsers: number;
+}
+
 export const AdminUserSelector: React.FC<AdminUserSelectorProps> = ({
   tournamentId,
   onUsersAdded,
@@ -21,7 +29,67 @@ export const AdminUserSelector: React.FC<AdminUserSelectorProps> = ({
   const [selectedUsers, setSelectedUsers] = useState<AvailableUser[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [adminNotes, setAdminNotes] = useState('');
-  const { availableUsers, loading, refreshUsers } = useAvailableUsers(tournamentId);
+  const [diagnostics, setDiagnostics] = useState<DiagnosticInfo | null>(null);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
+  const { availableUsers, loading, error, refreshUsers } = useAvailableUsers(tournamentId);
+
+  const runDiagnostics = async () => {
+    setShowDiagnostics(true);
+    console.log('🔍 Running diagnostics...');
+    
+    try {
+      // Check total demo users
+      const { count: totalDemo, error: demoCountError } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_demo_user', true);
+
+      if (demoCountError) {
+        console.error('❌ Demo count error:', demoCountError);
+      }
+
+      // Check tournament registrations
+      const { count: registered, error: regCountError } = await supabase
+        .from('tournament_registrations')
+        .select('*', { count: 'exact', head: true })
+        .eq('tournament_id', tournamentId);
+
+      if (regCountError) {
+        console.error('❌ Registration count error:', regCountError);
+      }
+
+      // Check admin status
+      const { data: { user } } = await supabase.auth.getUser();
+      let profile = null;
+      if (user) {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('role, is_admin')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (profileError) {
+          console.error('❌ Profile error:', profileError);
+        } else {
+          profile = profileData;
+        }
+      }
+
+      const diagnosticData: DiagnosticInfo = {
+        totalDemoUsers: totalDemo || 0,
+        usersInTournament: registered || 0,
+        adminRole: profile?.role || 'unknown',
+        isAdmin: profile?.is_admin || false,
+        availableUsers: availableUsers.length
+      };
+
+      setDiagnostics(diagnosticData);
+      console.log('📊 Diagnostics:', diagnosticData);
+    } catch (error) {
+      console.error('❌ Diagnostics error:', error);
+      toast.error('Không thể chạy diagnostics');
+    }
+  };
 
   const handleUserToggle = (user: AvailableUser) => {
     setSelectedUsers(prev => {
@@ -91,6 +159,10 @@ export const AdminUserSelector: React.FC<AdminUserSelectorProps> = ({
             Thêm Người Chơi Vào Giải
           </CardTitle>
           <div className="flex gap-2">
+            <Button onClick={runDiagnostics} variant="outline" size="sm">
+              <Info className="h-4 w-4 mr-1" />
+              Diagnostics
+            </Button>
             <Button onClick={refreshUsers} variant="outline" size="sm" disabled={loading}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : '🔄'}
               Refresh
@@ -105,6 +177,71 @@ export const AdminUserSelector: React.FC<AdminUserSelectorProps> = ({
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {/* Diagnostics Panel */}
+        {showDiagnostics && diagnostics && (
+          <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg">
+            <h4 className="font-medium text-gray-800 mb-3 flex items-center gap-2">
+              <Info className="h-4 w-4" />
+              System Diagnostics
+            </h4>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+              <div>
+                <div className="font-medium text-gray-700">Total Demo Users</div>
+                <div className="text-lg font-bold text-blue-600">{diagnostics.totalDemoUsers}</div>
+              </div>
+              <div>
+                <div className="font-medium text-gray-700">Users in Tournament</div>
+                <div className="text-lg font-bold text-orange-600">{diagnostics.usersInTournament}</div>
+              </div>
+              <div>
+                <div className="font-medium text-gray-700">Available Users</div>
+                <div className="text-lg font-bold text-green-600">{diagnostics.availableUsers}</div>
+              </div>
+              <div>
+                <div className="font-medium text-gray-700">Admin Role</div>
+                <div className="text-sm font-bold text-purple-600">{diagnostics.adminRole}</div>
+              </div>
+              <div>
+                <div className="font-medium text-gray-700">Is Admin</div>
+                <div className={`text-sm font-bold ${diagnostics.isAdmin ? 'text-green-600' : 'text-red-600'}`}>
+                  {diagnostics.isAdmin ? 'Yes' : 'No'}
+                </div>
+              </div>
+            </div>
+            <Button 
+              onClick={() => setShowDiagnostics(false)} 
+              variant="outline" 
+              size="sm" 
+              className="mt-3"
+            >
+              Hide Diagnostics
+            </Button>
+          </div>
+        )}
+
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertCircle className="h-5 w-5 text-red-600" />
+              <h4 className="font-medium text-red-800">Error Loading Users</h4>
+            </div>
+            <p className="text-red-700 text-sm mb-3">{error}</p>
+            <div className="text-red-700 text-sm mb-3">
+              <strong>Possible causes:</strong>
+              <ul className="list-disc list-inside mt-1">
+                <li>Database connection issues</li>
+                <li>RLS policy restrictions</li>
+                <li>Invalid tournament ID</li>
+                <li>Query syntax errors</li>
+              </ul>
+            </div>
+            <Button onClick={refreshUsers} size="sm" variant="outline">
+              Try Again
+            </Button>
+          </div>
+        )}
+
         {/* Quick Select Demo Users */}
         <div className="bg-blue-50 p-4 rounded-lg border">
           <h4 className="font-medium mb-3 flex items-center gap-2">

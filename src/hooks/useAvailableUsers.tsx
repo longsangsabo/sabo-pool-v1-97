@@ -18,31 +18,50 @@ export const useAvailableUsers = (tournamentId: string) => {
   const [error, setError] = useState<string | null>(null);
 
   const loadAvailableUsers = async () => {
-    if (!tournamentId) return;
+    if (!tournamentId) {
+      console.log('❌ No tournament ID provided');
+      return;
+    }
     
     setLoading(true);
     setError(null);
+    console.log('🔍 Loading available users for tournament:', tournamentId);
     
     try {
-      // Get users not already in this tournament
+      // Get users already registered in this tournament
       const { data: existingRegistrations, error: regError } = await supabase
         .from('tournament_registrations')
         .select('player_id')
         .eq('tournament_id', tournamentId);
 
-      if (regError) throw regError;
+      if (regError) {
+        console.error('❌ Registration error:', regError);
+        throw regError;
+      }
 
       const excludedIds = existingRegistrations?.map(reg => reg.player_id) || [];
+      console.log(`📋 Found ${excludedIds.length} users already registered`);
 
-      // Get demo users first
-      const { data: demoUsers, error: demoError } = await supabase
+      // Get demo users - simplified query without complex NOT IN
+      let demoUsersQuery = supabase
         .from('profiles')
         .select('user_id, full_name, display_name, phone, skill_level, is_demo_user')
         .eq('is_demo_user', true)
-        .eq('role', 'player')
-        .not('user_id', 'in', `(${excludedIds.length > 0 ? excludedIds.map(id => `'${id}'`).join(',') : "'00000000-0000-0000-0000-000000000000'"})`);
+        .eq('role', 'player');
 
-      if (demoError) throw demoError;
+      // If there are excluded IDs, filter them out
+      if (excludedIds.length > 0) {
+        demoUsersQuery = demoUsersQuery.not('user_id', 'in', `(${excludedIds.map(id => `'${id}'`).join(',')})`);
+      }
+
+      const { data: demoUsers, error: demoError } = await demoUsersQuery;
+
+      if (demoError) {
+        console.error('❌ Demo users error:', demoError);
+        throw demoError;
+      }
+
+      console.log(`👥 Found ${demoUsers?.length || 0} available demo users`);
 
       // Get ELO data for demo users
       const demoUserIds = demoUsers?.map(u => u.user_id) || [];
@@ -60,18 +79,31 @@ export const useAvailableUsers = (tournamentId: string) => {
             return acc;
           }, {} as Record<string, number>);
         }
+        console.log(`📊 Loaded ELO data for ${Object.keys(eloData).length} users`);
       }
 
-      // Get regular users (limited)
-      const { data: regularUsers, error: regularError } = await supabase
+      // Get regular users (limited) - simplified query
+      let regularUsersQuery = supabase
         .from('profiles')
         .select('user_id, full_name, display_name, phone, skill_level, is_demo_user')
         .eq('role', 'player')
         .eq('is_demo_user', false)
-        .not('user_id', 'in', `(${excludedIds.length > 0 ? excludedIds.map(id => `'${id}'`).join(',') : "'00000000-0000-0000-0000-000000000000'"})`)
         .limit(10);
 
-      if (regularError) throw regularError;
+      // If there are excluded IDs, filter them out
+      if (excludedIds.length > 0) {
+        regularUsersQuery = regularUsersQuery.not('user_id', 'in', `(${excludedIds.map(id => `'${id}'`).join(',')})`);
+      }
+
+      const { data: regularUsers, error: regularError } = await regularUsersQuery;
+
+      if (regularError) {
+        console.error('❌ Regular users error:', regularError);
+        // Don't throw error for regular users, just log it
+        console.log('⚠️ Continuing without regular users');
+      }
+
+      console.log(`👤 Found ${regularUsers?.length || 0} available regular users`);
 
       // Combine and format users
       const allUsers = [
@@ -95,10 +127,11 @@ export const useAvailableUsers = (tournamentId: string) => {
         }))
       ];
 
+      console.log(`✅ Total available users: ${allUsers.length}`);
       setAvailableUsers(allUsers);
       
     } catch (error) {
-      console.error('Error loading available users:', error);
+      console.error('❌ Error loading available users:', error);
       setError(error instanceof Error ? error.message : 'Failed to load users');
       toast.error('Không thể tải danh sách người chơi');
     } finally {
