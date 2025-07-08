@@ -10,10 +10,12 @@ import {
   Zap, 
   AlertTriangle,
   CheckCircle,
-  Loader2
+  Loader2,
+  Eye
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import BracketVisualization from './BracketVisualization';
 
 interface BracketGeneratorProps {
   tournamentId: string;
@@ -37,6 +39,8 @@ export const BracketGenerator: React.FC<BracketGeneratorProps> = ({
   const [generating, setGenerating] = useState(false);
   const [seedingMethod, setSeedingMethod] = useState('elo_ranking');
   const [logs, setLogs] = useState<string[]>([]);
+  const [showBracket, setShowBracket] = useState(false);
+  const [bracketGenerated, setBracketGenerated] = useState(false);
 
   const addLog = (message: string) => {
     const timestamp = new Date().toLocaleTimeString();
@@ -64,6 +68,11 @@ export const BracketGenerator: React.FC<BracketGeneratorProps> = ({
         addLog(`✅ Sẵn sàng tạo bảng đấu với ${(data as any).participant_count} người chơi`);
       } else {
         addLog(`❌ Không thể tạo bảng đấu: ${(data as any).reason}`);
+      }
+      
+      // Check if bracket already exists
+      if ((data as any).bracket_exists) {
+        setBracketGenerated(true);
       }
     } catch (error) {
       console.error('Error checking bracket generation:', error);
@@ -94,6 +103,8 @@ export const BracketGenerator: React.FC<BracketGeneratorProps> = ({
         addLog(`🏆 ${(data as any).rounds} vòng đấu, bracket size: ${(data as any).bracket_size}`);
         
         toast.success('Bảng đấu đã được tạo thành công!');
+        setBracketGenerated(true);
+        setShowBracket(true);
         onBracketGenerated();
       } else {
         addLog(`❌ Tạo bảng đấu thất bại: ${(data as any).error}`);
@@ -116,6 +127,16 @@ export const BracketGenerator: React.FC<BracketGeneratorProps> = ({
           <span>Đang kiểm tra thông tin giải đấu...</span>
         </CardContent>
       </Card>
+    );
+  }
+
+  // Show bracket visualization if requested
+  if (showBracket) {
+    return (
+      <BracketVisualization 
+        tournamentId={tournamentId}
+        onClose={() => setShowBracket(false)}
+      />
     );
   }
 
@@ -214,6 +235,19 @@ export const BracketGenerator: React.FC<BracketGeneratorProps> = ({
                 </>
               )}
             </Button>
+            
+            {/* View Bracket Button */}
+            {bracketGenerated && (
+              <Button
+                onClick={() => setShowBracket(true)}
+                variant="secondary"
+                disabled={loading}
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                Xem Sơ Đồ
+              </Button>
+            )}
+            
             <Button
               onClick={checkBracketGeneration}
               variant="outline"
