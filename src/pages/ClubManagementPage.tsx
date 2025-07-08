@@ -74,34 +74,34 @@ const ClubManagementPage = () => {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7">
-          <TabsTrigger value="overview" className="flex items-center gap-2">
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-1">
+          <TabsTrigger value="overview" className="flex items-center gap-1 px-2 py-2">
             <BarChart3 className="w-4 h-4" />
-            <span className="hidden sm:inline">Tổng quan</span>
+            <span className="hidden md:inline text-xs lg:text-sm">Tổng quan</span>
           </TabsTrigger>
-          <TabsTrigger value="rank-verification" className="flex items-center gap-2">
+          <TabsTrigger value="rank-verification" className="flex items-center gap-1 px-2 py-2">
             <Trophy className="w-4 h-4" />
-            <span className="hidden sm:inline">Xác thực Hạng</span>
+            <span className="hidden md:inline text-xs lg:text-sm">Xác thực</span>
           </TabsTrigger>
-          <TabsTrigger value="payment-manager" className="flex items-center gap-2">
-            <CreditCard className="w-4 h-4" />
-            <span className="hidden sm:inline">Thanh toán</span>
+          <TabsTrigger value="payment-manager" className="flex items-center gap-1 px-2 py-2 bg-blue-50 border-blue-200">
+            <CreditCard className="w-4 h-4 text-blue-600" />
+            <span className="text-xs lg:text-sm font-medium text-blue-600">Thanh toán</span>
           </TabsTrigger>
-          <TabsTrigger value="members" className="flex items-center gap-2">
+          <TabsTrigger value="members" className="flex items-center gap-1 px-2 py-2">
             <Users className="w-4 h-4" />
-            <span className="hidden sm:inline">Thành viên</span>
+            <span className="hidden md:inline text-xs lg:text-sm">Thành viên</span>
           </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2">
+          <TabsTrigger value="notifications" className="flex items-center gap-1 px-2 py-2">
             <Bell className="w-4 h-4" />
-            <span className="hidden sm:inline">Thông báo</span>
+            <span className="hidden lg:inline text-xs lg:text-sm">Thông báo</span>
           </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center gap-2">
+          <TabsTrigger value="settings" className="flex items-center gap-1 px-2 py-2">
             <Settings className="w-4 h-4" />
-            <span className="hidden sm:inline">Cài đặt</span>
+            <span className="hidden lg:inline text-xs lg:text-sm">Cài đặt</span>
           </TabsTrigger>
-          <TabsTrigger value="profile" className="flex items-center gap-2">
+          <TabsTrigger value="profile" className="flex items-center gap-1 px-2 py-2">
             <Building className="w-4 h-4" />
-            <span className="hidden sm:inline">Hồ sơ CLB</span>
+            <span className="hidden lg:inline text-xs lg:text-sm">Hồ sơ CLB</span>
           </TabsTrigger>
         </TabsList>
 
