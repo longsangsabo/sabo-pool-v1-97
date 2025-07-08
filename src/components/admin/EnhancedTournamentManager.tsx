@@ -19,7 +19,7 @@ interface Tournament {
   id: string;
   name: string;
   description: string;
-  status: 'upcoming' | 'registration_open' | 'ongoing' | 'completed';
+  status: 'upcoming' | 'registration_open' | 'registration_closed' | 'ongoing' | 'completed';
   tournament_start: string;
   tournament_end: string;
   registration_start: string;
@@ -149,10 +149,41 @@ const EnhancedTournamentManager = () => {
     }
   };
 
+  const handleCloseRegistration = async (tournamentId: string) => {
+    try {
+      const { error } = await supabase
+        .from('tournaments')
+        .update({ 
+          status: 'registration_closed',
+          management_status: 'locked' 
+        })
+        .eq('id', tournamentId);
+
+      if (error) throw error;
+      toast.success('Đăng ký giải đấu đã được đóng!');
+    } catch (error) {
+      console.error('Error closing registration:', error);
+      toast.error('Có lỗi khi đóng đăng ký');
+    }
+  };
+
   const handleGenerateBracket = async (tournamentId: string) => {
     try {
-      // Mock bracket generation - replace with actual implementation
-      toast.success('Bảng đấu đã được tạo!');
+      // Call the bracket generation function
+      const { data, error } = await supabase.rpc('generate_advanced_tournament_bracket', {
+        p_tournament_id: tournamentId,
+        p_seeding_method: 'elo_ranking',
+        p_force_regenerate: false
+      });
+
+      if (error) throw error;
+      
+      if (data && typeof data === 'object' && 'error' in data) {
+        toast.error(data.error as string);
+        return;
+      }
+
+      toast.success('Bảng đấu đã được tạo thành công!');
     } catch (error) {
       console.error('Error generating bracket:', error);
       toast.error('Có lỗi khi tạo bảng đấu');
@@ -174,6 +205,8 @@ const EnhancedTournamentManager = () => {
         return 'bg-blue-100 text-blue-800';
       case 'registration_open':
         return 'bg-green-100 text-green-800';
+      case 'registration_closed':
+        return 'bg-orange-100 text-orange-800';
       case 'ongoing':
         return 'bg-yellow-100 text-yellow-800';
       case 'completed':
@@ -189,6 +222,8 @@ const EnhancedTournamentManager = () => {
         return 'Sắp diễn ra';
       case 'registration_open':
         return 'Đang mở đăng ký';
+      case 'registration_closed':
+        return 'Đã đóng đăng ký';
       case 'ongoing':
         return 'Đang diễn ra';
       case 'completed':
@@ -303,6 +338,7 @@ const EnhancedTournamentManager = () => {
             <SelectItem value='all'>Tất cả</SelectItem>
             <SelectItem value='upcoming'>Sắp diễn ra</SelectItem>
             <SelectItem value='registration_open'>Đang mở đăng ký</SelectItem>
+            <SelectItem value='registration_closed'>Đã đóng đăng ký</SelectItem>
             <SelectItem value='ongoing'>Đang diễn ra</SelectItem>
             <SelectItem value='completed'>Đã kết thúc</SelectItem>
           </SelectContent>
@@ -410,6 +446,29 @@ const EnhancedTournamentManager = () => {
                     {/* Tournament Control Buttons */}
                     <div className='flex gap-2'>
                       {tournament.status === 'registration_open' && (
+                        <>
+                          <Button
+                            onClick={() => handleCloseRegistration(tournament.id)}
+                            variant='destructive'
+                            size='sm'
+                            className='flex-1'
+                          >
+                            <Clock className='w-4 h-4 mr-2' />
+                            Đóng đăng ký
+                          </Button>
+                          <Button
+                            onClick={() => handleGenerateBracket(tournament.id)}
+                            variant='outline'
+                            size='sm'
+                            className='flex-1'
+                          >
+                            <SquareCheckBig className='w-4 h-4 mr-2' />
+                            Tạo bảng đấu
+                          </Button>
+                        </>
+                      )}
+                      
+                      {tournament.status === 'registration_closed' && (
                         <>
                           <Button
                             onClick={() => handleStartTournament(tournament.id)}
