@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Users, Loader2, Play, Eye, GitBranch, Target, BookOpen, Info, Zap } from 'lucide-react';
+import { Trophy, Users, Loader2, Play, Eye, GitBranch, Target, BookOpen, Info, Zap, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -1901,13 +1901,163 @@ const IntegratedTournamentWorkflow = () => {
   );
 };
 
+// Delete Test Tournaments Component
+const DeleteTestTournaments = () => {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [testTournaments, setTestTournaments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const loadTestTournaments = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('tournaments')
+        .select('*')
+        .like('name', '%Test Tournament%')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setTestTournaments(data || []);
+    } catch (error: any) {
+      toast.error(`Lỗi tải tournament: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteAllTestTournaments = async () => {
+    if (!testTournaments.length) return;
+    
+    const confirmed = window.confirm(`Bạn có chắc muốn xóa tất cả ${testTournaments.length} test tournaments? Hành động này không thể hoàn tác.`);
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+    try {
+      // Delete tournament matches first
+      const { error: matchesError } = await supabase
+        .from('tournament_matches')
+        .delete()
+        .in('tournament_id', testTournaments.map(t => t.id));
+
+      if (matchesError) throw matchesError;
+
+      // Delete tournament registrations
+      const { error: registrationsError } = await supabase
+        .from('tournament_registrations')
+        .delete()
+        .in('tournament_id', testTournaments.map(t => t.id));
+
+      if (registrationsError) throw registrationsError;
+
+      // Delete tournament brackets
+      const { error: bracketsError } = await supabase
+        .from('tournament_brackets')
+        .delete()
+        .in('tournament_id', testTournaments.map(t => t.id));
+
+      if (bracketsError) throw bracketsError;
+
+      // Delete tournament seeding
+      const { error: seedingError } = await supabase
+        .from('tournament_seeding')
+        .delete()
+        .in('tournament_id', testTournaments.map(t => t.id));
+
+      if (seedingError) throw seedingError;
+
+      // Finally delete tournaments
+      const { error: tournamentsError } = await supabase
+        .from('tournaments')
+        .delete()
+        .like('name', '%Test Tournament%');
+
+      if (tournamentsError) throw tournamentsError;
+
+      toast.success(`Đã xóa thành công ${testTournaments.length} test tournaments`);
+      setTestTournaments([]);
+    } catch (error: any) {
+      toast.error(`Lỗi xóa tournaments: ${error.message}`);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  useEffect(() => {
+    loadTestTournaments();
+  }, []);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Trash2 className="h-5 w-5 text-red-500" />
+          🗑️ Xóa Test Tournaments
+        </CardTitle>
+        <CardDescription>
+          Xóa tất cả các tournament test đã tạo để dọn dẹp database
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="font-medium">
+              Tìm thấy: {testTournaments.length} test tournaments
+            </p>
+            {testTournaments.length > 0 && (
+              <p className="text-sm text-gray-600">
+                {testTournaments.slice(0, 3).map(t => t.name).join(', ')}
+                {testTournaments.length > 3 && '...'}
+              </p>
+            )}
+          </div>
+          <Button
+            onClick={loadTestTournaments}
+            variant="outline"
+            size="sm"
+            disabled={loading}
+          >
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
+            Refresh
+          </Button>
+        </div>
+
+        <div className="flex gap-2">
+          <Button
+            onClick={deleteAllTestTournaments}
+            disabled={isDeleting || testTournaments.length === 0}
+            variant="destructive"
+            className="flex-1"
+          >
+            {isDeleting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="mr-2 h-4 w-4" />
+            )}
+            {isDeleting 
+              ? 'Đang xóa...' 
+              : `Xóa tất cả (${testTournaments.length})`
+            }
+          </Button>
+        </div>
+
+        {testTournaments.length === 0 && !loading && (
+          <div className="text-center py-4 text-gray-500">
+            Không có test tournaments nào để xóa
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
 // Main Export - Choose between Integrated Workflow or Legacy Tools
 const TournamentTestingToolsMain = () => {
   return (
     <Tabs defaultValue="integrated" className="w-full">
-      <TabsList className="grid w-full grid-cols-2">
+      <TabsList className="grid w-full grid-cols-3">
         <TabsTrigger value="integrated">🚀 Integrated Workflow</TabsTrigger>
         <TabsTrigger value="legacy">📋 Legacy Tools</TabsTrigger>
+        <TabsTrigger value="cleanup">🗑️ Cleanup</TabsTrigger>
       </TabsList>
       
       <TabsContent value="integrated" className="mt-6">
@@ -1916,6 +2066,10 @@ const TournamentTestingToolsMain = () => {
       
       <TabsContent value="legacy" className="mt-6">
         <TournamentTestingTools />
+      </TabsContent>
+
+      <TabsContent value="cleanup" className="mt-6">
+        <DeleteTestTournaments />
       </TabsContent>
     </Tabs>
   );
