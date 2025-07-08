@@ -2,316 +2,248 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Trophy, 
   Users, 
-  RefreshCw, 
-  AlertTriangle, 
-  CheckCircle, 
-  Shuffle, 
-  TrendingUp,
-  Clock,
-  Zap
+  Zap, 
+  AlertTriangle,
+  CheckCircle,
+  Loader2
 } from 'lucide-react';
-import { useBracketGeneration, type SeedingOptions } from '@/hooks/useBracketGeneration';
-import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface BracketGeneratorProps {
   tournamentId: string;
-  onBracketGenerated?: () => void;
-  className?: string;
+  onBracketGenerated: () => void;
+}
+
+interface TournamentInfo {
+  participant_count: number;
+  bracket_exists: boolean;
+  tournament_type: string;
+  valid: boolean;
+  reason?: string;
 }
 
 export const BracketGenerator: React.FC<BracketGeneratorProps> = ({
   tournamentId,
-  onBracketGenerated,
-  className
+  onBracketGenerated
 }) => {
-  const {
-    isGenerating,
-    isValidating,
-    validateTournament,
-    generateBracket,
-    reseedTournament,
-    fetchSeeding
-  } = useBracketGeneration();
+  const [tournamentInfo, setTournamentInfo] = useState<TournamentInfo | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
+  const [seedingMethod, setSeedingMethod] = useState('elo_ranking');
+  const [logs, setLogs] = useState<string[]>([]);
 
-  const [validation, setValidation] = useState<any>(null);
-  const [seedingMethod, setSeedingMethod] = useState<'elo_ranking' | 'registration_order' | 'random'>('elo_ranking');
-  const [seeding, setSeeding] = useState<any[]>([]);
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const addLog = (message: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    setLogs(prev => [...prev, `[${timestamp}] ${message}`]);
+  };
 
   useEffect(() => {
-    checkValidation();
-    loadSeeding();
+    checkBracketGeneration();
   }, [tournamentId]);
 
-  const checkValidation = async () => {
-    const result = await validateTournament(tournamentId);
-    setValidation(result);
-  };
+  const checkBracketGeneration = async () => {
+    try {
+      setLoading(true);
+      addLog('🔍 Kiểm tra thông tin giải đấu...');
+      
+      const { data, error } = await supabase.rpc('can_generate_bracket', {
+        p_tournament_id: tournamentId
+      });
 
-  const loadSeeding = async () => {
-    const seedingData = await fetchSeeding(tournamentId);
-    setSeeding(seedingData);
-  };
+      if (error) throw error;
 
-  const handleGenerateBracket = async (forceRegenerate = false) => {
-    const options: SeedingOptions = {
-      method: seedingMethod,
-      forceRegenerate
-    };
-
-    const result = await generateBracket(tournamentId, options);
-    
-    if (result.success) {
-      await checkValidation();
-      await loadSeeding();
-      onBracketGenerated?.();
+      setTournamentInfo(data as unknown as TournamentInfo);
+      
+      if ((data as any).valid) {
+        addLog(`✅ Sẵn sàng tạo bảng đấu với ${(data as any).participant_count} người chơi`);
+      } else {
+        addLog(`❌ Không thể tạo bảng đấu: ${(data as any).reason}`);
+      }
+    } catch (error) {
+      console.error('Error checking bracket generation:', error);
+      addLog(`💥 Lỗi kiểm tra: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleReseed = async () => {
-    const result = await reseedTournament(tournamentId, seedingMethod);
-    
-    if (result.success) {
-      await loadSeeding();
-      onBracketGenerated?.();
+  const generateBracket = async () => {
+    if (!tournamentInfo?.valid) return;
+
+    setGenerating(true);
+    try {
+      addLog('🎯 Bắt đầu tạo bảng đấu...');
+      
+      const { data, error } = await supabase.rpc('generate_advanced_tournament_bracket', {
+        p_tournament_id: tournamentId,
+        p_seeding_method: seedingMethod,
+        p_force_regenerate: tournamentInfo.bracket_exists
+      });
+
+      if (error) throw error;
+
+      if ((data as any).success) {
+        addLog(`✅ Tạo bảng đấu thành công!`);
+        addLog(`📊 ${(data as any).participant_count} người chơi, ${(data as any).matches_created} trận đấu`);
+        addLog(`🏆 ${(data as any).rounds} vòng đấu, bracket size: ${(data as any).bracket_size}`);
+        
+        toast.success('Bảng đấu đã được tạo thành công!');
+        onBracketGenerated();
+      } else {
+        addLog(`❌ Tạo bảng đấu thất bại: ${(data as any).error}`);
+        toast.error((data as any).error);
+      }
+    } catch (error) {
+      console.error('Error generating bracket:', error);
+      addLog(`💥 Lỗi tạo bảng đấu: ${error.message}`);
+      toast.error('Có lỗi xảy ra khi tạo bảng đấu');
+    } finally {
+      setGenerating(false);
     }
   };
 
-  const getSeedingMethodIcon = (method: string) => {
-    switch (method) {
-      case 'elo_ranking': return <TrendingUp className="h-4 w-4" />;
-      case 'registration_order': return <Clock className="h-4 w-4" />;
-      case 'random': return <Shuffle className="h-4 w-4" />;
-      default: return <TrendingUp className="h-4 w-4" />;
-    }
-  };
-
-  const getSeedingMethodDescription = (method: string) => {
-    switch (method) {
-      case 'elo_ranking': return 'Xếp hạng theo điểm ELO (khuyến nghị)';
-      case 'registration_order': return 'Theo thứ tự đăng ký';
-      case 'random': return 'Ngẫu nhiên';
-      default: return '';
-    }
-  };
-
-  if (isValidating && !validation) {
+  if (loading) {
     return (
-      <Card className={className}>
+      <Card>
         <CardContent className="flex items-center justify-center py-8">
-          <LoadingSpinner />
-          <span className="ml-2">Đang kiểm tra điều kiện...</span>
+          <Loader2 className="h-6 w-6 animate-spin mr-2" />
+          <span>Đang kiểm tra thông tin giải đấu...</span>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Trophy className="h-5 w-5" />
-          Tạo Bảng Đấu Tự Động
-        </CardTitle>
-      </CardHeader>
-      
-      <CardContent className="space-y-6">
-        {/* Validation Status */}
-        {validation && (
-          <Alert className={validation.valid ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}>
-            <div className="flex items-center gap-2">
-              {validation.valid ? (
-                <CheckCircle className="h-4 w-4 text-green-600" />
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Zap className="h-5 w-5" />
+            Tạo Bảng Đấu
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Tournament Status */}
+          {tournamentInfo && (
+            <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                <span className="text-sm">Người tham gia:</span>
+                <Badge variant="secondary">{tournamentInfo.participant_count}</Badge>
+              </div>
+              <div className="flex items-center gap-2">
+                <Trophy className="h-4 w-4" />
+                <span className="text-sm">Loại giải:</span>
+                <Badge variant="outline">{tournamentInfo.tournament_type}</Badge>
+              </div>
+            </div>
+          )}
+
+          {/* Validation Status */}
+          {tournamentInfo && (
+            <Alert variant={tournamentInfo.valid ? "default" : "destructive"}>
+              {tournamentInfo.valid ? (
+                <CheckCircle className="h-4 w-4" />
               ) : (
-                <AlertTriangle className="h-4 w-4 text-red-600" />
+                <AlertTriangle className="h-4 w-4" />
               )}
-              <AlertDescription className={validation.valid ? 'text-green-800' : 'text-red-800'}>
-                {validation.valid ? (
-                  <div className="space-y-1">
-                    <div>✓ Sẵn sàng tạo bảng đấu</div>
-                    <div className="text-sm">
-                      • {validation.participant_count} người tham gia
-                      • Loại giải: {validation.tournament_type}
-                      {validation.bracket_exists && ' • Bảng đấu đã tồn tại'}
-                    </div>
+              <AlertDescription>
+                {tournamentInfo.valid ? (
+                  <div>
+                    <p className="font-medium">Sẵn sàng tạo bảng đấu</p>
+                    <p className="text-sm mt-1">
+                      Giải đấu có {tournamentInfo.participant_count} người chơi, đủ điều kiện để tạo bảng đấu.
+                      {tournamentInfo.bracket_exists && " (Bảng đấu hiện tại sẽ được thay thế)"}
+                    </p>
                   </div>
                 ) : (
-                  validation.reason
+                  <div>
+                    <p className="font-medium">Không thể tạo bảng đấu</p>
+                    <p className="text-sm mt-1">{tournamentInfo.reason}</p>
+                  </div>
                 )}
               </AlertDescription>
-            </div>
-          </Alert>
-        )}
+            </Alert>
+          )}
 
-        {/* Seeding Method Selection */}
-        {validation?.valid && (
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">
-                Phương thức xếp hạng
-              </label>
-              <Select value={seedingMethod} onValueChange={(value: any) => setSeedingMethod(value)}>
+          {/* Seeding Method Selection */}
+          {tournamentInfo?.valid && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Phương thức seeding:</label>
+              <Select value={seedingMethod} onValueChange={setSeedingMethod}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="elo_ranking">
-                    <div className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4" />
-                      <div>
-                        <div>Điểm ELO</div>
-                        <div className="text-xs text-muted-foreground">Khuyến nghị</div>
-                      </div>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="registration_order">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4" />
-                      <div>
-                        <div>Thứ tự đăng ký</div>
-                        <div className="text-xs text-muted-foreground">First come, first served</div>
-                      </div>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="random">
-                    <div className="flex items-center gap-2">
-                      <Shuffle className="h-4 w-4" />
-                      <div>
-                        <div>Ngẫu nhiên</div>
-                        <div className="text-xs text-muted-foreground">Công bằng nhất</div>
-                      </div>
-                    </div>
-                  </SelectItem>
+                  <SelectItem value="elo_ranking">Theo ELO Rating (Khuyến nghị)</SelectItem>
+                  <SelectItem value="registration_order">Theo thứ tự đăng ký</SelectItem>
+                  <SelectItem value="random">Ngẫu nhiên</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-sm text-muted-foreground mt-1">
-                {getSeedingMethodDescription(seedingMethod)}
+              <p className="text-xs text-muted-foreground">
+                {seedingMethod === 'elo_ranking' && "Người chơi có ELO cao sẽ được ưu tiên trong bracket"}
+                {seedingMethod === 'registration_order' && "Người đăng ký sớm sẽ được ưu tiên"}
+                {seedingMethod === 'random' && "Vị trí hoàn toàn ngẫu nhiên"}
               </p>
             </div>
+          )}
 
-            {/* Current Seeding Preview */}
-            {seeding.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">Thứ tự hiện tại</span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowAdvanced(!showAdvanced)}
-                  >
-                    {showAdvanced ? 'Ẩn' : 'Xem chi tiết'}
-                  </Button>
-                </div>
-                
-                {showAdvanced && (
-                  <div className="border rounded-lg p-4 max-h-60 overflow-y-auto bg-muted/30">
-                    <div className="space-y-2">
-                      {seeding.map((seed) => (
-                        <div key={seed.id} className="flex items-center justify-between text-sm">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="w-8 justify-center">
-                              {seed.seed_position}
-                            </Badge>
-                            <span className={seed.is_bye ? 'text-muted-foreground' : ''}>
-                              {seed.is_bye ? 'BYE' : seed.player?.full_name || seed.player?.display_name || 'Unknown'}
-                            </span>
-                          </div>
-                          {!seed.is_bye && (
-                            <Badge variant="secondary">
-                              ELO: {seed.elo_rating}
-                            </Badge>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+          {/* Generation Button */}
+          <div className="flex gap-2">
+            <Button
+              onClick={generateBracket}
+              disabled={!tournamentInfo?.valid || generating}
+              className="flex-1"
+              size="lg"
+            >
+              {generating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Đang tạo bảng đấu...
+                </>
+              ) : (
+                <>
+                  <Zap className="mr-2 h-4 w-4" />
+                  {tournamentInfo?.bracket_exists ? 'Tạo lại bảng đấu' : 'Tạo bảng đấu'}
+                </>
+              )}
+            </Button>
+            <Button
+              onClick={checkBracketGeneration}
+              variant="outline"
+              disabled={loading}
+            >
+              🔄 Kiểm tra lại
+            </Button>
           </div>
-        )}
+        </CardContent>
+      </Card>
 
-        {/* Action Buttons */}
-        {validation?.valid && (
-          <div className="flex flex-col gap-3">
-            {!validation.bracket_exists ? (
-              <Button 
-                onClick={() => handleGenerateBracket(false)}
-                disabled={isGenerating}
-                className="w-full"
-              >
-                {isGenerating ? (
-                  <>
-                    <LoadingSpinner />
-                    <span className="ml-2">Đang tạo bảng đấu...</span>
-                  </>
-                ) : (
-                  <>
-                    <Zap className="h-4 w-4 mr-2" />
-                    Tạo Bảng Đấu
-                  </>
-                )}
-              </Button>
-            ) : (
-              <div className="space-y-2">
-                <Button 
-                  onClick={() => handleGenerateBracket(true)}
-                  disabled={isGenerating}
-                  variant="destructive"
-                  className="w-full"
-                >
-                  {isGenerating ? (
-                    <>
-                      <LoadingSpinner />
-                      <span className="ml-2">Đang tạo lại...</span>
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Tạo Lại Bảng Đấu
-                    </>
-                  )}
-                </Button>
-                
-                <Button 
-                  onClick={handleReseed}
-                  disabled={isGenerating}
-                  variant="outline"
-                  className="w-full"
-                >
-                  {isGenerating ? (
-                    <>
-                      <LoadingSpinner />
-                      <span className="ml-2">Đang sắp xếp...</span>
-                    </>
-                  ) : (
-                    <>
-                      {getSeedingMethodIcon(seedingMethod)}
-                      <span className="ml-2">Sắp Xếp Lại</span>
-                    </>
-                  )}
-                </Button>
+      {/* Generation Logs */}
+      {logs.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Log hoạt động</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-muted/30 p-3 rounded-lg max-h-40 overflow-y-auto">
+              <div className="space-y-1 font-mono text-xs">
+                {logs.map((log, i) => (
+                  <div key={i} className="text-foreground/80">{log}</div>
+                ))}
               </div>
-            )}
-          </div>
-        )}
-
-        {/* Algorithm Info */}
-        <div className="text-xs text-muted-foreground bg-muted/30 p-3 rounded-lg">
-          <div className="font-medium mb-1">🔧 Thuật toán bracket:</div>
-          <ul className="space-y-1 ml-2">
-            <li>• Tự động tính toán kích thước bracket (power of 2)</li>
-            <li>• Thêm bye slots nếu cần thiết</li>
-            <li>• Hỗ trợ Single/Double Elimination, Round Robin</li>
-            <li>• Thời gian tạo &lt; 500ms cho 64 người</li>
-          </ul>
-        </div>
-      </CardContent>
-    </Card>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };
+
+export default BracketGenerator;
