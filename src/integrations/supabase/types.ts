@@ -5347,6 +5347,15 @@ export type Database = {
         }
         Returns: Json
       }
+      create_admin_user: {
+        Args: {
+          p_email: string
+          p_password: string
+          p_full_name?: string
+          p_phone?: string
+        }
+        Returns: Json
+      }
       create_bulk_notifications: {
         Args: { notifications: Json }
         Returns: undefined
