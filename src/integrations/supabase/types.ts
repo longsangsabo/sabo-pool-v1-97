@@ -4365,42 +4365,54 @@ export type Database = {
         Row: {
           added_by_admin: string | null
           admin_notes: string | null
+          bracket_position: number | null
+          check_in_time: string | null
           created_at: string | null
           id: string
           notes: string | null
+          payment_date: string | null
           payment_status: string | null
           player_id: string | null
           registration_date: string | null
           registration_status: string | null
           seed_number: number | null
+          status: string | null
           tournament_id: string | null
           updated_at: string | null
         }
         Insert: {
           added_by_admin?: string | null
           admin_notes?: string | null
+          bracket_position?: number | null
+          check_in_time?: string | null
           created_at?: string | null
           id?: string
           notes?: string | null
+          payment_date?: string | null
           payment_status?: string | null
           player_id?: string | null
           registration_date?: string | null
           registration_status?: string | null
           seed_number?: number | null
+          status?: string | null
           tournament_id?: string | null
           updated_at?: string | null
         }
         Update: {
           added_by_admin?: string | null
           admin_notes?: string | null
+          bracket_position?: number | null
+          check_in_time?: string | null
           created_at?: string | null
           id?: string
           notes?: string | null
+          payment_date?: string | null
           payment_status?: string | null
           player_id?: string | null
           registration_date?: string | null
           registration_status?: string | null
           seed_number?: number | null
+          status?: string | null
           tournament_id?: string | null
           updated_at?: string | null
         }
