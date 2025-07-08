@@ -1904,6 +1904,7 @@ const IntegratedTournamentWorkflow = () => {
 // Delete Test Tournaments Component
 const DeleteTestTournaments = () => {
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [testTournaments, setTestTournaments] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -1912,7 +1913,11 @@ const DeleteTestTournaments = () => {
     try {
       const { data, error } = await supabase
         .from('tournaments')
-        .select('*')
+        .select(`
+          *,
+          tournament_registrations(count),
+          tournament_matches(count)
+        `)
         .like('name', '%Test Tournament%')
         .order('created_at', { ascending: false });
 
@@ -1922,6 +1927,62 @@ const DeleteTestTournaments = () => {
       toast.error(`Lỗi tải tournament: ${error.message}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const deleteSingleTournament = async (tournamentId: string, tournamentName: string) => {
+    const confirmed = window.confirm(`Bạn có chắc muốn xóa tournament "${tournamentName}"? Hành động này không thể hoàn tác.`);
+    if (!confirmed) return;
+
+    setDeletingId(tournamentId);
+    try {
+      // Delete tournament matches first
+      const { error: matchesError } = await supabase
+        .from('tournament_matches')
+        .delete()
+        .eq('tournament_id', tournamentId);
+
+      if (matchesError) throw matchesError;
+
+      // Delete tournament registrations
+      const { error: registrationsError } = await supabase
+        .from('tournament_registrations')
+        .delete()
+        .eq('tournament_id', tournamentId);
+
+      if (registrationsError) throw registrationsError;
+
+      // Delete tournament brackets
+      const { error: bracketsError } = await supabase
+        .from('tournament_brackets')
+        .delete()
+        .eq('tournament_id', tournamentId);
+
+      if (bracketsError) throw bracketsError;
+
+      // Delete tournament seeding
+      const { error: seedingError } = await supabase
+        .from('tournament_seeding')
+        .delete()
+        .eq('tournament_id', tournamentId);
+
+      if (seedingError) throw seedingError;
+
+      // Finally delete tournament
+      const { error: tournamentError } = await supabase
+        .from('tournaments')
+        .delete()
+        .eq('id', tournamentId);
+
+      if (tournamentError) throw tournamentError;
+
+      toast.success(`Đã xóa thành công tournament "${tournamentName}"`);
+      // Remove from local state
+      setTestTournaments(prev => prev.filter(t => t.id !== tournamentId));
+    } catch (error: any) {
+      toast.error(`Lỗi xóa tournament: ${error.message}`);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -1982,71 +2043,158 @@ const DeleteTestTournaments = () => {
     }
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString('vi-VN');
+  };
+
   useEffect(() => {
     loadTestTournaments();
   }, []);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Trash2 className="h-5 w-5 text-red-500" />
-          🗑️ Xóa Test Tournaments
-        </CardTitle>
-        <CardDescription>
-          Xóa tất cả các tournament test đã tạo để dọn dẹp database
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="font-medium">
-              Tìm thấy: {testTournaments.length} test tournaments
-            </p>
-            {testTournaments.length > 0 && (
-              <p className="text-sm text-gray-600">
-                {testTournaments.slice(0, 3).map(t => t.name).join(', ')}
-                {testTournaments.length > 3 && '...'}
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Trash2 className="h-5 w-5 text-red-500" />
+            🗑️ Xóa Test Tournaments
+          </CardTitle>
+          <CardDescription>
+            Xóa các tournament test đã tạo để dọn dẹp database
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium">
+                Tìm thấy: {testTournaments.length} test tournaments
               </p>
-            )}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={loadTestTournaments}
+                variant="outline"
+                size="sm"
+                disabled={loading}
+              >
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
+                Refresh
+              </Button>
+              {testTournaments.length > 0 && (
+                <Button
+                  onClick={deleteAllTestTournaments}
+                  disabled={isDeleting}
+                  variant="destructive"
+                  size="sm"
+                >
+                  {isDeleting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="mr-2 h-4 w-4" />
+                  )}
+                  Xóa tất cả
+                </Button>
+              )}
+            </div>
           </div>
-          <Button
-            onClick={loadTestTournaments}
-            variant="outline"
-            size="sm"
-            disabled={loading}
-          >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
-            Refresh
-          </Button>
-        </div>
+        </CardContent>
+      </Card>
 
-        <div className="flex gap-2">
-          <Button
-            onClick={deleteAllTestTournaments}
-            disabled={isDeleting || testTournaments.length === 0}
-            variant="destructive"
-            className="flex-1"
-          >
-            {isDeleting ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Trash2 className="mr-2 h-4 w-4" />
-            )}
-            {isDeleting 
-              ? 'Đang xóa...' 
-              : `Xóa tất cả (${testTournaments.length})`
-            }
-          </Button>
-        </div>
+      {/* Tournament List */}
+      {testTournaments.length > 0 ? (
+        <div className="space-y-3">
+          {testTournaments.map((tournament) => (
+            <Card key={tournament.id} className="border-l-4 border-l-blue-500">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Trophy className="h-4 w-4 text-yellow-500" />
+                      <h3 className="font-semibold text-lg">{tournament.name}</h3>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        tournament.status === 'completed' ? 'bg-green-100 text-green-800' :
+                        tournament.status === 'ongoing' ? 'bg-blue-100 text-blue-800' :
+                        tournament.status === 'upcoming' ? 'bg-orange-100 text-orange-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {tournament.status}
+                      </span>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
+                      <div>
+                        <span className="font-medium">Tạo lúc:</span>
+                        <br />
+                        {formatDate(tournament.created_at)}
+                      </div>
+                      <div>
+                        <span className="font-medium">Loại:</span>
+                        <br />
+                        {tournament.tournament_type || 'N/A'}
+                      </div>
+                      <div>
+                        <span className="font-medium">Người tham gia:</span>
+                        <br />
+                        {tournament.current_participants || 0} / {tournament.max_participants || 0}
+                      </div>
+                      <div>
+                        <span className="font-medium">Trận đấu:</span>
+                        <br />
+                        {tournament.tournament_matches?.[0]?.count || 0} trận
+                      </div>
+                    </div>
 
-        {testTournaments.length === 0 && !loading && (
-          <div className="text-center py-4 text-gray-500">
-            Không có test tournaments nào để xóa
-          </div>
-        )}
-      </CardContent>
-    </Card>
+                    {tournament.description && (
+                      <p className="text-sm text-gray-500 mt-2">
+                        {tournament.description}
+                      </p>
+                    )}
+
+                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <span>ID: {tournament.id}</span>
+                      {tournament.tournament_start && (
+                        <span>Bắt đầu: {formatDate(tournament.tournament_start)}</span>
+                      )}
+                      {tournament.prize_pool && (
+                        <span>Giải thưởng: {tournament.prize_pool.toLocaleString()} VND</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={() => deleteSingleTournament(tournament.id, tournament.name)}
+                    disabled={deletingId === tournament.id || isDeleting}
+                    variant="destructive"
+                    size="sm"
+                    className="ml-4"
+                  >
+                    {deletingId === tournament.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : loading ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <p className="text-gray-500">Đang tải danh sách tournaments...</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Trophy className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">Không có test tournaments nào để xóa</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };
 
