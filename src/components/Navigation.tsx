@@ -83,16 +83,21 @@ const Navigation = () => {
       current: location.pathname === '/tournaments',
     },
     {
+      name: 'Thách đấu',
+      href: '/challenges',
+      current: location.pathname === '/challenges',
+    },
+    {
+      name: 'Trận của tôi',
+      href: '/my-matches',
+      current: location.pathname === '/my-matches',
+    },
+    {
       name: 'Ranking',
       href: '/leaderboard',
       current: location.pathname === '/leaderboard',
     },
     { name: 'CLB', href: '/clubs', current: location.pathname === '/clubs' },
-    {
-      name: 'Thách đấu',
-      href: '/challenges',
-      current: location.pathname === '/challenges',
-    },
     {
       name: 'Về chúng tôi',
       href: '/about',

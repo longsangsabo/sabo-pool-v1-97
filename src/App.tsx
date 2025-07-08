@@ -183,6 +183,7 @@ const App = () => {
                         {/* Chat & History */}
                         <Route path="chat" element={<ChatPage />} />
                         <Route path="matches" element={<MatchHistoryPage />} />
+                        <Route path="my-matches" element={<MatchHistoryPage />} />
                         <Route path="live-stream" element={<LiveStreamPage />} />
                         <Route path="notifications" element={<AuthWrapper><NotificationsPage /></AuthWrapper>} />
                         <Route path="inbox" element={<AuthWrapper><InboxPage /></AuthWrapper>} />
