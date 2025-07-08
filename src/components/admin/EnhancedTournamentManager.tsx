@@ -194,8 +194,11 @@ const EnhancedTournamentManager = () => {
   };
 
   const handleBracketGenerated = () => {
-    setShowBracketModal(false);
-    setBracketTournamentId(null);
+    // Không đóng modal ngay sau khi tạo bracket thành công
+    // để người dùng có thể xem bracket visualization
+    // setShowBracketModal(false);
+    // setBracketTournamentId(null);
+    toast.success('Bảng đấu đã được tạo thành công! Bạn có thể xem sơ đồ bên dưới.');
   };
 
   const filteredTournaments = tournaments?.filter(tournament => {
