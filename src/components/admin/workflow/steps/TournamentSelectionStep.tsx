@@ -22,7 +22,8 @@ export const TournamentSelectionStep: React.FC<TournamentSelectionStepProps> = (
 }) => {
   const [tournaments, setTournaments] = useState<any[]>([]);
   const [selectedTournament, setSelectedTournament] = useState<string>('');
-  const [loading, setLoading] = useState(false);
+  const [loadingBracket, setLoadingBracket] = useState(false);
+  const [generatingBracket, setGeneratingBracket] = useState(false);
   const [bracketData, setBracketData] = useState<any>(null);
   const [bracket, setBracket] = useState<any[]>([]);
   const [seeding, setSeeding] = useState<any[]>([]);
@@ -59,12 +60,14 @@ export const TournamentSelectionStep: React.FC<TournamentSelectionStepProps> = (
   };
 
   const generateSampleBracket = async () => {
+    console.log('🎯 Generate Sample Bracket clicked!', { selectedTournament, generatingBracket });
+    
     if (!selectedTournament) {
       addLog('❌ Please select a tournament first', 'error');
       return;
     }
 
-    setLoading(true);
+    setGeneratingBracket(true);
     addLog('🔧 Generating sample bracket...', 'info');
 
     try {
@@ -119,17 +122,19 @@ export const TournamentSelectionStep: React.FC<TournamentSelectionStepProps> = (
     } catch (error: any) {
       addLog(`❌ Error generating bracket: ${error.message}`, 'error');
     } finally {
-      setLoading(false);
+      setGeneratingBracket(false);
     }
   };
 
   const loadBracket = async () => {
+    console.log('👁️ Load Bracket clicked!', { selectedTournament, loadingBracket });
+    
     if (!selectedTournament) {
       addLog('❌ Please select a tournament first', 'error');
       return;
     }
 
-    setLoading(true);
+    setLoadingBracket(true);
     addLog('🔄 Loading bracket...', 'info');
     
     try {
@@ -222,7 +227,7 @@ export const TournamentSelectionStep: React.FC<TournamentSelectionStepProps> = (
     } catch (error: any) {
       addLog(`❌ Error loading bracket: ${error.message}`, 'error');
     } finally {
-      setLoading(false);
+      setLoadingBracket(false);
     }
   };
 
@@ -259,21 +264,32 @@ export const TournamentSelectionStep: React.FC<TournamentSelectionStepProps> = (
         {/* Action Buttons */}
         <div className="flex gap-2">
           <Button 
-            onClick={loadBracket} 
-            disabled={loading || !selectedTournament} 
+            onClick={(e) => {
+              console.log('Load Bracket button clicked!', e);
+              loadBracket();
+            }} 
+            disabled={loadingBracket || !selectedTournament} 
             className="flex-1"
           >
-            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Eye className="mr-2 h-4 w-4" />}
-            {loading ? 'Loading...' : 'Load Bracket'}
+            {loadingBracket ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Eye className="mr-2 h-4 w-4" />}
+            {loadingBracket ? 'Loading...' : 'Load Bracket'}
           </Button>
           <Button 
-            onClick={generateSampleBracket} 
-            disabled={loading || !selectedTournament} 
+            onClick={(e) => {
+              console.log('Generate Sample Bracket button clicked!', e);
+              generateSampleBracket();
+            }} 
+            disabled={generatingBracket || !selectedTournament} 
             variant="outline"
           >
-            <Target className="mr-2 h-4 w-4" />
-            Generate Sample Bracket
+            {generatingBracket ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Target className="mr-2 h-4 w-4" />}
+            {generatingBracket ? 'Generating...' : 'Generate Sample Bracket'}
           </Button>
+        </div>
+        
+        {/* Debug Info */}
+        <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
+          Debug: Selected={selectedTournament ? '✅' : '❌'} | Loading={loadingBracket ? '🔄' : '✅'} | Generating={generatingBracket ? '🔄' : '✅'}
         </div>
       </div>
 
