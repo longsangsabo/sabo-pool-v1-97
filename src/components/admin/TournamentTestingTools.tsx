@@ -32,6 +32,29 @@ const BracketVerification = ({ tournamentId, addLog }: { tournamentId: string; a
     addLog('🔄 Đang tải bracket...', 'info');
     
     try {
+      // First check if tournament has participants
+      const { data: registrations, error: regError } = await supabase
+        .from('tournament_registrations')
+        .select('*')
+        .eq('tournament_id', tournamentId)
+        .eq('registration_status', 'confirmed');
+
+      if (regError) {
+        console.error('Registration error:', regError);
+        addLog(`⚠️ Lỗi kiểm tra đăng ký: ${regError.message}`, 'error');
+      }
+
+      addLog(`👥 Tìm thấy ${registrations?.length || 0} người tham gia đã xác nhận`, 'info');
+
+      if ((registrations?.length || 0) < 2) {
+        addLog('⚠️ Tournament chưa có đủ người tham gia (tối thiểu 2 người). Hãy tạo participants trước.', 'error');
+        setBracket([]);
+        setSeeding([]);
+        setBracketData(null);
+        setLoading(false);
+        return;
+      }
+
       // Load tournament matches first
       const { data: matches, error: matchError } = await supabase
         .from('tournament_matches')
@@ -46,6 +69,15 @@ const BracketVerification = ({ tournamentId, addLog }: { tournamentId: string; a
       }
 
       addLog(`📊 Tìm thấy ${matches?.length || 0} trận đấu`, 'info');
+
+      if (!matches || matches.length === 0) {
+        addLog('⚠️ Tournament chưa có bracket. Hãy tạo bracket trước.', 'error');
+        setBracket([]);
+        setSeeding([]);
+        setBracketData(null);
+        setLoading(false);
+        return;
+      }
 
       // Get unique player IDs from matches
       const playerIds = new Set<string>();
@@ -90,7 +122,6 @@ const BracketVerification = ({ tournamentId, addLog }: { tournamentId: string; a
       if (seedError) {
         console.error('Seeding error:', seedError);
         addLog(`⚠️ Lỗi tải seeding: ${seedError.message}`, 'error');
-        // Don't throw here, seeding might not exist yet
       }
 
       // Add player data to seeding
@@ -115,18 +146,67 @@ const BracketVerification = ({ tournamentId, addLog }: { tournamentId: string; a
         addLog(`⚠️ Lỗi tải bracket metadata: ${bracketError.message}`, 'error');
       }
 
-      setBracket(matchesWithPlayers || []);
       setSeeding(seedingWithPlayers || []);
       setBracketData(bracketMeta);
       
-      if (!bracket || bracket.length === 0) {
-        addLog('⚠️ Giải đấu chưa có bracket. Hãy tạo bracket trước.', 'error');
-      } else {
-        addLog('✅ Bracket loaded successfully', 'success');
-      }
+      addLog('✅ Bracket loaded successfully', 'success');
     } catch (error: any) {
       console.error('Load bracket error:', error);
       addLog(`❌ Lỗi loading bracket: ${error.message}`, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createTestParticipants = async () => {
+    if (!tournamentId) {
+      addLog('❌ Vui lòng chọn một giải đấu trước', 'error');
+      return;
+    }
+
+    setLoading(true);
+    addLog('👥 Đang tạo participants test...', 'info');
+
+    try {
+      // Get available demo users
+      const { data: demoUsers, error: demoError } = await supabase
+        .rpc('get_available_demo_users', { needed_count: 4 });
+
+      if (demoError) throw demoError;
+
+      if (!demoUsers || demoUsers.length < 2) {
+        addLog('❌ Không đủ demo users. Hãy tạo demo users trước.', 'error');
+        setLoading(false);
+        return;
+      }
+
+      addLog(`🎯 Tìm thấy ${demoUsers.length} demo users khả dụng`, 'info');
+
+      // Register demo users for tournament
+      const registrations = demoUsers.slice(0, 4).map((user: any) => ({
+        tournament_id: tournamentId,
+        player_id: user.user_id,
+        registration_status: 'confirmed',
+        registration_date: new Date().toISOString()
+      }));
+
+      const { error: regError } = await supabase
+        .from('tournament_registrations')
+        .insert(registrations);
+
+      if (regError) throw regError;
+
+      // Update tournament participant count
+      const { error: updateError } = await supabase
+        .from('tournaments')
+        .update({ current_participants: registrations.length })
+        .eq('id', tournamentId);
+
+      if (updateError) throw updateError;
+
+      addLog(`✅ Đã tạo ${registrations.length} participants test thành công!`, 'success');
+    } catch (error: any) {
+      addLog(`❌ Lỗi tạo participants: ${error.message}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -142,17 +222,51 @@ const BracketVerification = ({ tournamentId, addLog }: { tournamentId: string; a
     addLog('🔧 Đang tạo bracket mẫu...', 'info');
 
     try {
+      // Check participants first
+      const { data: registrations, error: regError } = await supabase
+        .from('tournament_registrations')
+        .select('*')
+        .eq('tournament_id', tournamentId)
+        .eq('registration_status', 'confirmed');
+
+      if (regError) throw regError;
+
+      if ((registrations?.length || 0) < 2) {
+        addLog('❌ Tournament chưa có đủ người tham gia. Hãy tạo participants trước.', 'error');
+        setLoading(false);
+        return;
+      }
+
+      addLog(`🎯 Tournament found: ${tournamentId}`, 'info');
+      addLog(`📊 Existing matches before: ${bracket.length}`, 'info');
+
       const { data, error } = await supabase.rpc('generate_advanced_tournament_bracket', {
         p_tournament_id: tournamentId,
         p_seeding_method: 'elo_ranking',
         p_force_regenerate: true
       });
 
+      addLog(`🔧 Bracket function result: ${JSON.stringify(data)}`, 'info');
+
       if (error) throw error;
 
-      addLog('✅ Tạo bracket mẫu thành công!', 'success');
-      // Reload bracket after generation
-      setTimeout(() => loadBracket(), 1000);
+      // Check if matches were actually created
+      const { data: newMatches, error: matchError } = await supabase
+        .from('tournament_matches')
+        .select('*')
+        .eq('tournament_id', tournamentId);
+
+      if (matchError) throw matchError;
+
+      addLog(`📊 Matches after generation: ${newMatches?.length || 0}`, 'info');
+
+      if (!newMatches || newMatches.length === 0) {
+        addLog('⚠️ No new matches created. Function may have failed silently.', 'error');
+      } else {
+        addLog('✅ Tạo bracket mẫu thành công!', 'success');
+        // Reload bracket after generation
+        setTimeout(() => loadBracket(), 1000);
+      }
     } catch (error: any) {
       addLog(`❌ Lỗi tạo bracket: ${error.message}`, 'error');
     } finally {
@@ -184,6 +298,10 @@ const BracketVerification = ({ tournamentId, addLog }: { tournamentId: string; a
           <Button onClick={loadBracket} disabled={loading || !tournamentId} className="flex-1">
             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Eye className="mr-2 h-4 w-4" />}
             {loading ? 'Đang tải...' : 'Tải Bracket'}
+          </Button>
+          <Button onClick={createTestParticipants} disabled={loading || !tournamentId} variant="outline">
+            <Users className="mr-2 h-4 w-4" />
+            Tạo Participants
           </Button>
           <Button onClick={generateSampleBracket} disabled={loading || !tournamentId} variant="outline">
             <Target className="mr-2 h-4 w-4" />
