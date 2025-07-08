@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Users, Trophy, Clock, CheckCircle } from 'lucide-react';
+import { Users, Trophy, Clock, CheckCircle, CreditCard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 
 interface TournamentParticipant {
   id: string;
@@ -30,8 +32,10 @@ export const TournamentParticipantsList: React.FC<TournamentParticipantsListProp
   tournamentId,
   maxParticipants
 }) => {
+  const { user } = useAuth();
   const [participants, setParticipants] = useState<TournamentParticipant[]>([]);
   const [loading, setLoading] = useState(true);
+  const [confirmingPayment, setConfirmingPayment] = useState<string | null>(null);
 
   useEffect(() => {
     fetchParticipants();
@@ -110,6 +114,34 @@ export const TournamentParticipantsList: React.FC<TournamentParticipantsListProp
       default: return status;
     }
   };
+
+  const handleConfirmPayment = async (participantId: string) => {
+    try {
+      setConfirmingPayment(participantId);
+      
+      const { error } = await supabase
+        .from('tournament_registrations')
+        .update({ 
+          payment_status: 'paid',
+          registration_status: 'confirmed',
+          status: 'confirmed' 
+        })
+        .eq('id', participantId);
+
+      if (error) throw error;
+      
+      toast.success('Đã xác nhận thanh toán thành công!');
+      fetchParticipants(); // Refresh data
+    } catch (error) {
+      console.error('Error confirming payment:', error);
+      toast.error('Có lỗi khi xác nhận thanh toán');
+    } finally {
+      setConfirmingPayment(null);
+    }
+  };
+
+  // Allow all logged-in users to confirm payments (simplified for demo)
+  const canConfirmPayments = !!user;
 
   const confirmedParticipants = participants.filter(p => p.status === 'confirmed');
   const pendingParticipants = participants.filter(p => p.status === 'registered' || p.status === 'pending');
@@ -216,6 +248,20 @@ export const TournamentParticipantsList: React.FC<TournamentParticipantsListProp
                     <Badge className={getPaymentStatusColor(participant.payment_status)}>
                       {getPaymentStatusText(participant.payment_status)}
                     </Badge>
+                    
+                    {/* Payment Confirmation Button */}
+                    {canConfirmPayments && participant.payment_status === 'pending' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleConfirmPayment(participant.id)}
+                        disabled={confirmingPayment === participant.id}
+                        className="ml-2 text-xs"
+                      >
+                        <CreditCard className="h-3 w-3 mr-1" />
+                        {confirmingPayment === participant.id ? 'Đang xác nhận...' : 'Xác nhận'}
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
