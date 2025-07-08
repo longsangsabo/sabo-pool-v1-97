@@ -5299,6 +5299,15 @@ export type Database = {
         }
         Returns: Json
       }
+      complete_tournament_match: {
+        Args: {
+          p_match_id: string
+          p_winner_id: string
+          p_player1_score?: number
+          p_player2_score?: number
+        }
+        Returns: Json
+      }
       create_bulk_notifications: {
         Args: { notifications: Json }
         Returns: undefined
@@ -5426,6 +5435,10 @@ export type Database = {
       get_time_multiplier: {
         Args: Record<PropertyKey, never>
         Returns: number
+      }
+      get_tournament_bracket_status: {
+        Args: { p_tournament_id: string }
+        Returns: Json
       }
       get_tournament_registrations: {
         Args: { tournament_uuid: string }

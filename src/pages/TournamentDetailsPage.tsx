@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import TournamentManagementFlow from '@/components/tournament/TournamentManagementFlow';
 import TournamentCard from '@/components/tournament/TournamentCard';
 import TournamentParticipantsList from '@/components/tournament/TournamentParticipantsList';
+import TournamentBracketManager from '@/components/tournament/TournamentBracketManager';
 import { useTournaments } from '@/hooks/useTournaments';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -91,17 +92,10 @@ const TournamentDetailsPage: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="bracket" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Bảng đấu</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Bảng đấu sẽ được tạo khi giải đấu bắt đầu
-                </p>
-                {/* Add bracket component here */}
-              </CardContent>
-            </Card>
+            <TournamentBracketManager 
+              tournamentId={tournament.id}
+              canManage={isOrganizer}
+            />
           </TabsContent>
 
           {isOrganizer && (
