@@ -11,7 +11,7 @@ import TournamentCard from '@/components/tournament/TournamentCard';
 import { useTournaments } from '@/hooks/useTournaments';
 import { useAuth } from '@/hooks/useAuth';
 import { useRealTimeTournamentState } from '@/hooks/useRealTimeTournamentState';
-import { useRealTimeTournamentSync } from '@/hooks/useRealTimeTournamentSync';
+import { useRealtimeTournamentSync } from '@/hooks/useRealtimeTournamentSync';
 import { useTournamentRegistrationFlow } from '@/hooks/useTournamentRegistrationFlow';
 import { toast } from 'sonner';
 
@@ -36,18 +36,7 @@ const TournamentsPage: React.FC = () => {
   const [showRegistrationDashboard, setShowRegistrationDashboard] = useState(false);
 
   // Enhanced real-time sync with better state management
-  useRealTimeTournamentSync((tournamentId: string, isRegistered: boolean) => {
-    console.log('Tournament registration state changed:', { tournamentId, isRegistered });
-    setRegistrationStatus(tournamentId, isRegistered);
-    
-    // Force refresh tournaments data to get updated participant counts
-    fetchTournaments();
-    
-    // Show appropriate toast message
-    if (isRegistered) {
-      toast.success('Trạng thái đăng ký đã được cập nhật!');
-    }
-  });
+  // TODO: Implement specific tournament sync when needed
 
   // Load user registrations using new hook
   useEffect(() => {
@@ -68,10 +57,18 @@ const TournamentsPage: React.FC = () => {
     setShowRegistrationDashboard(true);
   };
 
+  const updateRegistrationStatus = (tournamentId: string, isRegistered: boolean) => {
+    console.log('Tournament registration state changed:', { tournamentId, isRegistered });
+    setRegistrationStatus(tournamentId, isRegistered);
+    fetchTournaments();
+    if (isRegistered) {
+      toast.success('Trạng thái đăng ký đã được cập nhật!');
+    }
+  };
+
   const handleTournamentCreated = (tournament: any) => {
     setShowTournamentCreator(false);
     toast.success('Giải đấu đã được tạo thành công!');
-    // Refresh tournaments list
     fetchTournaments();
   };
 

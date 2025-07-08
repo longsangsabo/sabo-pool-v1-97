@@ -13,6 +13,7 @@ import { AvatarProvider } from "@/contexts/AvatarContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import MainLayout from "@/components/MainLayout";
 import DailyNotificationSystem from "@/components/DailyNotificationSystem";
+import RealtimeNotificationSystem from "@/components/RealtimeNotificationSystem";
 
 // Import components directly instead of lazy loading to avoid loading issues
 import SimpleDashboard from "./pages/SimpleDashboard";
@@ -128,6 +129,7 @@ const App = () => {
                 <AvatarProvider>
                 <LanguageProvider>
                 <BrowserRouter>
+                  <RealtimeNotificationSystem />
                   <Suspense fallback={<LoadingFallback />}>
                     <Routes>
                       <Route path="/" element={<MainLayout />}>

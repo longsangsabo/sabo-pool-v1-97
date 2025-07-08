@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import TournamentManagementFlow from '@/components/tournament/TournamentManagementFlow';
 import TournamentCard from '@/components/tournament/TournamentCard';
 import TournamentParticipantsList from '@/components/tournament/TournamentParticipantsList';
-import TournamentBracketManager from '@/components/tournament/TournamentBracketManager';
+import { RealtimeBracketViewer } from '@/components/tournament/RealtimeBracketViewer';
 import { useTournaments } from '@/hooks/useTournaments';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -92,10 +92,7 @@ const TournamentDetailsPage: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="bracket" className="space-y-6">
-            <TournamentBracketManager 
-              tournamentId={tournament.id}
-              canManage={isOrganizer}
-            />
+            <RealtimeBracketViewer tournamentId={tournament.id} />
           </TabsContent>
 
           {isOrganizer && (
