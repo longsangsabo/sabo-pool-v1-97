@@ -14,7 +14,7 @@ interface WorkflowStep {
 export const WORKFLOW_STEPS: WorkflowStep[] = [
   {
     id: 1,
-    title: 'Tournament Selection & Bracket Verification',
+    title: 'Chọn Giải Đấu & Xác Thực Bracket',
     description: 'Chọn giải đấu và xác thực cấu trúc bracket',
     icon: '🏆',
     autoAdvance: true,
@@ -22,7 +22,7 @@ export const WORKFLOW_STEPS: WorkflowStep[] = [
   },
   {
     id: 2,
-    title: 'Match Reporting Test',
+    title: 'Kiểm Tra Báo Cáo Trận Đấu',
     description: 'Test báo cáo kết quả trận đấu và logic advancement',
     icon: '⚾',
     autoAdvance: false,
@@ -30,7 +30,7 @@ export const WORKFLOW_STEPS: WorkflowStep[] = [
   },
   {
     id: 3,
-    title: 'Tournament Progression',
+    title: 'Tiến Trình Giải Đấu',
     description: 'Test tiến trình giải đấu từ đầu đến cuối',
     icon: '🚀',
     autoAdvance: true,
@@ -38,7 +38,7 @@ export const WORKFLOW_STEPS: WorkflowStep[] = [
   },
   {
     id: 4,
-    title: 'Admin Controls',
+    title: 'Điều Khiển Quản Trị',
     description: 'Test các chức năng quản trị viên',
     icon: '⚙️',
     autoAdvance: false,
@@ -46,7 +46,7 @@ export const WORKFLOW_STEPS: WorkflowStep[] = [
   },
   {
     id: 5,
-    title: 'User Experience Test',
+    title: 'Kiểm Tra Trải Nghiệm Người Dùng',
     description: 'Test trải nghiệm người dùng và UI/UX',
     icon: '👤',
     autoAdvance: false,
@@ -54,7 +54,7 @@ export const WORKFLOW_STEPS: WorkflowStep[] = [
   },
   {
     id: 6,
-    title: 'Scale Testing',
+    title: 'Kiểm Tra Hiệu Suất',
     description: 'Test hiệu suất với dữ liệu lớn',
     icon: '📊',
     autoAdvance: false,
@@ -62,7 +62,7 @@ export const WORKFLOW_STEPS: WorkflowStep[] = [
   },
   {
     id: 7,
-    title: 'Data Cleanup',
+    title: 'Dọn Dẹp Dữ Liệu',
     description: 'Dọn dẹp dữ liệu test và hoàn tất workflow',
     icon: '🧹',
     autoAdvance: false,
@@ -86,9 +86,9 @@ export const WorkflowProgress: React.FC<WorkflowProgressProps> = ({
   return (
     <div className="bg-white rounded-lg p-6 border mb-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-gray-900">🏆 Tournament Testing Workflow</h2>
+        <h2 className="text-xl font-bold text-gray-900">🏆 Quy Trình Kiểm Tra Giải Đấu</h2>
         <div className="text-sm text-gray-500">
-          Step {currentStep} of {WORKFLOW_STEPS.length} | {completedSteps.length} completed
+          Bước {currentStep} / {WORKFLOW_STEPS.length} | {completedSteps.length} đã hoàn thành
         </div>
       </div>
       
@@ -128,7 +128,7 @@ export const WorkflowProgress: React.FC<WorkflowProgressProps> = ({
               <div className="text-2xl">{step.icon}</div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-sm">Step {step.id}</span>
+                  <span className="font-medium text-sm">Bước {step.id}</span>
                   {isCompleted && <Check className="h-4 w-4 text-green-600" />}
                   {!canAccess && <Lock className="h-4 w-4 text-gray-400" />}
                 </div>

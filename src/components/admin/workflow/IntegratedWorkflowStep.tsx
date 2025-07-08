@@ -42,7 +42,7 @@ export const IntegratedWorkflowStep: React.FC<IntegratedWorkflowStepProps> = ({
             <div className="text-3xl">{icon}</div>
             <div>
               <CardTitle className="text-xl">
-                Step {stepNumber}: {title}
+                Bước {stepNumber}: {title}
               </CardTitle>
               <CardDescription className="text-sm text-gray-600">
                 {description}
@@ -52,7 +52,7 @@ export const IntegratedWorkflowStep: React.FC<IntegratedWorkflowStepProps> = ({
           
           {isCompleted && (
             <div className="text-right">
-              <div className="text-green-600 font-medium text-sm">✅ Completed</div>
+              <div className="text-green-600 font-medium text-sm">✅ Đã Hoàn Thành</div>
               {completionTime && (
                 <div className="text-xs text-gray-500">{completionTime}</div>
               )}
@@ -61,7 +61,7 @@ export const IntegratedWorkflowStep: React.FC<IntegratedWorkflowStepProps> = ({
           
           {autoAdvance && !isCompleted && (
             <div className="text-right">
-              <div className="text-blue-600 font-medium text-sm">🤖 Auto-Advance</div>
+              <div className="text-blue-600 font-medium text-sm">🤖 Tự Động Chuyển</div>
               <div className="text-xs text-gray-500">Sẽ tự động chuyển bước</div>
             </div>
           )}
@@ -80,7 +80,7 @@ export const IntegratedWorkflowStep: React.FC<IntegratedWorkflowStepProps> = ({
             className="flex items-center gap-2"
           >
             <ChevronLeft className="h-4 w-4" />
-            Previous Step
+            Bước Trước
           </Button>
           
           <div className="flex gap-2">
@@ -92,7 +92,7 @@ export const IntegratedWorkflowStep: React.FC<IntegratedWorkflowStepProps> = ({
                 onClick={() => window.location.reload()}
               >
                 <RotateCcw className="h-4 w-4 mr-1" />
-                Reset Step
+                Đặt Lại Bước
               </Button>
             )}
             
@@ -101,7 +101,7 @@ export const IntegratedWorkflowStep: React.FC<IntegratedWorkflowStepProps> = ({
               disabled={!canNext}
               className="flex items-center gap-2"
             >
-              Next Step
+              Bước Tiếp
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
