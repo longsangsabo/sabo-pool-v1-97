@@ -14,7 +14,8 @@ const MobileLayout = ({
   showNavigation = true,
 }: MobileLayoutProps) => {
   return (
-    <RealtimeNotificationSystem>
+    <>
+      <RealtimeNotificationSystem />
       <div className={`min-h-screen bg-background ${className}`}>
         <div className='mx-auto max-w-md bg-white shadow-lg min-h-screen relative'>
           {/* Main content with bottom padding for navigation */}
@@ -24,7 +25,7 @@ const MobileLayout = ({
           {showNavigation && <MobileNavigation />}
         </div>
       </div>
-    </RealtimeNotificationSystem>
+    </>
   );
 };
 
