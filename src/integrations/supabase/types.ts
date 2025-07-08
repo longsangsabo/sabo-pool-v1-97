@@ -4277,6 +4277,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "tournament_matches_player1_id_fkey"
+            columns: ["player1_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "tournament_matches_player2_id_fkey"
+            columns: ["player2_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "tournament_matches_tournament_id_fkey"
             columns: ["tournament_id"]
             isOneToOne: false
