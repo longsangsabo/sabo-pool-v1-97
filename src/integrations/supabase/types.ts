@@ -5262,6 +5262,10 @@ export type Database = {
         }
         Returns: string
       }
+      create_test_demo_user: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       credit_spa_points: {
         Args: {
           p_user_id: string
