@@ -4399,7 +4399,9 @@ export type Database = {
           created_at: string | null
           id: string
           notes: string | null
+          payment_confirmed_at: string | null
           payment_date: string | null
+          payment_method: string | null
           payment_status: string | null
           player_id: string | null
           registration_date: string | null
@@ -4417,7 +4419,9 @@ export type Database = {
           created_at?: string | null
           id?: string
           notes?: string | null
+          payment_confirmed_at?: string | null
           payment_date?: string | null
+          payment_method?: string | null
           payment_status?: string | null
           player_id?: string | null
           registration_date?: string | null
@@ -4435,7 +4439,9 @@ export type Database = {
           created_at?: string | null
           id?: string
           notes?: string | null
+          payment_confirmed_at?: string | null
           payment_date?: string | null
+          payment_method?: string | null
           payment_status?: string | null
           player_id?: string | null
           registration_date?: string | null
