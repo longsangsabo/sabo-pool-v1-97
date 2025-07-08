@@ -5288,6 +5288,15 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      club_confirm_payment: {
+        Args: {
+          p_registration_id: string
+          p_club_user_id: string
+          p_payment_method?: string
+          p_notes?: string
+        }
+        Returns: Json
+      }
       complete_challenge_match: {
         Args: {
           p_match_id: string
@@ -5393,6 +5402,10 @@ export type Database = {
         }
         Returns: Json
       }
+      generate_complete_tournament_bracket: {
+        Args: { p_tournament_id: string; p_seeding_method?: string }
+        Returns: Json
+      }
       generate_referral_code: {
         Args: { p_user_id: string }
         Returns: string
@@ -5456,6 +5469,19 @@ export type Database = {
       get_tournament_bracket_status: {
         Args: { p_tournament_id: string }
         Returns: Json
+      }
+      get_tournament_registration_priority: {
+        Args: { p_tournament_id: string }
+        Returns: {
+          registration_id: string
+          player_id: string
+          player_name: string
+          elo_rating: number
+          registration_date: string
+          payment_status: string
+          registration_status: string
+          priority_order: number
+        }[]
       }
       get_tournament_registrations: {
         Args: { tournament_uuid: string }
