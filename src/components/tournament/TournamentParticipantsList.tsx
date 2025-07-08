@@ -146,6 +146,58 @@ export const TournamentParticipantsList: React.FC<TournamentParticipantsListProp
   const confirmedParticipants = participants.filter(p => p.status === 'confirmed');
   const pendingParticipants = participants.filter(p => p.status === 'registered' || p.status === 'pending');
 
+  const handleFinalizeRegistration = async () => {
+    try {
+      // Get 16 earliest paid participants
+      const paidParticipants = participants
+        .filter(p => p.payment_status === 'paid')
+        .sort((a, b) => new Date(a.registration_date).getTime() - new Date(b.registration_date).getTime())
+        .slice(0, 16);
+
+      if (paidParticipants.length < 16) {
+        toast.error(`Chỉ có ${paidParticipants.length} người đã thanh toán. Cần tối thiểu 16 người.`);
+        return;
+      }
+
+      // Update selected 16 to confirmed, remove others
+      const { error: removeError } = await supabase
+        .from('tournament_registrations')
+        .delete()
+        .eq('tournament_id', tournamentId)
+        .not('id', 'in', `(${paidParticipants.map(p => `"${p.id}"`).join(',')})`);
+
+      if (removeError) throw removeError;
+
+      // Confirm the selected 16
+      const { error: confirmError } = await supabase
+        .from('tournament_registrations')
+        .update({ 
+          status: 'confirmed',
+          registration_status: 'confirmed'
+        })
+        .in('id', paidParticipants.map(p => p.id));
+
+      if (confirmError) throw confirmError;
+
+      // Update tournament status
+      const { error: tournamentError } = await supabase
+        .from('tournaments')
+        .update({ 
+          status: 'registration_closed',
+          current_participants: 16
+        })
+        .eq('id', tournamentId);
+
+      if (tournamentError) throw tournamentError;
+
+      toast.success('Đã chốt sổ thành công! 16 người thanh toán sớm nhất được chọn.');
+      fetchParticipants();
+    } catch (error) {
+      console.error('Error finalizing registration:', error);
+      toast.error('Có lỗi khi chốt sổ');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -198,10 +250,24 @@ export const TournamentParticipantsList: React.FC<TournamentParticipantsListProp
       {/* Participants List */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Danh sách người tham gia ({participants.length}/{maxParticipants})
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Danh sách người tham gia ({participants.length}/{maxParticipants})
+            </CardTitle>
+            
+            {/* Admin finalize button */}
+            {canConfirmPayments && participants.filter(p => p.payment_status === 'paid').length >= 16 && (
+              <Button
+                variant="default"
+                onClick={handleFinalizeRegistration}
+                className="bg-primary hover:bg-primary/90"
+              >
+                <Trophy className="h-4 w-4 mr-2" />
+                Chốt sổ 16 người
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {participants.length === 0 ? (
