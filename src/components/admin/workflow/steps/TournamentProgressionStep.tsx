@@ -272,6 +272,16 @@ export const TournamentProgressionStep: React.FC<TournamentProgressionStepProps>
 
   return (
     <div className="space-y-6">
+      {/* Step Purpose Explanation */}
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 p-6 rounded-lg border border-blue-200 dark:border-blue-700">
+        <h3 className="font-bold text-lg text-blue-900 dark:text-blue-100 mb-3">🎯 Step 3: Tournament Progression Testing</h3>
+        <div className="text-sm text-blue-800 dark:text-blue-200 space-y-2">
+          <p><strong>Purpose:</strong> Test the complete tournament flow from start to finish by simulating matches and bracket advancement.</p>
+          <p><strong>What this validates:</strong> Match result reporting, winner advancement, round progression, and tournament completion logic.</p>
+          <p><strong>How to advance:</strong> Successfully complete at least one round simulation OR run the full tournament simulation.</p>
+        </div>
+      </div>
+
       {/* Tournament Status */}
       <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
         <h4 className="font-medium mb-2">🏆 Tournament: {sharedData.tournament?.name}</h4>
@@ -300,10 +310,10 @@ export const TournamentProgressionStep: React.FC<TournamentProgressionStepProps>
         <Button 
           onClick={simulateRound}
           disabled={isSimulating || currentRoundMatches.length === 0}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 bg-primary hover:bg-primary/90"
         >
           {isSimulating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-          Simulate Round {currentRound}
+          Test Round {currentRound}
           {currentRoundMatches.length > 0 && ` (${currentRoundMatches.length} matches)`}
         </Button>
         
@@ -311,10 +321,10 @@ export const TournamentProgressionStep: React.FC<TournamentProgressionStepProps>
           onClick={simulateEntireTournament}
           disabled={isSimulating}
           variant="outline"
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 border-green-500 text-green-600 hover:bg-green-50"
         >
           {isSimulating ? <Loader2 className="h-4 w-4 animate-spin" /> : <FastForward className="h-4 w-4" />}
-          Simulate Entire Tournament
+          Run Full Tournament Test
         </Button>
 
         <Button 
@@ -330,28 +340,32 @@ export const TournamentProgressionStep: React.FC<TournamentProgressionStepProps>
 
       {/* Round Status */}
       {currentRoundMatches.length === 0 && currentRound <= maxRounds && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
-          <p className="text-sm">⏳ Waiting for round {currentRound - 1} to complete before proceeding to round {currentRound}</p>
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200">
+          <p className="text-sm">⏳ <strong>Waiting:</strong> Round {currentRound - 1} must complete before round {currentRound} can begin</p>
         </div>
       )}
 
       {currentRound > maxRounds && (
-        <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-          <p className="text-sm">🏆 Tournament completed! All rounds finished.</p>
+        <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200">
+          <p className="text-sm">🏆 <strong>Tournament Completed!</strong> All rounds finished successfully.</p>
+          <p className="text-xs text-green-600 mt-1">You can now proceed to Step 4 - the tournament progression logic has been validated.</p>
         </div>
       )}
 
       {/* Simulation Results */}
       {simulationResults.length > 0 && (
-        <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-          <h4 className="font-medium mb-3">📊 Simulation Results</h4>
+        <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border">
+          <h4 className="font-medium mb-3">📊 Tournament Progression Results</h4>
           <div className="space-y-1 max-h-40 overflow-y-auto">
             {simulationResults.slice(-10).map((result, index) => (
-              <div key={index} className="text-xs p-2 bg-white dark:bg-gray-700 rounded">
-                R{result.round} M{result.match}: Winner advances ({result.score})
+              <div key={index} className="text-xs p-2 bg-white dark:bg-gray-700 rounded border-l-2 border-blue-500">
+                <span className="font-mono">Round {result.round}, Match {result.match}:</span> Winner advances <span className="text-green-600">({result.score})</span>
               </div>
             ))}
           </div>
+          {simulationResults.length > 10 && (
+            <p className="text-xs text-gray-500 mt-2">Showing last 10 results of {simulationResults.length} total</p>
+          )}
         </div>
       )}
     </div>
