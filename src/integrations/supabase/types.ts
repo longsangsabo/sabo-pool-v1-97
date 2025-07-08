@@ -5475,12 +5475,15 @@ export type Database = {
         Returns: {
           registration_id: string
           player_id: string
-          player_name: string
-          elo_rating: number
-          registration_date: string
+          tournament_id: string
           payment_status: string
           registration_status: string
+          registration_date: string
+          player_name: string
+          elo_rating: number
           priority_order: number
+          payment_method: string
+          admin_notes: string
         }[]
       }
       get_tournament_registrations: {
