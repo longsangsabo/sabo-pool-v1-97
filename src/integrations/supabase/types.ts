@@ -4297,6 +4297,13 @@ export type Database = {
             referencedRelation: "tournaments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "tournament_matches_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       tournament_participants: {
