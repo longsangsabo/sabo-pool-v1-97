@@ -15,6 +15,11 @@ import { WorkflowProgress, WORKFLOW_STEPS } from './workflow/WorkflowSteps';
 import { IntegratedWorkflowStep } from './workflow/IntegratedWorkflowStep';
 import { TournamentSelectionStep } from './workflow/steps/TournamentSelectionStep';
 import { MatchReportingStep } from './workflow/steps/MatchReportingStep';
+import { TournamentProgressionStep } from './workflow/steps/TournamentProgressionStep';
+import { AdminControlsStep } from './workflow/steps/AdminControlsStep';
+import { UserExperienceStep } from './workflow/steps/UserExperienceStep';
+import { ScaleTestingStep } from './workflow/steps/ScaleTestingStep';
+import { DataCleanupStep } from './workflow/steps/DataCleanupStep';
 
 // STEP 1 - Bracket Verification
 const BracketVerification = ({ tournamentId, addLog }: { tournamentId: string; addLog: (message: string, type?: 'info' | 'error' | 'success') => void }) => {
@@ -1902,8 +1907,53 @@ const IntegratedTournamentWorkflow = () => {
       case 3:
         return (
           <IntegratedWorkflowStep {...stepProps}>
-            <TournamentProgressionTester
-              tournamentId={state.selectedTournament || ''}
+            <TournamentProgressionStep
+              onComplete={stepProps.onComplete}
+              sharedData={state.sharedData}
+              addLog={addLog}
+            />
+          </IntegratedWorkflowStep>
+        );
+        
+      case 4:
+        return (
+          <IntegratedWorkflowStep {...stepProps}>
+            <AdminControlsStep
+              onComplete={stepProps.onComplete}
+              sharedData={state.sharedData}
+              addLog={addLog}
+            />
+          </IntegratedWorkflowStep>
+        );
+        
+      case 5:
+        return (
+          <IntegratedWorkflowStep {...stepProps}>
+            <UserExperienceStep
+              onComplete={stepProps.onComplete}
+              sharedData={state.sharedData}
+              addLog={addLog}
+            />
+          </IntegratedWorkflowStep>
+        );
+        
+      case 6:
+        return (
+          <IntegratedWorkflowStep {...stepProps}>
+            <ScaleTestingStep
+              onComplete={stepProps.onComplete}
+              sharedData={state.sharedData}
+              addLog={addLog}
+            />
+          </IntegratedWorkflowStep>
+        );
+        
+      case 7:
+        return (
+          <IntegratedWorkflowStep {...stepProps}>
+            <DataCleanupStep
+              onComplete={stepProps.onComplete}
+              sharedData={state.sharedData}
               addLog={addLog}
             />
           </IntegratedWorkflowStep>
