@@ -59,6 +59,32 @@ export const TournamentSelectionStep: React.FC<TournamentSelectionStepProps> = (
     }
   };
 
+  const verifyDatabaseSetup = async () => {
+    console.log('🔍 Verify Database clicked!');
+    addLog('🔍 Verifying database setup...', 'info');
+    
+    try {
+      const { data: verification, error: verifyError } = await supabase
+        .rpc('verify_tournament_database');
+      
+      if (verifyError) {
+        addLog(`❌ Verification failed: ${verifyError.message}`, 'error');
+      } else {
+        addLog(`📊 Database verification: ${JSON.stringify(verification)}`, 'info');
+        
+        // Type safe access to verification properties
+        const result = verification as any;
+        if (result?.status === 'ready') {
+          addLog('✅ Database schema is ready for bracket generation', 'success');
+        } else {
+          addLog(`⚠️ Database issues found: Tables(${result?.tables_found || 0}/${result?.tables_expected || 0}) Columns(${result?.tournament_brackets_columns || 0}/${result?.tournament_brackets_expected || 0})`, 'error');
+        }
+      }
+    } catch (error: any) {
+      addLog(`💥 Verification error: ${error.message}`, 'error');
+    }
+  };
+
   const generateSampleBracket = async () => {
     console.log('🎯 Generate Sample Bracket clicked!', { selectedTournament, generatingBracket });
     
@@ -99,7 +125,13 @@ export const TournamentSelectionStep: React.FC<TournamentSelectionStepProps> = (
         p_force_regenerate: true
       });
 
-      if (error) throw error;
+      if (error) {
+        addLog(`❌ Database function error: ${error.message}`, 'error');
+        addLog(`🔍 Error code: ${error.code || 'N/A'}`, 'error');
+        addLog(`🔍 Error details: ${error.details || 'N/A'}`, 'error');
+        addLog(`🔍 Error hint: ${error.hint || 'N/A'}`, 'error');
+        throw error;
+      }
 
       addLog(`🔧 Bracket function result: ${JSON.stringify(data)}`, 'info');
       
@@ -263,6 +295,13 @@ export const TournamentSelectionStep: React.FC<TournamentSelectionStepProps> = (
 
         {/* Action Buttons */}
         <div className="flex gap-2">
+          <Button 
+            onClick={verifyDatabaseSetup}
+            variant="secondary"
+            size="sm"
+          >
+            🔍 Verify Database
+          </Button>
           <Button 
             onClick={(e) => {
               console.log('Load Bracket button clicked!', e);

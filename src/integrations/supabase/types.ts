@@ -4141,6 +4141,7 @@ export type Database = {
           created_at: string | null
           current_round: number | null
           id: string
+          status: string | null
           total_players: number
           total_rounds: number
           tournament_id: string
@@ -4153,6 +4154,7 @@ export type Database = {
           created_at?: string | null
           current_round?: number | null
           id?: string
+          status?: string | null
           total_players: number
           total_rounds: number
           tournament_id: string
@@ -4165,6 +4167,7 @@ export type Database = {
           created_at?: string | null
           current_round?: number | null
           id?: string
+          status?: string | null
           total_players?: number
           total_rounds?: number
           tournament_id?: string
@@ -5565,6 +5568,10 @@ export type Database = {
           p_verifier_id: string
           p_verification_method?: string
         }
+        Returns: Json
+      }
+      verify_tournament_database: {
+        Args: Record<PropertyKey, never>
         Returns: Json
       }
     }
