@@ -4,6 +4,7 @@ import AdminLayout from '@/components/AdminLayout';
 import { useAdminCheck } from '@/hooks/useAdminCheck';
 import { useLanguage } from '@/contexts/LanguageContext';
 import EnhancedTournamentManager from '@/components/admin/EnhancedTournamentManager';
+import TournamentWorkflowManager from '@/components/admin/TournamentWorkflowManager';
 
 const AdminTournaments = () => {
   const { data: isAdmin, isLoading: adminLoading } = useAdminCheck();
@@ -34,7 +35,7 @@ const AdminTournaments = () => {
 
   return (
     <AdminLayout>
-      <EnhancedTournamentManager />
+      <TournamentWorkflowManager />
     </AdminLayout>
   );
 };
