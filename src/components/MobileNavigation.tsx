@@ -53,34 +53,42 @@ const MobileNavigation = () => {
   ];
 
   return (
-    <nav className='fixed bottom-0 left-0 right-0 mx-auto max-w-md bg-white border-t border-gray-200 z-50 shadow-lg'>
-      <div className='flex justify-around items-center h-16 px-2'>
-        {navigationItems.map(item => (
-          <button
-            key={item.name}
-            onClick={() => navigate(item.href)}
-            className={`flex flex-col items-center justify-center flex-1 h-full transition-all duration-200 ${
-              item.current
-                ? 'text-blue-600 bg-blue-50 rounded-lg mx-1'
-                : 'text-gray-500 hover:text-blue-600 hover:bg-gray-50 rounded-lg mx-1'
-            } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
+    <div className='flex justify-around items-center h-16 px-2'>
+      {navigationItems.map(item => (
+        <button
+          key={item.name}
+          onClick={() => navigate(item.href)}
+          className={`relative flex flex-col items-center justify-center flex-1 h-full transition-all duration-300 transform ${
+            item.current
+              ? 'text-primary bg-primary/10 rounded-xl mx-1 scale-105'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl mx-1 hover:scale-102'
+          } focus:outline-none focus:ring-2 focus:ring-primary/50`}
+        >
+          {/* Active indicator */}
+          {item.current && (
+            <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-6 h-1 bg-primary rounded-full animate-slide-up" />
+          )}
+          
+          <item.icon
+            className={`h-5 w-5 mb-1 transition-transform duration-200 ${
+              item.current ? 'scale-110' : 'scale-100'
+            }`}
+          />
+          <span
+            className={`text-xs font-medium transition-all duration-200 ${
+              item.current ? 'font-semibold' : ''
+            }`}
           >
-            <item.icon
-              className={`h-5 w-5 mb-1 transition-transform duration-200 ${
-                item.current ? 'scale-110' : 'scale-100'
-              }`}
-            />
-            <span
-              className={`text-xs font-medium transition-colors duration-200 ${
-                item.current ? 'text-blue-600' : 'text-gray-600'
-              }`}
-            >
-              {item.name}
-            </span>
-          </button>
-        ))}
-      </div>
-    </nav>
+            {item.name}
+          </span>
+          
+          {/* Ripple effect on tap */}
+          <div className="absolute inset-0 rounded-xl overflow-hidden">
+            <div className="absolute inset-0 rounded-xl opacity-0 bg-primary/20 transition-opacity duration-150 active:opacity-100" />
+          </div>
+        </button>
+      ))}
+    </div>
   );
 };
 

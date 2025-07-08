@@ -10,6 +10,10 @@
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
+    /* Mobile safe areas */
+    --safe-area-inset-top: env(safe-area-inset-top);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom);
+
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
 
