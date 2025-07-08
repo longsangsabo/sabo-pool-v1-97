@@ -84,15 +84,64 @@ const TournamentPaymentManager: React.FC = () => {
 
     setLoading(true);
     try {
+      // First check if function exists by trying to call it
       const { data, error } = await supabase.rpc('get_tournament_registration_priority', {
         p_tournament_id: selectedTournament
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('RPC Error:', error);
+        throw error;
+      }
+      
+      console.log('Registration data:', data);
       setRegistrations(data || []);
     } catch (error) {
       console.error('Error fetching registrations:', error);
-      toast.error('Lỗi khi tải danh sách đăng ký');
+      toast.error('Lỗi khi tải danh sách đăng ký: ' + (error as Error).message);
+      
+      // Fallback: try manual query
+      try {
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('tournament_registrations')
+          .select(`
+            id,
+            player_id,
+            tournament_id,
+            payment_status,
+            status,
+            registration_date,
+            payment_method,
+            admin_notes,
+            profiles!inner(full_name, display_name),
+            player_rankings(elo_points)
+          `)
+          .eq('tournament_id', selectedTournament)
+          .order('registration_date', { ascending: true });
+          
+        if (fallbackError) throw fallbackError;
+        
+        // Transform fallback data to match expected format
+        const transformedData = (fallbackData || []).map((reg: any, index: number) => ({
+          registration_id: reg.id,
+          player_id: reg.player_id,
+          tournament_id: reg.tournament_id,
+          payment_status: reg.payment_status || 'pending',
+          registration_status: reg.status || 'pending',
+          registration_date: reg.registration_date,
+          player_name: reg.profiles?.full_name || reg.profiles?.display_name || 'Unknown Player',
+          elo_rating: reg.player_rankings?.elo_points || 1000,
+          priority_order: index + 1,
+          payment_method: reg.payment_method || 'cash',
+          admin_notes: reg.admin_notes || ''
+        }));
+        
+        setRegistrations(transformedData);
+        console.log('Fallback data loaded:', transformedData);
+      } catch (fallbackError) {
+        console.error('Fallback query also failed:', fallbackError);
+        toast.error('Không thể tải dữ liệu từ database');
+      }
     } finally {
       setLoading(false);
     }
