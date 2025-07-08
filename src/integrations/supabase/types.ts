@@ -600,6 +600,41 @@ export type Database = {
         }
         Relationships: []
       }
+      demo_user_pool: {
+        Row: {
+          created_at: string | null
+          currently_used_in: string | null
+          id: string
+          is_available: boolean | null
+          last_used_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          currently_used_in?: string | null
+          id?: string
+          is_available?: boolean | null
+          last_used_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          currently_used_in?: string | null
+          id?: string
+          is_available?: boolean | null
+          last_used_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_user_pool_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       elo_history: {
         Row: {
           created_at: string | null
@@ -5281,6 +5316,17 @@ export type Database = {
         Args: { tournament_uuid: string }
         Returns: Json
       }
+      get_available_demo_users: {
+        Args: { needed_count: number }
+        Returns: {
+          user_id: string
+          full_name: string
+          display_name: string
+          skill_level: string
+          elo: number
+          spa_points: number
+        }[]
+      }
       get_cron_jobs: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -5294,6 +5340,10 @@ export type Database = {
           active: boolean
           jobname: string
         }[]
+      }
+      get_demo_user_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       get_inactive_players: {
         Args: { days_threshold: number }
@@ -5363,8 +5413,16 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      release_demo_users: {
+        Args: { tournament_id: string }
+        Returns: Json
+      }
       reseed_tournament: {
         Args: { p_tournament_id: string; p_seeding_method?: string }
+        Returns: Json
+      }
+      reserve_demo_users: {
+        Args: { user_ids: string[]; tournament_id: string }
         Returns: Json
       }
       reset_daily_challenges: {
@@ -5374,6 +5432,10 @@ export type Database = {
       reset_season: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      seed_demo_users: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       send_enhanced_notification: {
         Args: {

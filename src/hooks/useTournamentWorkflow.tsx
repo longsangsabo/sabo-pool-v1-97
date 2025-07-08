@@ -5,6 +5,7 @@ export interface WorkflowState {
   completedSteps: number[];
   selectedTournament: string | null;
   testResults: {
+    demoUserSetup?: any;
     bracketVerification?: any;
     matchReporting?: any;
     tournamentProgression?: any;
@@ -53,8 +54,8 @@ export const useTournamentWorkflow = () => {
         ...prev.testResults, 
         [getStepKey(stepNumber)]: results 
       },
-      currentStep: stepNumber < 7 ? stepNumber + 1 : stepNumber,
-      workflowStatus: stepNumber === 7 ? 'completed' : 'in_progress'
+      currentStep: stepNumber < 8 ? stepNumber + 1 : stepNumber,
+      workflowStatus: stepNumber === 8 ? 'completed' : 'in_progress'
     }));
   }, []);
 
@@ -100,6 +101,7 @@ export const useTournamentWorkflow = () => {
 
 const getStepKey = (stepNumber: number): keyof WorkflowState['testResults'] => {
   const stepKeys = [
+    'demoUserSetup',
     'bracketVerification',
     'matchReporting', 
     'tournamentProgression',
@@ -113,13 +115,14 @@ const getStepKey = (stepNumber: number): keyof WorkflowState['testResults'] => {
 
 const getStepDependencies = (stepNumber: number): number[] => {
   const dependencies: { [key: number]: number[] } = {
-    1: [], // Tournament Selection & Bracket Verification
-    2: [1], // Match Reporting Test (needs bracket)
-    3: [1, 2], // Tournament Progression (needs bracket + match reporting)
-    4: [1], // Admin Controls (needs tournament)
-    5: [1], // User Experience Test (needs tournament)
-    6: [1, 2, 3], // Scale Testing (needs basic functionality)
-    7: [1, 2, 3, 4, 5, 6] // Data Cleanup (needs all previous steps)
+    1: [], // Demo User Setup (no dependencies)
+    2: [1], // Tournament Selection & Bracket Verification (needs demo users)
+    3: [1, 2], // Match Reporting Test (needs demo users + bracket)
+    4: [1, 2, 3], // Tournament Progression (needs demo users + bracket + match reporting)
+    5: [1, 2], // Admin Controls (needs demo users + tournament)
+    6: [1, 2], // User Experience Test (needs demo users + tournament)
+    7: [1, 2, 3, 4], // Scale Testing (needs basic functionality)
+    8: [1, 2, 3, 4, 5, 6, 7] // Data Cleanup (needs all previous steps)
   };
   return dependencies[stepNumber] || [];
 };
