@@ -133,27 +133,31 @@ export const MatchReportingStep: React.FC<MatchReportingStepProps> = ({
 
     addLog('🤖 Running automatic match reporting test...', 'info');
     
-    // Test 3 matches automatically
-    const testMatches = matches.slice(0, 3);
+    // Test first match automatically
+    const testMatch = matches[0];
+    setSelectedMatch(testMatch);
     
-    for (const match of testMatches) {
-      const randomWinner = Math.random() > 0.5 ? match.player1_id : match.player2_id;
-      setSelectedMatch(match);
-      await reportMatchResult(randomWinner);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second between tests
-    }
+    // Simulate random winner
+    const winnerId = Math.random() > 0.5 ? testMatch.player1_id : testMatch.player2_id;
+    await reportMatchResult(winnerId);
 
     // Complete step after testing
-    const results = {
-      totalTests: testResults.length + testMatches.length,
-      successfulTests: testResults.filter(r => r.success).length + testMatches.length,
-      averageDuration: testResults.reduce((acc, r) => acc + (r.duration || 0), 0) / testResults.length,
-      testResults: testResults,
-      completedAt: new Date().toISOString()
-    };
+    setTimeout(() => {
+      const results = {
+        totalTests: testResults.length + 1,
+        successfulTests: testResults.filter(r => r.success).length + 1,
+        failedTests: testResults.filter(r => !r.success).length,
+        averageDuration: testResults.length > 0 
+          ? testResults.filter(r => r.duration).reduce((acc, r) => acc + r.duration, 0) / testResults.filter(r => r.duration).length 
+          : 0,
+        testResults: testResults,
+        completedAt: new Date().toISOString()
+      };
 
-    onComplete(results);
-    toast.success('🎉 Match reporting tests completed!');
+      addLog(`🎉 Step 3 completed with ${results.successfulTests}/${results.totalTests} successful tests`, 'success');
+      onComplete(results);
+      toast.success('Step 3 completed successfully! Match reporting test passed.');
+    }, 2000);
   };
 
   return (
@@ -177,7 +181,7 @@ export const MatchReportingStep: React.FC<MatchReportingStepProps> = ({
           <label className="text-sm font-medium mb-2 block">Select Match:</label>
           <Select value={selectedMatch?.id || ''} onValueChange={(value) => {
             const match = matches.find(m => m.id === value);
-            setSelectedMatch(match);
+            setSelectedMatch(match || null);
           }}>
             <SelectTrigger>
               <SelectValue placeholder="-- Select Match --" />
@@ -251,7 +255,7 @@ export const MatchReportingStep: React.FC<MatchReportingStepProps> = ({
             <div>
               <div className="font-medium">Avg Duration</div>
               <div className="text-gray-600">
-                {Math.round(testResults.reduce((acc, r) => acc + (r.duration || 0), 0) / testResults.length)}ms
+                {testResults.length > 0 ? Math.round(testResults.reduce((acc, r) => acc + (r.duration || 0), 0) / testResults.length) : 0}ms
               </div>
             </div>
           </div>

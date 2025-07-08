@@ -54,8 +54,8 @@ export const useTournamentWorkflow = () => {
         ...prev.testResults, 
         [getStepKey(stepNumber)]: results 
       },
-      currentStep: stepNumber < 8 ? stepNumber + 1 : stepNumber,
-      workflowStatus: stepNumber === 8 ? 'completed' : 'in_progress'
+      currentStep: stepNumber < 7 ? stepNumber + 1 : stepNumber,
+      workflowStatus: stepNumber === 7 ? 'completed' : 'in_progress'
     }));
   }, []);
 
@@ -101,28 +101,26 @@ export const useTournamentWorkflow = () => {
 
 const getStepKey = (stepNumber: number): keyof WorkflowState['testResults'] => {
   const stepKeys = [
-    'demoUserSetup',
-    'bracketVerification',
-    'matchReporting', 
-    'tournamentProgression',
-    'adminControls',
-    'userExperience',
-    'scaleTesting',
-    'dataCleanup'
+    'bracketVerification', // Step 1: Tournament Selection & Bracket Verification
+    'matchReporting',      // Step 2: Match Reporting Test
+    'tournamentProgression', // Step 3: Tournament Progression
+    'adminControls',       // Step 4: Admin Controls
+    'userExperience',      // Step 5: User Experience Test
+    'scaleTesting',        // Step 6: Scale Testing
+    'dataCleanup'          // Step 7: Data Cleanup
   ];
   return stepKeys[stepNumber - 1] as keyof WorkflowState['testResults'];
 };
 
 const getStepDependencies = (stepNumber: number): number[] => {
   const dependencies: { [key: number]: number[] } = {
-    1: [], // Demo User Setup (no dependencies)
-    2: [1], // Tournament Selection & Bracket Verification (needs demo users)
-    3: [1, 2], // Match Reporting Test (needs demo users + bracket)
-    4: [1, 2, 3], // Tournament Progression (needs demo users + bracket + match reporting)
-    5: [1, 2], // Admin Controls (needs demo users + tournament)
-    6: [1, 2], // User Experience Test (needs demo users + tournament)
-    7: [1, 2, 3, 4], // Scale Testing (needs basic functionality)
-    8: [1, 2, 3, 4, 5, 6, 7] // Data Cleanup (needs all previous steps)
+    1: [], // Tournament Selection & Bracket Verification (no dependencies)
+    2: [1], // Match Reporting Test (needs bracket from step 1)
+    3: [1, 2], // Tournament Progression (needs bracket + match reporting)
+    4: [1], // Admin Controls (needs tournament selection)
+    5: [1], // User Experience Test (needs tournament selection)
+    6: [1, 2, 3], // Scale Testing (needs basic functionality)
+    7: [1, 2, 3, 4, 5, 6] // Data Cleanup (needs all previous steps)
   };
   return dependencies[stepNumber] || [];
 };
