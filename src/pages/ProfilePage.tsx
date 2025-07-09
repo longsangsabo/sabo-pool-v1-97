@@ -12,17 +12,12 @@ import { toast } from 'sonner';
 import { Camera, MapPin, User, Phone, Calendar, Trophy, Save, RotateCcw, Building } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ClubRegistrationForm from '@/components/ClubRegistrationForm';
-import ClubRegistrationMultiStepForm from '@/components/ClubRegistrationMultiStepForm';
-import RankVerificationForm from '@/components/RankVerificationForm';
-import RankVerificationRequests from '@/components/RankVerificationRequests';
-import PenaltyManagement from '@/components/PenaltyManagement';
-import MyChallengesTab from '@/components/MyChallengesTab';
-import PlayerStatsComponent from '@/components/PlayerStatsComponent';
-import TrustScoreBadge from '@/components/TrustScoreBadge';
 import ProfileHeader from '@/components/ProfileHeader';
-import { RankingDashboard } from '@/components/ranking';
-import { WalletBalance } from '@/components/WalletBalance';
+import { ProfileTabs } from '@/components/profile/ProfileTabs';
+import BasicProfileTab from '@/components/profile/BasicProfileTab';
+import PerformanceTab from '@/components/profile/PerformanceTab';
+import ActivitiesTab from '@/components/profile/ActivitiesTab';
+import ClubManagementTab from '@/components/profile/ClubManagementTab';
 import { isAdminUser } from '@/utils/adminHelpers';
 
 // Export types for other components
@@ -455,238 +450,39 @@ const ProfilePage = () => {
           skillLevels={skillLevels}
         />
 
-        {/* Profile Tabs */}
-        <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-7">
-            <TabsTrigger value="profile">Hồ sơ</TabsTrigger>
-            <TabsTrigger value="ranking">
-              <Trophy className="w-4 h-4 mr-1" />
-              Ranking
-            </TabsTrigger>
-            <TabsTrigger value="rank">Xác thực hạng</TabsTrigger>
-            <TabsTrigger value="club-registration">
-              <Building className="w-4 h-4 mr-1" />
-              Đăng ký CLB
-            </TabsTrigger>
-            <TabsTrigger value="challenges">Thách đấu</TabsTrigger>
-            <TabsTrigger value="penalties">Hình phạt</TabsTrigger>
-            {profile.role === 'club_owner' || profile.role === 'both' ? (
-              <TabsTrigger value="requests">Yêu cầu xác thực</TabsTrigger>
-            ) : (
-              <TabsTrigger value="requests" disabled>Yêu cầu xác thực</TabsTrigger>
-            )}
-          </TabsList>
-
-          <TabsContent value="profile" className="space-y-6">
-            {/* Wallet Balance Card */}
-            <WalletBalance />
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <User className="w-5 h-5 mr-2" />
-                  Thông tin cá nhân
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Display Name */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tên hiển thị *
-                  </label>
-                  <Input
-                    value={profile.display_name}
-                    onChange={(e) => setProfile(prev => ({ ...prev, display_name: e.target.value }))}
-                    onBlur={(e) => handleFieldBlur('display_name', e.target.value)}
-                    placeholder="Nhập tên hiển thị của bạn"
-                    className="h-12 text-lg"
-                  />
-                </div>
-
-                {/* Phone */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Phone className="w-4 h-4 inline mr-1" />
-                    Số điện thoại
-                  </label>
-                  <Input
-                    value={profile.phone}
-                    onChange={(e) => setProfile(prev => ({ ...prev, phone: e.target.value }))}
-                    onBlur={(e) => handleFieldBlur('phone', e.target.value)}
-                    placeholder="0987654321"
-                    className="h-12 text-lg"
-                    type="tel"
-                    inputMode="numeric"
-                  />
-                </div>
-
-                {/* Skill Level */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Trình độ chơi bida
-                  </label>
-                  <Select
-                    value={profile.skill_level}
-                    onValueChange={(value) => {
-                      setProfile(prev => ({ ...prev, skill_level: value as any }));
-                      updateProfile('skill_level', value);
-                    }}
-                  >
-                    <SelectTrigger className="h-12 text-lg">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(skillLevels).map(([key, { label }]) => (
-                        <SelectItem key={key} value={key}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Location */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      <MapPin className="w-4 h-4 inline mr-1" />
-                      Thành phố
-                    </label>
-                    <Input
-                      value={profile.city}
-                      onChange={(e) => setProfile(prev => ({ ...prev, city: e.target.value }))}
-                      onBlur={(e) => handleFieldBlur('city', e.target.value)}
-                      placeholder="TP. Hồ Chí Minh"
-                      className="h-12 text-lg"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Quận/Huyện
-                    </label>
-                    <Input
-                      value={profile.district}
-                      onChange={(e) => setProfile(prev => ({ ...prev, district: e.target.value }))}
-                      onBlur={(e) => handleFieldBlur('district', e.target.value)}
-                      placeholder="Quận 1"
-                      className="h-12 text-lg"
-                    />
-                  </div>
-                </div>
-
-                {/* Bio */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Giới thiệu bản thân
-                    <span className="text-sm text-gray-500 ml-2">
-                      ({profile.bio.length}/200)
-                    </span>
-                  </label>
-                  <Textarea
-                    value={profile.bio}
-                    onChange={(e) => {
-                      if (e.target.value.length <= 200) {
-                        setProfile(prev => ({ ...prev, bio: e.target.value }));
-                      }
-                    }}
-                    onBlur={(e) => handleFieldBlur('bio', e.target.value)}
-                    placeholder="Chia sẻ về sở thích chơi bida, thành tích hoặc mục tiêu của bạn..."
-                    className="min-h-[100px] text-lg"
-                    maxLength={200}
-                  />
-                </div>
-
-                {/* Privacy Notice */}
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    <strong>Quyền riêng tư:</strong> Số điện thoại của bạn sẽ không hiển thị công khai. 
-                    Chỉ tên hiển thị, ảnh đại diện, trình độ và giới thiệu sẽ được hiển thị cho người khác.
-                  </p>
-                </div>
-
-                {/* Update Actions */}
-                {hasChanges && (
-                  <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
-                    <Button 
-                      onClick={updateAllProfile}
-                      disabled={updating || !hasChanges}
-                      className="flex-1 h-12 text-lg bg-green-600 hover:bg-green-700 text-white"
-                    >
-                      {updating ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Đang cập nhật...
-                        </>
-                      ) : (
-                        <>
-                          <Save className="w-4 h-4 mr-2" />
-                          Cập nhật thông tin
-                        </>
-                      )}
-                    </Button>
-                    <Button 
-                      onClick={resetChanges}
-                      disabled={updating}
-                      variant="outline"
-                      className="flex-1 h-12 text-lg border-gray-300 hover:bg-gray-50"
-                    >
-                      <RotateCcw className="w-4 h-4 mr-2" />
-                      Hủy thay đổi
-                    </Button>
-                  </div>
-                )}
-
-                {!hasChanges && (
-                  <div className="pt-4 border-t">
-                    <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-600">
-                        💡 Thông tin sẽ được tự động lưu khi bạn nhấn ra ngoài ô nhập liệu, hoặc bạn có thể chỉnh sửa và nhấn "Cập nhật thông tin" để lưu tất cả cùng lúc.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+        {/* New Profile Tabs */}
+        <ProfileTabs
+          activeTab="basic"
+          onTabChange={() => {}}
+          userRole={profile.role}
+        >
+          <TabsContent value="basic">
+            <BasicProfileTab
+              profile={profile}
+              setProfile={setProfile}
+              hasChanges={hasChanges}
+              updating={updating}
+              onUpdateAll={updateAllProfile}
+              onReset={resetChanges}
+              onFieldBlur={handleFieldBlur}
+              skillLevels={skillLevels}
+            />
           </TabsContent>
 
-          <TabsContent value="ranking">
-            <RankingDashboard />
+          <TabsContent value="performance">
+            <PerformanceTab />
           </TabsContent>
 
-          <TabsContent value="rank">
-            <RankVerificationForm />
+          <TabsContent value="activities">
+            <ActivitiesTab />
           </TabsContent>
 
-          <TabsContent value="club-registration">
-            <ClubRegistrationMultiStepForm />
-          </TabsContent>
-
-          <TabsContent value="club">
-            <ClubRegistrationForm />
-          </TabsContent>
-
-          <TabsContent value="penalties">
-            <PenaltyManagement />
-          </TabsContent>
-
-          <TabsContent value="challenges">
-            <MyChallengesTab />
-          </TabsContent>
-
-          <TabsContent value="requests">
-            {(profile.role === 'club_owner' || profile.role === 'both') ? (
-              <RankVerificationRequests />
-            ) : (
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center text-gray-500">
-                    <p>Bạn cần đăng ký câu lạc bộ để xem mục này</p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-        </Tabs>
+          {(profile.role === 'club_owner' || profile.role === 'both') && (
+            <TabsContent value="club">
+              <ClubManagementTab userRole={profile.role} />
+            </TabsContent>
+          )}
+        </ProfileTabs>
       </div>
     </div>
   );

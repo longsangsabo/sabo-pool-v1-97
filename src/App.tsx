@@ -94,6 +94,7 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminTestRanking from "./pages/admin/AdminTestRanking";
 import AdminLayout from "./components/AdminLayout";
 import ClubManagementPage from "./pages/ClubManagementPage";
+import ClubRegistrationPage from "./pages/ClubRegistrationPage";
 import TournamentDetailsPage from "./pages/TournamentDetailsPage";
 
 // Simple loading fallback
@@ -158,6 +159,7 @@ const App = () => {
                         {/* Clubs & Membership */}
                         <Route path="clubs" element={<ClubsPage />} />
                         <Route path="club/:id" element={<ClubDetailPage />} />
+                        <Route path="club-registration" element={<ClubRegistrationPage />} />
                         <Route path="membership" element={<MembershipPage />} />
                         
                         {/* Leaderboard & Ranking */}

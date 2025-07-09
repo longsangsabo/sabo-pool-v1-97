@@ -120,6 +120,7 @@ const Header = () => {
     { name: 'Cộng đồng', href: '/social-feed', icon: Heart },
     { name: 'Marketplace', href: '/enhanced-marketplace', icon: Store },
     { name: 'CLB', href: '/clubs', icon: Users },
+    { name: 'Đăng ký CLB', href: '/club-registration', icon: Shield },
     { name: 'Phân tích', href: '/analytics', icon: BarChart3 },
   ];
 
