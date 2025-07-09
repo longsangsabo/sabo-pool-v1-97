@@ -10,6 +10,7 @@ import ErrorBoundary from "@/components/ui/error-boundary";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AvatarProvider } from "@/contexts/AvatarContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { MonitoringProvider } from "@/contexts/MonitoringProvider";
 import MainLayout from "@/components/MainLayout";
 import DailyNotificationSystem from "@/components/DailyNotificationSystem";
 import RealtimeNotificationSystem from "@/components/RealtimeNotificationSystem";
@@ -97,6 +98,7 @@ import AdminLayout from "./components/AdminLayout";
 import ClubManagementPage from "./pages/ClubManagementPage";
 import ClubRegistrationPage from "./pages/ClubRegistrationPage";
 import TournamentDetailsPage from "./pages/TournamentDetailsPage";
+import { AdminMonitoringPage } from "./pages/admin/AdminMonitoringPage";
 
 // Enhanced loading fallback with LoadingSpinner
 const LoadingFallback = () => (
@@ -125,8 +127,9 @@ const App = () => {
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
             <TooltipProvider>
               <AuthProvider>
-                <AvatarProvider>
-                <LanguageProvider>
+                <MonitoringProvider>
+                  <AvatarProvider>
+                  <LanguageProvider>
                 <BrowserRouter>
                   <RealtimeNotificationSystem />
                   <Suspense fallback={<LoadingFallback />}>
@@ -222,6 +225,7 @@ const App = () => {
                       <Route path="/admin/development" element={<AdminDevelopment />} />
                       <Route path="/admin/settings" element={<AdminSettings />} />
                       <Route path="/admin/test-ranking" element={<AdminTestRanking />} />
+                      <Route path="/admin/monitoring" element={<AdminMonitoringPage />} />
                       
                       {/* Auth routes - standalone without layout */}
                       <Route path="/login" element={<LoginPage />} />
@@ -256,6 +260,7 @@ const App = () => {
                 </BrowserRouter>
                 </LanguageProvider>
                 </AvatarProvider>
+                </MonitoringProvider>
               </AuthProvider>
             </TooltipProvider>
           </ThemeProvider>
