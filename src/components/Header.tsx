@@ -39,7 +39,7 @@ const Header = () => {
   const { user, signOut } = useAuth();
   console.log('Header: user:', user?.id, user?.phone);
   
-  const { data: isAdmin, isLoading, error } = useAdminCheck();
+  const { isAdmin, isLoading, error } = useAdminCheck();
   console.log('Header: isAdmin value:', isAdmin, 'isLoading:', isLoading, 'error:', error);
   
   const location = useLocation();

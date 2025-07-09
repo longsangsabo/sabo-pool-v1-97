@@ -37,7 +37,7 @@ import {
 
 const Navigation = () => {
   const { user, signOut } = useAuth();
-  const { data: isAdmin } = useAdminCheck();
+  const { isAdmin } = useAdminCheck();
   const { getUnreadCount } = useNotifications();
   console.log('Navigation: user admin status:', isAdmin);
   const navigate = useNavigate();

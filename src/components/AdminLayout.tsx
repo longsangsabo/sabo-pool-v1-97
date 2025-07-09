@@ -13,7 +13,7 @@ interface AdminLayoutProps {
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { user, loading: authLoading } = useAuth();
-  const { data: isAdmin, isLoading: adminLoading } = useAdminCheck();
+  const { isAdmin, isLoading: adminLoading } = useAdminCheck();
   const { t } = useLanguage();
   const navigate = useNavigate();
 

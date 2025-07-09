@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Building, CheckCircle, Clock } from 'lucide-react';
 
 const AdminClubs = () => {
-  const { data: isAdmin, isLoading: adminLoading } = useAdminCheck();
+  const { isAdmin, isLoading: adminLoading } = useAdminCheck();
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('pending');
 

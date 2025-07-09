@@ -56,7 +56,7 @@ export const EnhancedTournamentCreator: React.FC<EnhancedTournamentCreatorProps>
   onCancel
 }) => {
   const { user } = useAuth();
-  const { data: isAdmin } = useAdminCheck();
+  const { isAdmin } = useAdminCheck();
   const { createTournament } = useTournaments();
   
   const [currentStep, setCurrentStep] = useState(1);

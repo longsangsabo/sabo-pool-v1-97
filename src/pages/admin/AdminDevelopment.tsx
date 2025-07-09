@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import DevelopmentTools from '@/components/admin/DevelopmentTools';
 
 const AdminDevelopment = () => {
-  const { data: isAdmin, isLoading: adminLoading } = useAdminCheck();
+  const { isAdmin, isLoading: adminLoading } = useAdminCheck();
   const { t } = useLanguage();
 
   if (adminLoading) {

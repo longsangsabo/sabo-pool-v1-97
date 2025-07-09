@@ -7,7 +7,7 @@ import EnhancedTournamentManager from '@/components/admin/EnhancedTournamentMana
 import TournamentWorkflowManager from '@/components/admin/TournamentWorkflowManager';
 
 const AdminTournaments = () => {
-  const { data: isAdmin, isLoading: adminLoading } = useAdminCheck();
+  const { isAdmin, isLoading: adminLoading } = useAdminCheck();
   const { t } = useLanguage();
 
   if (adminLoading) {

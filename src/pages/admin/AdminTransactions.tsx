@@ -24,7 +24,7 @@ import AdminLayout from '@/components/AdminLayout';
 import { useAdminCheck } from '@/hooks/useAdminCheck';
 
 const AdminTransactions = () => {
-  const { data: isAdmin, isLoading: adminLoading } = useAdminCheck();
+  const { isAdmin, isLoading: adminLoading } = useAdminCheck();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');

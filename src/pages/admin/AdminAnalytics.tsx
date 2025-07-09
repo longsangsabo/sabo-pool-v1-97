@@ -7,7 +7,7 @@ import AdminLayout from '@/components/AdminLayout';
 import { useAdminCheck } from '@/hooks/useAdminCheck';
 
 const AdminAnalytics = () => {
-  const { data: isAdmin, isLoading: adminLoading } = useAdminCheck();
+  const { isAdmin, isLoading: adminLoading } = useAdminCheck();
 
   if (adminLoading) {
     return (

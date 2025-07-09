@@ -6,7 +6,7 @@ import { useAuth } from './useAuth';
 export const useAdminCheck = () => {
   const { user } = useAuth();
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['admin-check', user?.id],
     queryFn: async () => {
       if (!user?.id) {
@@ -36,4 +36,10 @@ export const useAdminCheck = () => {
     },
     enabled: !!user?.id,
   });
+
+  return {
+    isAdmin: query.data || false,
+    isLoading: query.isLoading,
+    error: query.error
+  };
 };

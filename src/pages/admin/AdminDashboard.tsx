@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 const AdminDashboard = () => {
-  const { data: isAdmin, isLoading: adminLoading } = useAdminCheck();
+  const { isAdmin, isLoading: adminLoading } = useAdminCheck();
   const { unreadCount, highPriorityCount } = useEnhancedNotifications();
   const { t } = useLanguage();
   const [dashboardStats, setDashboardStats] = useState<any>(null);

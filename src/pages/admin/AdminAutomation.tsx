@@ -4,7 +4,7 @@ import { useAdminCheck } from '@/hooks/useAdminCheck';
 import AutomationMonitor from '@/components/admin/AutomationMonitor';
 
 const AdminAutomation = () => {
-  const { data: isAdmin, isLoading } = useAdminCheck();
+  const { isAdmin, isLoading } = useAdminCheck();
 
   if (isLoading) {
     return (

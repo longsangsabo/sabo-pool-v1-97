@@ -35,7 +35,7 @@ import { useAdminCheck } from '@/hooks/useAdminCheck';
 import { useAdminUsers, type AdminUser } from '@/hooks/useAdminUsers';
 
 const AdminUsers = () => {
-  const { data: isAdmin, isLoading: adminLoading } = useAdminCheck();
+  const { isAdmin, isLoading: adminLoading } = useAdminCheck();
   const { users, isLoading: usersLoading, updateUserBan, updateUserRole, isUpdatingBan, isUpdatingRole } = useAdminUsers();
   const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
