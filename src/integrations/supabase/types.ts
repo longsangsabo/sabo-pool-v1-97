@@ -4760,6 +4760,72 @@ export type Database = {
           },
         ]
       }
+      translation_dictionary: {
+        Row: {
+          context: string | null
+          created_at: string | null
+          id: string
+          key: string
+          language: string
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          context?: string | null
+          created_at?: string | null
+          id?: string
+          key: string
+          language: string
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          context?: string | null
+          created_at?: string | null
+          id?: string
+          key?: string
+          language?: string
+          updated_at?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
+      translation_tasks: {
+        Row: {
+          component_name: string
+          created_at: string | null
+          id: string
+          page_path: string
+          source_language: string
+          status: string
+          target_language: string
+          translation_keys: string[]
+          updated_at: string | null
+        }
+        Insert: {
+          component_name: string
+          created_at?: string | null
+          id?: string
+          page_path: string
+          source_language?: string
+          status?: string
+          target_language?: string
+          translation_keys?: string[]
+          updated_at?: string | null
+        }
+        Update: {
+          component_name?: string
+          created_at?: string | null
+          id?: string
+          page_path?: string
+          source_language?: string
+          status?: string
+          target_language?: string
+          translation_keys?: string[]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       user_communication_channels: {
         Row: {
           channel_address: string
