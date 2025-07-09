@@ -1,5 +1,6 @@
 // useTournamentService Hook Tests
 import { renderHook, act } from '@testing-library/react';
+import { waitFor } from '@testing-library/dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useTournamentService } from '../useTournamentService';
@@ -280,7 +281,7 @@ describe('useTournamentService', () => {
         {
           player_id: 'player-1',
           final_position: 1,
-          player_rank: 'Gold' as const,
+          player_rank: 'G' as const,
           matches_played: 5,
           matches_won: 5,
           matches_lost: 0
@@ -303,9 +304,9 @@ describe('useTournamentService', () => {
         wrapper: createWrapper(),
       });
 
-      const rewards = result.current.calculateTournamentRewards('CHAMPION', 'Gold');
+      const rewards = result.current.calculateTournamentRewards('CHAMPION', 'G');
 
-      expect(RankingService.calculateTournamentRewards).toHaveBeenCalledWith('CHAMPION', 'Gold');
+      expect(RankingService.calculateTournamentRewards).toHaveBeenCalledWith('CHAMPION', 'G');
       expect(rewards).toEqual({ eloPoints: 50, spaPoints: 100 });
     });
 
@@ -314,7 +315,7 @@ describe('useTournamentService', () => {
         wrapper: createWrapper(),
       });
 
-      const allRewards = result.current.getAllTournamentRewards('Gold');
+      const allRewards = result.current.getAllTournamentRewards('G');
 
       expect(RankingService.getTournamentPositions).toHaveBeenCalled();
       expect(Array.isArray(allRewards)).toBe(true);

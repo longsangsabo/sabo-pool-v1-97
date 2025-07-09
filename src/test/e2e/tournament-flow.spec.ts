@@ -271,10 +271,12 @@ test.describe('Tournament Management E2E', () => {
 
     await test.step('Test screen reader compatibility', async () => {
       // Check for ARIA labels
-      await expect(page.locator('[aria-label]')).toHaveCount(expect.any(Number));
+      const ariaElements = await page.locator('[aria-label]').count();
+      expect(ariaElements).toBeGreaterThanOrEqual(0);
       
       // Check for proper heading structure
-      await expect(page.locator('h1, h2, h3')).toHaveCount(expect.any(Number));
+      const headingCount = await page.locator('h1, h2, h3').count();
+      expect(headingCount).toBeGreaterThanOrEqual(0);
       
       // Check for alt text on images
       const images = page.locator('img');

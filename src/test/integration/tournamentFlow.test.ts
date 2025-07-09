@@ -5,6 +5,7 @@ import { TournamentRepository } from '@/repositories/tournamentRepository';
 import { RewardsService } from '@/services/RewardsService';
 import { ValidationService } from '@/services/ValidationService';
 import { TournamentStatus, TournamentType, GameFormat, TournamentTier } from '@/types/tournament-enums';
+import type { TournamentFormData } from '@/schemas/tournamentSchema';
 import { 
   mockSupabase, 
   setupSupabaseMocks, 
@@ -42,6 +43,32 @@ vi.mock('@/services/ValidationService', () => ({
   }
 }));
 
+// Helper function to create valid tournament data
+const createValidTournamentData = (overrides: Partial<TournamentFormData> = {}): TournamentFormData => {
+  const baseData: TournamentFormData = {
+    name: 'Test Tournament',
+    description: 'Test tournament description',
+    tournament_type: TournamentType.SINGLE_ELIMINATION,
+    game_format: GameFormat.NINE_BALL,
+    tier_level: TournamentTier.I,
+    max_participants: 16,
+    registration_start: '2024-12-01T00:00',
+    registration_end: '2024-12-15T23:59',
+    tournament_start: '2024-12-20T10:00',
+    tournament_end: '2024-12-20T18:00',
+    venue_address: 'Test Venue',
+    entry_fee: 100000,
+    prize_pool: 500000,
+    eligible_ranks: ['K', 'I'],
+    contact_info: 'test@example.com',
+    is_public: true,
+    requires_approval: false,
+    allow_all_ranks: false,
+  };
+  
+  return { ...baseData, ...overrides };
+};
+
 describe('Tournament Lifecycle Integration Tests', () => {
   let createdTournamentId: string;
   let mockUser: any;
@@ -60,26 +87,10 @@ describe('Tournament Lifecycle Integration Tests', () => {
   describe('Complete Tournament Lifecycle', () => {
     it('should handle complete tournament flow: create → register → manage → complete', async () => {
       // Step 1: Create Tournament
-      const tournamentData = {
+      const tournamentData = createValidTournamentData({
         name: 'Integration Test Tournament',
         description: 'Test tournament for integration testing',
-        tournament_type: TournamentType.SINGLE_ELIMINATION,
-        game_format: GameFormat.RACE_TO_5,
-        tier_level: TournamentTier.AMATEUR,
-        max_participants: 16,
-        registration_start: '2024-12-01T00:00:00Z',
-        registration_end: '2024-12-15T00:00:00Z',
-        tournament_start: '2024-12-20T00:00:00Z',
-        tournament_end: '2024-12-22T00:00:00Z',
-        venue_address: 'Integration Test Venue',
-        entry_fee: 100000,
-        is_public: true,
-        requires_approval: false,
-        eligible_ranks: ['Bronze', 'Silver', 'Gold'],
-        allow_all_ranks: false,
-        rules: 'Standard tournament rules',
-        contact_info: 'test@example.com'
-      };
+      });
 
       const createdTournament = await TournamentService.createTournament(tournamentData);
       
@@ -129,12 +140,10 @@ describe('Tournament Lifecycle Integration Tests', () => {
 
     it('should handle tournament visibility correctly throughout lifecycle', async () => {
       // Create tournament
-      const tournamentData = {
+      const tournamentData = createValidTournamentData({
         name: 'Visibility Test Tournament',
         description: 'Test tournament visibility',
-        tournament_type: TournamentType.SINGLE_ELIMINATION,
-        is_public: true
-      };
+      });
 
       const tournament = await TournamentService.createTournament(tournamentData);
       createdTournamentId = tournament?.id || 'test-id';
@@ -171,11 +180,9 @@ describe('Tournament Lifecycle Integration Tests', () => {
         errors: ['Name is required', 'Invalid date range']
       });
 
-      const invalidTournamentData = {
+      const invalidTournamentData = createValidTournamentData({
         name: '', // Invalid: empty name
-        description: 'Test',
-        tournament_type: TournamentType.SINGLE_ELIMINATION
-      };
+      });
 
       const result = await TournamentService.createTournament(invalidTournamentData);
 
@@ -186,11 +193,11 @@ describe('Tournament Lifecycle Integration Tests', () => {
 
     it('should handle registration conflicts', async () => {
       // Create tournament first
-      const tournament = await TournamentService.createTournament({
+      const tournamentData = createValidTournamentData({
         name: 'Conflict Test',
-        tournament_type: TournamentType.SINGLE_ELIMINATION
       });
 
+      const tournament = await TournamentService.createTournament(tournamentData);
       createdTournamentId = tournament?.id || 'test-id';
 
       // First registration should succeed
@@ -223,10 +230,9 @@ describe('Tournament Lifecycle Integration Tests', () => {
       });
 
       // All operations should fail gracefully
-      const createResult = await TournamentService.createTournament({
-        name: 'Test Tournament',
-        tournament_type: TournamentType.SINGLE_ELIMINATION
-      });
+      const createResult = await TournamentService.createTournament(
+        createValidTournamentData({ name: 'Test Tournament' })
+      );
       expect(createResult).toBeNull();
 
       const tournamentsResult = await TournamentService.getTournaments();
@@ -244,21 +250,16 @@ describe('Tournament Lifecycle Integration Tests', () => {
     beforeEach(async () => {
       // Create test tournaments with different statuses
       const tournaments = [
-        {
+        createValidTournamentData({
           name: 'Upcoming Tournament',
-          status: TournamentStatus.UPCOMING,
-          tournament_type: TournamentType.SINGLE_ELIMINATION
-        },
-        {
+        }),
+        createValidTournamentData({
           name: 'Ongoing Tournament',
-          status: TournamentStatus.ONGOING,
           tournament_type: TournamentType.DOUBLE_ELIMINATION
-        },
-        {
+        }),
+        createValidTournamentData({
           name: 'Completed Tournament',
-          status: TournamentStatus.COMPLETED,
-          tournament_type: TournamentType.SINGLE_ELIMINATION
-        }
+        })
       ];
 
       for (const tournamentData of tournaments) {
@@ -269,13 +270,13 @@ describe('Tournament Lifecycle Integration Tests', () => {
     it('should filter tournaments by status correctly', async () => {
       // Test filtering by single status
       const upcomingTournaments = await TournamentService.getTournaments({
-        status: [TournamentStatus.UPCOMING]
+        status: [TournamentStatus.REGISTRATION_OPEN]
       });
       expect(upcomingTournaments.tournaments).toBeDefined();
 
       // Test filtering by multiple statuses
       const activeTournaments = await TournamentService.getTournaments({
-        status: [TournamentStatus.UPCOMING, TournamentStatus.ONGOING]
+        status: [TournamentStatus.REGISTRATION_OPEN, TournamentStatus.ONGOING]
       });
       expect(activeTournaments.tournaments).toBeDefined();
     });
@@ -304,11 +305,12 @@ describe('Tournament Lifecycle Integration Tests', () => {
 
   describe('Tournament Registration Management', () => {
     beforeEach(async () => {
-      const tournament = await TournamentService.createTournament({
+      const tournamentData = createValidTournamentData({
         name: 'Registration Test Tournament',
-        tournament_type: TournamentType.SINGLE_ELIMINATION,
         max_participants: 4
       });
+
+      const tournament = await TournamentService.createTournament(tournamentData);
       createdTournamentId = tournament?.id || 'test-id';
     });
 
@@ -350,10 +352,11 @@ describe('Tournament Lifecycle Integration Tests', () => {
   describe('Real-time Updates Simulation', () => {
     it('should handle tournament status updates from external sources', async () => {
       // Create tournament
-      const tournament = await TournamentService.createTournament({
+      const tournamentData = createValidTournamentData({
         name: 'Real-time Test Tournament',
-        tournament_type: TournamentType.SINGLE_ELIMINATION
       });
+
+      const tournament = await TournamentService.createTournament(tournamentData);
       createdTournamentId = tournament?.id || 'test-id';
 
       // Simulate external status update (like from admin panel)
@@ -370,10 +373,11 @@ describe('Tournament Lifecycle Integration Tests', () => {
 
     it('should handle concurrent modifications gracefully', async () => {
       // Create tournament
-      const tournament = await TournamentService.createTournament({
+      const tournamentData = createValidTournamentData({
         name: 'Concurrency Test Tournament',
-        tournament_type: TournamentType.SINGLE_ELIMINATION
       });
+
+      const tournament = await TournamentService.createTournament(tournamentData);
       createdTournamentId = tournament?.id || 'test-id';
 
       // Simulate concurrent updates

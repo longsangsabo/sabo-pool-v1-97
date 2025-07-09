@@ -59,8 +59,8 @@ describe('TournamentService', () => {
       name: 'Test Tournament',
       description: 'Test Description',
       tournament_type: TournamentType.SINGLE_ELIMINATION,
-      game_format: GameFormat.RACE_TO_5,
-      tier_level: TournamentTier.AMATEUR,
+      game_format: GameFormat.NINE_BALL,
+      tier_level: TournamentTier.I,
       prize_pool: 500000,
       max_participants: 32,
       registration_start: '2024-12-01T00:00:00Z',
@@ -71,10 +71,10 @@ describe('TournamentService', () => {
       entry_fee: 100000,
       is_public: true,
       requires_approval: false,
-      eligible_ranks: ['Bronze', 'Silver', 'Gold'],
+      eligible_ranks: ['K' as const, 'I' as const, 'H' as const],
       allow_all_ranks: false,
-      min_rank_requirement: 'Bronze',
-      max_rank_requirement: 'Gold',
+      min_rank_requirement: 'K' as const,
+      max_rank_requirement: 'H' as const,
       rules: 'Standard tournament rules',
       contact_info: 'test@example.com'
     };
@@ -192,7 +192,7 @@ describe('TournamentService', () => {
       expect(insertCall).toHaveBeenCalledWith(
         expect.objectContaining({
           current_participants: 0,
-          status: TournamentStatus.OPEN,
+          status: TournamentStatus.REGISTRATION_OPEN,
           created_at: expect.any(String),
           updated_at: expect.any(String)
         })
@@ -311,7 +311,7 @@ describe('TournamentService', () => {
     it('should apply status filters correctly', async () => {
       // Arrange
       const filters = {
-        status: [TournamentStatus.UPCOMING, TournamentStatus.ONGOING]
+        status: [TournamentStatus.REGISTRATION_OPEN, TournamentStatus.ONGOING]
       };
 
       // Act

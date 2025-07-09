@@ -283,7 +283,7 @@ export const setMockError = (error: any) => {
   // This could be enhanced to set specific errors for specific operations
   mockSupabase.from = vi.fn(() => {
     const builder = createMockQueryBuilder('');
-    builder.then = vi.fn(() => Promise.resolve({ data: null, error }));
+    (builder as any).then = vi.fn(() => Promise.resolve({ data: null, error }));
     return builder;
   });
 };
