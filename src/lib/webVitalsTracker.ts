@@ -128,6 +128,10 @@ class WebVitalsTracker {
   public getMetrics(): WebVitalsMetric[] {
     return [...this.metrics];
   }
+
+  public sendAllMetrics() {
+    return this.sendMetrics();
+  }
 }
 
 export const webVitalsTracker = new WebVitalsTracker();

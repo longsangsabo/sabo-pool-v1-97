@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useMobileOptimization } from '@/hooks/useMobileOptimization';
+import { PerformanceMetrics } from './PerformanceMetrics';
+import { AlertAnalyzer } from './AlertAnalyzer';
 import MobileOptimizedTable from '@/components/mobile/MobileOptimizedTable';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

@@ -10,16 +10,34 @@ interface MobileOptimizationConfig {
   touchDevice: boolean;
 }
 
+const getInitialConfig = (): MobileOptimizationConfig => {
+  if (typeof window === 'undefined') {
+    return {
+      isMobile: false,
+      isTablet: false,
+      isDesktop: true,
+      screenWidth: 1024,
+      screenHeight: 768,
+      orientation: 'landscape',
+      touchDevice: false
+    };
+  }
+  
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  return {
+    isMobile: width < 768,
+    isTablet: width >= 768 && width < 1024,
+    isDesktop: width >= 1024,
+    screenWidth: width,
+    screenHeight: height,
+    orientation: width > height ? 'landscape' : 'portrait',
+    touchDevice: 'ontouchstart' in window || navigator.maxTouchPoints > 0
+  };
+};
+
 export const useMobileOptimization = (): MobileOptimizationConfig => {
-  const [config, setConfig] = useState<MobileOptimizationConfig>({
-    isMobile: false,
-    isTablet: false,
-    isDesktop: true,
-    screenWidth: 1024,
-    screenHeight: 768,
-    orientation: 'landscape',
-    touchDevice: false
-  });
+  const [config, setConfig] = useState<MobileOptimizationConfig>(getInitialConfig);
 
   useEffect(() => {
     const updateConfig = () => {
