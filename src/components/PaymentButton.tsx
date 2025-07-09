@@ -1,11 +1,14 @@
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Crown } from 'lucide-react';
-import { usePayment } from '@/hooks/usePayment';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { toast } from 'sonner';
 
 interface PaymentButtonProps {
-  membershipType: 'premium';
+  membershipType: 'premium' | 'vip';
   className?: string;
   amount?: number;
 }
@@ -15,12 +18,40 @@ export const PaymentButton = ({
   className,
   amount = 99000,
 }: PaymentButtonProps) => {
-  const paymentHook = usePayment();
-  const isProcessing = false; // Mock processing state
+  const { user } = useAuth();
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handlePayment = async () => {
-    // Mock payment creation
-    console.log('Creating payment:', { membershipType, amount });
+    if (!user) {
+      toast.error('Vui lòng đăng nhập để tiếp tục');
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: {
+          userId: user.id,
+          membershipType,
+          amount,
+          type: 'membership',
+          description: `Nâng cấp ${membershipType} - ${amount.toLocaleString('vi-VN')} VNĐ`,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.paymentUrl) {
+        window.location.href = data.paymentUrl;
+      } else {
+        toast.error('Không thể tạo link thanh toán');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast.error('Có lỗi xảy ra khi tạo thanh toán');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (

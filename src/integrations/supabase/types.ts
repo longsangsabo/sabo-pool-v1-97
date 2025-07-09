@@ -2294,6 +2294,98 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_receipts: {
+        Row: {
+          created_at: string | null
+          id: string
+          issued_at: string | null
+          pdf_url: string | null
+          receipt_number: string
+          transaction_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          issued_at?: string | null
+          pdf_url?: string | null
+          receipt_number: string
+          transaction_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          issued_at?: string | null
+          pdf_url?: string | null
+          receipt_number?: string
+          transaction_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_receipts_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "payment_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          id: string
+          metadata: Json | null
+          payment_method: string | null
+          refund_amount: number | null
+          refund_reason: string | null
+          refunded_at: string | null
+          status: string | null
+          transaction_ref: string
+          transaction_type: string | null
+          updated_at: string | null
+          user_id: string
+          vnpay_response_code: string | null
+          vnpay_transaction_no: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_method?: string | null
+          refund_amount?: number | null
+          refund_reason?: string | null
+          refunded_at?: string | null
+          status?: string | null
+          transaction_ref: string
+          transaction_type?: string | null
+          updated_at?: string | null
+          user_id: string
+          vnpay_response_code?: string | null
+          vnpay_transaction_no?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_method?: string | null
+          refund_amount?: number | null
+          refund_reason?: string | null
+          refunded_at?: string | null
+          status?: string | null
+          transaction_ref?: string
+          transaction_type?: string | null
+          updated_at?: string | null
+          user_id?: string
+          vnpay_response_code?: string | null
+          vnpay_transaction_no?: string | null
+        }
+        Relationships: []
+      }
       performance_metrics: {
         Row: {
           created_at: string
@@ -3194,6 +3286,8 @@ export type Database = {
           is_demo_user: boolean | null
           last_activity_check: string | null
           member_since: string | null
+          membership_expires_at: string | null
+          membership_type: string | null
           my_referral_code: string | null
           nickname: string | null
           phone: string | null
@@ -3230,6 +3324,8 @@ export type Database = {
           is_demo_user?: boolean | null
           last_activity_check?: string | null
           member_since?: string | null
+          membership_expires_at?: string | null
+          membership_type?: string | null
           my_referral_code?: string | null
           nickname?: string | null
           phone?: string | null
@@ -3266,6 +3362,8 @@ export type Database = {
           is_demo_user?: boolean | null
           last_activity_check?: string | null
           member_since?: string | null
+          membership_expires_at?: string | null
+          membership_type?: string | null
           my_referral_code?: string | null
           nickname?: string | null
           phone?: string | null
@@ -5827,6 +5925,16 @@ export type Database = {
         }
         Returns: string
       }
+      create_payment_transaction: {
+        Args: {
+          p_user_id: string
+          p_amount: number
+          p_transaction_ref: string
+          p_transaction_type?: string
+          p_payment_method?: string
+        }
+        Returns: string
+      }
       create_test_demo_user: {
         Args: Record<PropertyKey, never>
         Returns: Json
@@ -5991,6 +6099,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      process_refund: {
+        Args: {
+          p_transaction_id: string
+          p_refund_amount: number
+          p_refund_reason: string
+        }
+        Returns: boolean
+      }
       recalculate_rankings: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -6078,9 +6194,25 @@ export type Database = {
         Args: { tournament_id: string; increment?: number }
         Returns: undefined
       }
+      update_wallet_balance: {
+        Args: {
+          p_user_id: string
+          p_amount: number
+          p_transaction_type?: string
+        }
+        Returns: boolean
+      }
       update_weekly_leaderboard: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      upgrade_membership_after_payment: {
+        Args: {
+          p_user_id: string
+          p_transaction_ref: string
+          p_membership_type: string
+        }
+        Returns: boolean
       }
       verify_match_result: {
         Args: {

@@ -9,8 +9,11 @@ const corsHeaders = {
 
 interface PaymentRequest {
   userId: string;
-  membershipType: string;
+  membershipType?: string;
   amount?: number;
+  type?: string;
+  paymentMethod?: string;
+  description?: string;
 }
 
 function sortObject(obj: Record<string, any>): Record<string, any> {
@@ -71,9 +74,12 @@ serve(async req => {
       userId,
       membershipType,
       amount = 99000,
+      type = 'membership',
+      paymentMethod = 'vnpay',
+      description = 'Payment',
     }: PaymentRequest = await req.json();
 
-    if (!userId || !membershipType) {
+    if (!userId || !amount) {
       throw new Error('Missing required parameters');
     }
 
@@ -81,17 +87,16 @@ serve(async req => {
     const transactionRef = `SABO_${userId.substring(0, 8)}_${Date.now()}`;
 
     // Save transaction to database
-    const { error: dbError } = await supabase.rpc(
-      'create_payment_transaction',
-      {
-        p_user_id: userId,
-        p_amount: amount,
-        p_transaction_ref: transactionRef,
-      }
-    );
+    const transactionId = await supabase.rpc('create_payment_transaction', {
+      p_user_id: userId,
+      p_amount: amount,
+      p_transaction_ref: transactionRef,
+      p_transaction_type: type,
+      p_payment_method: paymentMethod,
+    });
 
-    if (dbError) {
-      console.error('Database error:', dbError);
+    if (!transactionId.data) {
+      console.error('Database error:', transactionId.error);
       throw new Error('Failed to create transaction record');
     }
 
@@ -110,7 +115,7 @@ serve(async req => {
       vnp_Amount: String(amount * 100), // VNPay requires amount in VND * 100
       vnp_CurrCode: 'VND',
       vnp_TxnRef: transactionRef,
-      vnp_OrderInfo: `Nang cap Premium - User ${userId}`,
+      vnp_OrderInfo: description,
       vnp_OrderType: 'other',
       vnp_Locale: 'vn',
       vnp_ReturnUrl: returnUrl,
