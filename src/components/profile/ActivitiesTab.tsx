@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Gamepad2, History, Calendar } from 'lucide-react';
 import MyChallengesTab from '@/components/MyChallengesTab';
+import SPAMilestones from '@/components/SPAMilestones';
 
 const ActivitiesTab = () => {
   return (
@@ -54,6 +55,9 @@ const ActivitiesTab = () => {
 
       {/* Challenges Component */}
       <MyChallengesTab />
+      
+      {/* SPA Milestones */}
+      <SPAMilestones />
     </div>
   );
 };

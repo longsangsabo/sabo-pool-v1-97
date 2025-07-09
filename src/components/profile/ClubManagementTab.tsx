@@ -2,11 +2,12 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building, UserCheck, Shield, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Building, UserCheck, Shield, AlertTriangle, ExternalLink, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ClubRegistrationMultiStepForm from '@/components/ClubRegistrationMultiStepForm';
 import RankVerificationRequests from '@/components/RankVerificationRequests';
 import PenaltyManagement from '@/components/PenaltyManagement';
+import ClubTournamentManagement from '@/components/ClubTournamentManagement';
 
 interface ClubManagementTabProps {
   userRole: 'player' | 'club_owner' | 'both';
@@ -52,11 +53,16 @@ const ClubManagementTab: React.FC<ClubManagementTabProps> = ({ userRole }) => {
       </div>
       
       <Tabs defaultValue="registration" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="registration" className="flex items-center gap-2">
             <Building className="w-4 h-4" />
             <span className="hidden sm:inline">Đăng ký CLB</span>
             <span className="sm:hidden">CLB</span>
+          </TabsTrigger>
+          <TabsTrigger value="tournaments" className="flex items-center gap-2">
+            <Trophy className="w-4 h-4" />
+            <span className="hidden sm:inline">Giải đấu</span>
+            <span className="sm:hidden">Giải</span>
           </TabsTrigger>
           <TabsTrigger value="verification" className="flex items-center gap-2">
             <UserCheck className="w-4 h-4" />
@@ -90,6 +96,10 @@ const ClubManagementTab: React.FC<ClubManagementTabProps> = ({ userRole }) => {
             </Card>
             <ClubRegistrationMultiStepForm />
           </div>
+        </TabsContent>
+
+        <TabsContent value="tournaments">
+          <ClubTournamentManagement />
         </TabsContent>
 
         <TabsContent value="verification">
