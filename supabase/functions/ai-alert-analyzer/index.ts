@@ -1,0 +1,329 @@
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+const handler = async (req: Request): Promise<Response> => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key not configured');
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const { action, data } = await req.json();
+
+    console.log('🤖 AI Alert Analyzer - Action:', action);
+
+    switch (action) {
+      case 'analyze_alert': {
+        const { alertData, context } = data;
+        
+        const analysisPrompt = `
+Bạn là AI expert trong việc phân tích alerts hệ thống SABO Pool Arena Hub.
+
+Alert Data:
+${JSON.stringify(alertData, null, 2)}
+
+Context:
+${JSON.stringify(context, null, 2)}
+
+Hãy phân tích alert này và trả về JSON response với:
+{
+  "severity": "low|medium|high|critical",
+  "urgency": "low|medium|high|critical", 
+  "category": "performance|security|business|system|user_experience",
+  "root_cause_analysis": "Phân tích nguyên nhân gốc bằng tiếng Việt",
+  "impact_assessment": "Đánh giá tác động",
+  "recommended_actions": ["action1", "action2", "action3"],
+  "priority_score": 1-100,
+  "summary": "Tóm tắt ngắn gọn bằng tiếng Việt",
+  "technical_details": "Chi tiết kỹ thuật",
+  "estimated_resolution_time": "15m|1h|4h|1d|3d",
+  "related_patterns": ["pattern1", "pattern2"]
+}`;
+
+        const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openAIApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: 'You are an expert system analyst specializing in alert analysis for pool/billiards gaming platforms. Respond only with valid JSON.' },
+              { role: 'user', content: analysisPrompt }
+            ],
+            temperature: 0.3,
+            max_tokens: 1500
+          }),
+        });
+
+        const aiData = await aiResponse.json();
+        const analysis = JSON.parse(aiData.choices[0].message.content);
+
+        // Store analysis in database
+        const { data: savedAnalysis, error } = await supabase
+          .from('ai_alert_analysis')
+          .insert({
+            alert_id: alertData.id,
+            analysis_data: analysis,
+            ai_model: 'gpt-4o-mini',
+            created_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error saving analysis:', error);
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          analysis,
+          analysis_id: savedAnalysis?.id
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      case 'generate_summary': {
+        const { alerts, timeframe } = data;
+        
+        const summaryPrompt = `
+Tạo báo cáo tóm tắt alerts cho SABO Pool Arena Hub trong khoảng thời gian: ${timeframe}
+
+Alerts data:
+${JSON.stringify(alerts, null, 2)}
+
+Hãy tạo một báo cáo tóm tắt bao gồm:
+1. Tổng quan tình hình
+2. Các vấn đề chính
+3. Xu hướng và patterns
+4. Khuyến nghị cải thiện
+5. Dự đoán rủi ro
+
+Format: Markdown tiếng Việt, dễ đọc và chuyên nghiệp.
+`;
+
+        const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openAIApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: 'You are a technical report writer for gaming platform operations. Create detailed, actionable reports in Vietnamese.' },
+              { role: 'user', content: summaryPrompt }
+            ],
+            temperature: 0.4,
+            max_tokens: 2000
+          }),
+        });
+
+        const aiData = await aiResponse.json();
+        const summary = aiData.choices[0].message.content;
+
+        return new Response(JSON.stringify({
+          success: true,
+          summary,
+          generated_at: new Date().toISOString()
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      case 'suggest_resolution': {
+        const { alertData, historicalData } = data;
+        
+        const resolutionPrompt = `
+Alert cần giải quyết:
+${JSON.stringify(alertData, null, 2)}
+
+Dữ liệu lịch sử tương tự:
+${JSON.stringify(historicalData, null, 2)}
+
+Hãy đưa ra hướng dẫn giải quyết chi tiết với:
+1. Các bước troubleshooting
+2. Commands/queries cần chạy
+3. Các checkpoint để verify
+4. Backup plan nếu solution không work
+5. Thời gian dự kiến cho mỗi bước
+
+Format: Markdown với step-by-step instructions.
+`;
+
+        const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openAIApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: 'You are a senior DevOps engineer with expertise in gaming platform operations. Provide detailed, practical troubleshooting guides.' },
+              { role: 'user', content: resolutionPrompt }
+            ],
+            temperature: 0.2,
+            max_tokens: 2000
+          }),
+        });
+
+        const aiData = await aiResponse.json();
+        const resolution = aiData.choices[0].message.content;
+
+        return new Response(JSON.stringify({
+          success: true,
+          resolution_guide: resolution,
+          generated_at: new Date().toISOString()
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      case 'predict_incidents': {
+        const { systemMetrics, alertHistory } = data;
+        
+        const predictionPrompt = `
+Dựa trên system metrics và alert history, hãy dự đoán các incidents có thể xảy ra:
+
+System Metrics:
+${JSON.stringify(systemMetrics, null, 2)}
+
+Alert History:
+${JSON.stringify(alertHistory, null, 2)}
+
+Trả về JSON với format:
+{
+  "predictions": [
+    {
+      "incident_type": "performance_degradation|security_breach|system_outage|user_impact",
+      "probability": 0.0-1.0,
+      "estimated_timeframe": "1h|6h|24h|3d|1w",
+      "description": "Mô tả chi tiết",
+      "early_warning_signs": ["sign1", "sign2"],
+      "preventive_measures": ["measure1", "measure2"],
+      "potential_impact": "low|medium|high|critical"
+    }
+  ],
+  "overall_risk_score": 0-100,
+  "recommendations": ["rec1", "rec2", "rec3"]
+}
+`;
+
+        const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openAIApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: 'You are a predictive analytics expert for system reliability. Analyze patterns and predict potential issues with high accuracy.' },
+              { role: 'user', content: predictionPrompt }
+            ],
+            temperature: 0.1,
+            max_tokens: 1500
+          }),
+        });
+
+        const aiData = await aiResponse.json();
+        const predictions = JSON.parse(aiData.choices[0].message.content);
+
+        return new Response(JSON.stringify({
+          success: true,
+          predictions,
+          generated_at: new Date().toISOString()
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      case 'chat_query': {
+        const { query, alertContext } = data;
+        
+        const chatPrompt = `
+Bạn là AI assistant chuyên về hệ thống alerts của SABO Pool Arena Hub.
+
+Context hiện tại:
+${JSON.stringify(alertContext, null, 2)}
+
+User query: ${query}
+
+Hãy trả lời câu hỏi một cách chi tiết, chính xác và hữu ích. Nếu cần thêm thông tin, hãy đề xuất những gì user nên cung cấp.
+`;
+
+        const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openAIApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: 'You are a helpful AI assistant specializing in system monitoring and alert management for gaming platforms. Respond in Vietnamese when appropriate.' },
+              { role: 'user', content: chatPrompt }
+            ],
+            temperature: 0.5,
+            max_tokens: 1000
+          }),
+        });
+
+        const aiData = await aiResponse.json();
+        const response = aiData.choices[0].message.content;
+
+        return new Response(JSON.stringify({
+          success: true,
+          response,
+          timestamp: new Date().toISOString()
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      default:
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Invalid action'
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+    }
+
+  } catch (error: any) {
+    console.error('💥 Error in AI Alert Analyzer:', error);
+    
+    return new Response(
+      JSON.stringify({ 
+        error: error.message,
+        success: false
+      }), {
+        status: 500,
+        headers: { 
+          'Content-Type': 'application/json', 
+          ...corsHeaders 
+        },
+      }
+    );
+  }
+};
+
+serve(handler);

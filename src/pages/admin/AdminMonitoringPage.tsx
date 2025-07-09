@@ -8,7 +8,10 @@ import { UserBehaviorAnalytics } from '@/components/analytics/UserBehaviorAnalyt
 import { PredictiveAnalyticsDashboard } from '@/components/predictive/PredictiveAnalyticsDashboard';
 import { RecommendationEngine } from '@/components/ai/RecommendationEngine';
 import { EngagementScoring } from '@/components/ai/EngagementScoring';
-import { Activity, TrendingUp, AlertTriangle, CheckCircle, BarChart3, Users, Brain, Lightbulb, Target } from 'lucide-react';
+import { AlertAnalysisDashboard } from '@/components/alerts/AlertAnalysisDashboard';
+import { ConversationalAlerts } from '@/components/alerts/ConversationalAlerts';
+import { AutomatedReporting } from '@/components/alerts/AutomatedReporting';
+import { Activity, TrendingUp, AlertTriangle, CheckCircle, BarChart3, Users, Brain, Lightbulb, Target, MessageSquare, FileText, Zap } from 'lucide-react';
 
 export const AdminMonitoringPage: React.FC = () => {
   return (
@@ -80,7 +83,7 @@ export const AdminMonitoringPage: React.FC = () => {
 
       {/* Main Dashboard Tabs */}
       <Tabs defaultValue="monitoring" className="space-y-6">
-        <TabsList className="grid w-full lg:w-auto grid-cols-3 lg:grid-cols-7">
+        <TabsList className="grid w-full lg:w-auto grid-cols-5 lg:grid-cols-10">
           <TabsTrigger value="monitoring" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
             Monitoring
@@ -108,6 +111,18 @@ export const AdminMonitoringPage: React.FC = () => {
           <TabsTrigger value="engagement" className="flex items-center gap-2">
             <Target className="h-4 w-4" />
             Engagement
+          </TabsTrigger>
+          <TabsTrigger value="alerts" className="flex items-center gap-2">
+            <Zap className="h-4 w-4" />
+            Alert Analysis
+          </TabsTrigger>
+          <TabsTrigger value="chat" className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            AI Chat
+          </TabsTrigger>
+          <TabsTrigger value="reports" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Reports
           </TabsTrigger>
         </TabsList>
 
@@ -179,6 +194,21 @@ export const AdminMonitoringPage: React.FC = () => {
         {/* Engagement Scoring Tab */}
         <TabsContent value="engagement">
           <EngagementScoring />
+        </TabsContent>
+
+        {/* Alert Analysis Tab */}
+        <TabsContent value="alerts">
+          <AlertAnalysisDashboard />
+        </TabsContent>
+
+        {/* Conversational AI Tab */}
+        <TabsContent value="chat">
+          <ConversationalAlerts />
+        </TabsContent>
+
+        {/* Automated Reports Tab */}
+        <TabsContent value="reports">
+          <AutomatedReporting />
         </TabsContent>
       </Tabs>
     </div>
