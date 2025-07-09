@@ -76,6 +76,9 @@ type JobStatus = 'Running' | 'Completed' | 'Paused' | 'Error' | 'Scheduled';
 
 const AutomationMonitor = () => {
   const { user } = useAuth();
+  // CRITICAL: All hooks MUST be called at the top level BEFORE any returns
+  const { isMobile } = useMobileOptimization();
+  
   const [cronJobs, setCronJobs] = useState<CronJob[]>([]);
   const [systemLogs, setSystemLogs] = useState<SystemLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -298,7 +301,7 @@ const AutomationMonitor = () => {
 
   const summary = getAutomationSummary();
 
-  const { isMobile } = useMobileOptimization();
+  // Note: isMobile is now defined at component top level
 
   return (
     <TooltipProvider>
