@@ -5,7 +5,7 @@ import { TournamentRepository } from '@/repositories/tournamentRepository';
 import { RewardsService } from '@/services/RewardsService';
 import { ValidationService } from '@/services/ValidationService';
 import { TournamentStatus, TournamentType, GameFormat, TournamentTier } from '@/types/tournament-enums';
-import type { TournamentFormData } from '@/schemas/tournamentSchema';
+import type { TournamentFormData } from '@/types/tournament-extended';
 import { 
   mockSupabase, 
   setupSupabaseMocks, 
@@ -44,7 +44,7 @@ vi.mock('@/services/ValidationService', () => ({
 }));
 
 // Helper function to create valid tournament data
-const createValidTournamentData = (overrides: Partial<TournamentFormData> = {}): TournamentFormData => {
+const createValidTournamentData = (overrides?: Partial<TournamentFormData>): TournamentFormData => {
   const baseData: TournamentFormData = {
     name: 'Test Tournament',
     description: 'Test tournament description',
@@ -64,9 +64,10 @@ const createValidTournamentData = (overrides: Partial<TournamentFormData> = {}):
     is_public: true,
     requires_approval: false,
     allow_all_ranks: false,
+    rules: 'Standard tournament rules',
   };
   
-  return { ...baseData, ...overrides };
+  return { ...baseData, ...overrides } as TournamentFormData;
 };
 
 describe('Tournament Lifecycle Integration Tests', () => {
@@ -92,7 +93,7 @@ describe('Tournament Lifecycle Integration Tests', () => {
         description: 'Test tournament for integration testing',
       });
 
-      const createdTournament = await TournamentService.createTournament(tournamentData);
+      const createdTournament = await TournamentService.createTournament(tournamentData as TournamentFormData);
       
       expect(createdTournament).toBeTruthy();
       expect(createdTournament?.name).toBe(tournamentData.name);
@@ -145,7 +146,7 @@ describe('Tournament Lifecycle Integration Tests', () => {
         description: 'Test tournament visibility',
       });
 
-      const tournament = await TournamentService.createTournament(tournamentData);
+      const tournament = await TournamentService.createTournament(tournamentData as TournamentFormData);
       createdTournamentId = tournament?.id || 'test-id';
 
       // Check visible tournaments (should include new tournament)
@@ -184,7 +185,7 @@ describe('Tournament Lifecycle Integration Tests', () => {
         name: '', // Invalid: empty name
       });
 
-      const result = await TournamentService.createTournament(invalidTournamentData);
+      const result = await TournamentService.createTournament(invalidTournamentData as TournamentFormData);
 
       expect(result).toBeNull();
       expect(mockToast.error).toHaveBeenCalledWith('Dữ liệu không hợp lệ');
@@ -197,7 +198,7 @@ describe('Tournament Lifecycle Integration Tests', () => {
         name: 'Conflict Test',
       });
 
-      const tournament = await TournamentService.createTournament(tournamentData);
+      const tournament = await TournamentService.createTournament(tournamentData as TournamentFormData);
       createdTournamentId = tournament?.id || 'test-id';
 
       // First registration should succeed
@@ -231,7 +232,7 @@ describe('Tournament Lifecycle Integration Tests', () => {
 
       // All operations should fail gracefully
       const createResult = await TournamentService.createTournament(
-        createValidTournamentData({ name: 'Test Tournament' })
+        createValidTournamentData({ name: 'Test Tournament' }) as TournamentFormData
       );
       expect(createResult).toBeNull();
 
@@ -263,7 +264,7 @@ describe('Tournament Lifecycle Integration Tests', () => {
       ];
 
       for (const tournamentData of tournaments) {
-        await TournamentService.createTournament(tournamentData);
+        await TournamentService.createTournament(tournamentData as TournamentFormData);
       }
     });
 
@@ -310,7 +311,7 @@ describe('Tournament Lifecycle Integration Tests', () => {
         max_participants: 4
       });
 
-      const tournament = await TournamentService.createTournament(tournamentData);
+      const tournament = await TournamentService.createTournament(tournamentData as TournamentFormData);
       createdTournamentId = tournament?.id || 'test-id';
     });
 
@@ -356,7 +357,7 @@ describe('Tournament Lifecycle Integration Tests', () => {
         name: 'Real-time Test Tournament',
       });
 
-      const tournament = await TournamentService.createTournament(tournamentData);
+      const tournament = await TournamentService.createTournament(tournamentData as TournamentFormData);
       createdTournamentId = tournament?.id || 'test-id';
 
       // Simulate external status update (like from admin panel)
@@ -377,7 +378,7 @@ describe('Tournament Lifecycle Integration Tests', () => {
         name: 'Concurrency Test Tournament',
       });
 
-      const tournament = await TournamentService.createTournament(tournamentData);
+      const tournament = await TournamentService.createTournament(tournamentData as TournamentFormData);
       createdTournamentId = tournament?.id || 'test-id';
 
       // Simulate concurrent updates

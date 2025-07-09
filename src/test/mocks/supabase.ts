@@ -72,6 +72,180 @@ export const mockRegistrations = [
   }
 ];
 
+// Create the mock query builder function
+const createMockQueryBuilder = (tableName: string) => {
+  let mockData = [];
+  let mockFilters = {};
+  let mockError = null;
+  let shouldReturnSingle = false;
+  
+  // Set initial data based on table
+  switch (tableName) {
+    case 'tournaments':
+      mockData = [...mockTournaments];
+      break;
+    case 'tournament_registrations':
+      mockData = [...mockRegistrations];
+      break;
+    case 'profiles':
+      mockData = [...mockUsers];
+      break;
+    default:
+      mockData = [];
+  }
+
+  const builder = {
+    // SELECT operations
+    select: vi.fn().mockReturnThis(),
+    
+    // FILTER operations
+    eq: vi.fn((column: string, value: any) => {
+      mockData = mockData.filter(item => item[column] === value);
+      return builder;
+    }),
+    
+    neq: vi.fn((column: string, value: any) => {
+      mockData = mockData.filter(item => item[column] !== value);
+      return builder;
+    }),
+    
+    in: vi.fn((column: string, values: any[]) => {
+      mockData = mockData.filter(item => values.includes(item[column]));
+      return builder;
+    }),
+    
+    is: vi.fn((column: string, value: any) => {
+      if (value === null) {
+        mockData = mockData.filter(item => item[column] === null);
+      }
+      return builder;
+    }),
+    
+    not: vi.fn((column: string, operator: string, value: any) => {
+      if (operator === 'is' && value === null) {
+        mockData = mockData.filter(item => item[column] !== null);
+      }
+      return builder;
+    }),
+    
+    ilike: vi.fn((column: string, pattern: string) => {
+      const searchTerm = pattern.replace(/%/g, '');
+      mockData = mockData.filter(item => 
+        item[column]?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      return builder;
+    }),
+    
+    or: vi.fn((query: string) => {
+      // Simple OR implementation for name/description search
+      if (query.includes('name.ilike') && query.includes('description.ilike')) {
+        const searchTerm = query.match(/%(.*?)%/)?.[1] || '';
+        mockData = mockData.filter(item => 
+          item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+      return builder;
+    }),
+    
+    // ORDERING
+    order: vi.fn((column: string, options?: { ascending?: boolean }) => {
+      const ascending = options?.ascending ?? true;
+      mockData.sort((a, b) => {
+        if (ascending) {
+          return a[column] > b[column] ? 1 : -1;
+        } else {
+          return a[column] < b[column] ? 1 : -1;
+        }
+      });
+      return builder;
+    }),
+    
+    // PAGINATION
+    limit: vi.fn((count: number) => {
+      mockData = mockData.slice(0, count);
+      return builder;
+    }),
+    
+    range: vi.fn((from: number, to: number) => {
+      mockData = mockData.slice(from, to + 1);
+      return builder;
+    }),
+    
+    // RESULT METHODS
+    single: vi.fn(() => {
+      shouldReturnSingle = true;
+      return builder;
+    }),
+    
+    maybeSingle: vi.fn(() => {
+      shouldReturnSingle = true;
+      return builder;
+    }),
+    
+    // EXECUTION
+    then: vi.fn((callback) => {
+      const result = {
+        data: shouldReturnSingle ? (mockData[0] || null) : mockData,
+        error: mockError,
+        count: mockData.length
+      };
+      return Promise.resolve(callback(result));
+    }),
+    
+    // INSERT operations
+    insert: vi.fn((data: any) => {
+      const newItem = {
+        id: `new-${Date.now()}`,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        ...data
+      };
+      
+      // Add to mock data for chaining
+      mockData = [newItem];
+      
+      return {
+        select: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({
+            data: newItem,
+            error: null
+          })
+        })
+      };
+    }),
+    
+    // UPDATE operations
+    update: vi.fn((data: any) => {
+      if (mockData.length > 0) {
+        mockData[0] = { ...mockData[0], ...data, updated_at: new Date().toISOString() };
+      }
+      return {
+        eq: vi.fn().mockReturnValue({
+          select: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({
+              data: mockData[0] || null,
+              error: mockError
+            })
+          })
+        })
+      };
+    }),
+    
+    // DELETE operations
+    delete: vi.fn(() => {
+      return {
+        eq: vi.fn().mockResolvedValue({
+          data: mockData,
+          error: mockError
+        })
+      };
+    })
+  };
+
+  return builder;
+};
+
 // Mock Supabase client
 const createMockSupabaseClient = () => {
   const mockAuth = {
@@ -82,179 +256,6 @@ const createMockSupabaseClient = () => {
       error: null
     }),
     signOut: vi.fn().mockResolvedValue({ error: null }),
-  };
-
-  const createMockQueryBuilder = (tableName: string) => {
-    let mockData = [];
-    let mockFilters = {};
-    let mockError = null;
-    let shouldReturnSingle = false;
-    
-    // Set initial data based on table
-    switch (tableName) {
-      case 'tournaments':
-        mockData = [...mockTournaments];
-        break;
-      case 'tournament_registrations':
-        mockData = [...mockRegistrations];
-        break;
-      case 'profiles':
-        mockData = [...mockUsers];
-        break;
-      default:
-        mockData = [];
-    }
-
-    const builder = {
-      // SELECT operations
-      select: vi.fn().mockReturnThis(),
-      
-      // FILTER operations
-      eq: vi.fn((column: string, value: any) => {
-        mockData = mockData.filter(item => item[column] === value);
-        return builder;
-      }),
-      
-      neq: vi.fn((column: string, value: any) => {
-        mockData = mockData.filter(item => item[column] !== value);
-        return builder;
-      }),
-      
-      in: vi.fn((column: string, values: any[]) => {
-        mockData = mockData.filter(item => values.includes(item[column]));
-        return builder;
-      }),
-      
-      is: vi.fn((column: string, value: any) => {
-        if (value === null) {
-          mockData = mockData.filter(item => item[column] === null);
-        }
-        return builder;
-      }),
-      
-      not: vi.fn((column: string, operator: string, value: any) => {
-        if (operator === 'is' && value === null) {
-          mockData = mockData.filter(item => item[column] !== null);
-        }
-        return builder;
-      }),
-      
-      ilike: vi.fn((column: string, pattern: string) => {
-        const searchTerm = pattern.replace(/%/g, '');
-        mockData = mockData.filter(item => 
-          item[column]?.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        return builder;
-      }),
-      
-      or: vi.fn((query: string) => {
-        // Simple OR implementation for name/description search
-        if (query.includes('name.ilike') && query.includes('description.ilike')) {
-          const searchTerm = query.match(/%(.*?)%/)?.[1] || '';
-          mockData = mockData.filter(item => 
-            item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.description?.toLowerCase().includes(searchTerm.toLowerCase())
-          );
-        }
-        return builder;
-      }),
-      
-      // ORDERING
-      order: vi.fn((column: string, options?: { ascending?: boolean }) => {
-        const ascending = options?.ascending ?? true;
-        mockData.sort((a, b) => {
-          if (ascending) {
-            return a[column] > b[column] ? 1 : -1;
-          } else {
-            return a[column] < b[column] ? 1 : -1;
-          }
-        });
-        return builder;
-      }),
-      
-      // PAGINATION
-      limit: vi.fn((count: number) => {
-        mockData = mockData.slice(0, count);
-        return builder;
-      }),
-      
-      range: vi.fn((from: number, to: number) => {
-        mockData = mockData.slice(from, to + 1);
-        return builder;
-      }),
-      
-      // RESULT METHODS
-      single: vi.fn(() => {
-        shouldReturnSingle = true;
-        return builder;
-      }),
-      
-      maybeSingle: vi.fn(() => {
-        shouldReturnSingle = true;
-        return builder;
-      }),
-      
-      // EXECUTION
-      then: vi.fn((callback) => {
-        const result = {
-          data: shouldReturnSingle ? (mockData[0] || null) : mockData,
-          error: mockError,
-          count: mockData.length
-        };
-        return Promise.resolve(callback(result));
-      }),
-      
-      // INSERT operations
-      insert: vi.fn((data: any) => {
-        const newItem = {
-          id: `new-${Date.now()}`,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          ...data
-        };
-        
-        // Add to mock data for chaining
-        mockData = [newItem];
-        
-        return {
-          select: vi.fn().mockReturnValue({
-            single: vi.fn().mockResolvedValue({
-              data: newItem,
-              error: null
-            })
-          })
-        };
-      }),
-      
-      // UPDATE operations
-      update: vi.fn((data: any) => {
-        if (mockData.length > 0) {
-          mockData[0] = { ...mockData[0], ...data, updated_at: new Date().toISOString() };
-        }
-        return {
-          eq: vi.fn().mockReturnValue({
-            select: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({
-                data: mockData[0] || null,
-                error: mockError
-              })
-            })
-          })
-        };
-      }),
-      
-      // DELETE operations
-      delete: vi.fn(() => {
-        return {
-          eq: vi.fn().mockResolvedValue({
-            data: mockData,
-            error: mockError
-          })
-        };
-      })
-    };
-
-    return builder;
   };
 
   return {
@@ -281,11 +282,9 @@ export const setupSupabaseMocks = () => {
 
 export const setMockError = (error: any) => {
   // This could be enhanced to set specific errors for specific operations
-  mockSupabase.from = vi.fn(() => {
-    const builder = createMockQueryBuilder('');
-    (builder as any).then = vi.fn(() => Promise.resolve({ data: null, error }));
-    return builder;
-  });
+  const builder = createMockQueryBuilder('');
+  (builder as any).then = vi.fn(() => Promise.resolve({ data: null, error }));
+  mockSupabase.from = vi.fn(() => builder);
 };
 
 export const setMockUser = (user: any) => {

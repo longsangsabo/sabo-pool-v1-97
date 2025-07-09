@@ -163,9 +163,13 @@ describe('TournamentService', () => {
       // Arrange
       const customRewards = {
         totalPrize: 1000000,
-        firstPlace: 500000,
-        secondPlace: 300000,
-        thirdPlace: 200000
+        showPrizes: true,
+        positions: [
+          { position: 1, name: 'Vô địch', eloPoints: 100, spaPoints: 1000, cashPrize: 500000, items: ['Cúp'], isVisible: true },
+          { position: 2, name: 'Á quân', eloPoints: 60, spaPoints: 800, cashPrize: 300000, items: ['Huy chương'], isVisible: true },
+          { position: 3, name: 'Hạng ba', eloPoints: 40, spaPoints: 600, cashPrize: 200000, items: ['Huy chương'], isVisible: true },
+        ],
+        specialAwards: [],
       };
       const dataWithRewards = { ...validTournamentData, rewards: customRewards };
 
