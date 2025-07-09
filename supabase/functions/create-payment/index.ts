@@ -1,5 +1,5 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -32,10 +32,10 @@ function sortObject(obj: Record<string, any>): Record<string, any> {
   return sorted;
 }
 
-function createSecureHash(
+async function createSecureHash(
   params: Record<string, any>,
   secretKey: string
-): string {
+): Promise<string> {
   const sortedParams = sortObject(params);
   const signData = Object.keys(sortedParams)
     .map(key => `${key}=${sortedParams[key]}`)
@@ -46,16 +46,18 @@ function createSecureHash(
   const keyData = encoder.encode(secretKey);
   const dataToSign = encoder.encode(signData);
 
-  return crypto.subtle
-    .importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-512' }, false, [
-      'sign',
-    ])
-    .then(key => crypto.subtle.sign('HMAC', key, dataToSign))
-    .then(signature =>
-      Array.from(new Uint8Array(signature))
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('')
-    );
+  const key = await crypto.subtle.importKey(
+    'raw',
+    keyData,
+    { name: 'HMAC', hash: 'SHA-512' },
+    false,
+    ['sign']
+  );
+
+  const signature = await crypto.subtle.sign('HMAC', key, dataToSign);
+  return Array.from(new Uint8Array(signature))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
 }
 
 serve(async req => {
@@ -65,10 +67,24 @@ serve(async req => {
   }
 
   try {
+    console.log('Creating payment request...');
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('No authorization header provided');
+    }
+
+    // Get user from auth header
+    const token = authHeader.replace('Bearer ', '');
+    const { data: userData, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !userData.user) {
+      throw new Error('Invalid authentication token');
+    }
 
     const {
       userId,
@@ -76,18 +92,20 @@ serve(async req => {
       amount = 99000,
       type = 'membership',
       paymentMethod = 'vnpay',
-      description = 'Payment',
+      description = 'Payment for SABO Pool Arena',
     }: PaymentRequest = await req.json();
 
     if (!userId || !amount) {
-      throw new Error('Missing required parameters');
+      throw new Error('Missing required parameters: userId and amount');
     }
+
+    console.log('Payment request details:', { userId, amount, type, paymentMethod });
 
     // Create transaction reference
     const transactionRef = `SABO_${userId.substring(0, 8)}_${Date.now()}`;
 
     // Save transaction to database
-    const transactionId = await supabase.rpc('create_payment_transaction', {
+    const { data: transactionData, error: transactionError } = await supabase.rpc('create_payment_transaction', {
       p_user_id: userId,
       p_amount: amount,
       p_transaction_ref: transactionRef,
@@ -95,14 +113,17 @@ serve(async req => {
       p_payment_method: paymentMethod,
     });
 
-    if (!transactionId.data) {
-      console.error('Database error:', transactionId.error);
+    if (transactionError) {
+      console.error('Database error:', transactionError);
       throw new Error('Failed to create transaction record');
     }
 
+    console.log('Transaction created with ID:', transactionData);
+
     // VNPay configuration
     const vnpUrl = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html';
-    const returnUrl = `${Deno.env.get('SUPABASE_URL')?.replace('/rest/v1', '')}/functions/v1/payment-callback`;
+    const siteUrl = Deno.env.get('SITE_URL') || req.headers.get('origin') || 'https://knxevbkkkiadgppxbphh.supabase.co';
+    const returnUrl = `${siteUrl.replace('/rest/v1', '')}/functions/v1/payment-callback`;
 
     const date = new Date();
     const createDate = date.toISOString().replace(/[-:]/g, '').split('.')[0];
@@ -119,12 +140,18 @@ serve(async req => {
       vnp_OrderType: 'other',
       vnp_Locale: 'vn',
       vnp_ReturnUrl: returnUrl,
-      vnp_IpAddr: '127.0.0.1',
+      vnp_IpAddr: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1',
       vnp_CreateDate: createDate,
     };
 
+    console.log('VNPay parameters:', vnpParams);
+
     // Create secure hash
     const secretKey = Deno.env.get('VNPAY_HASH_SECRET') || '';
+    if (!secretKey) {
+      throw new Error('VNPAY_HASH_SECRET not configured');
+    }
+
     const secureHash = await createSecureHash(vnpParams, secretKey);
 
     // Build payment URL
@@ -134,13 +161,14 @@ serve(async req => {
     });
     const paymentUrl = `${vnpUrl}?${query.toString()}`;
 
-    console.log('Payment URL created:', paymentUrl);
+    console.log('Payment URL created successfully');
 
     return new Response(
       JSON.stringify({
         success: true,
         paymentUrl,
         transactionRef,
+        transactionId: transactionData,
       }),
       {
         headers: {
@@ -153,6 +181,7 @@ serve(async req => {
     console.error('Payment creation error:', error);
     return new Response(
       JSON.stringify({
+        success: false,
         error: error.message || 'Internal server error',
       }),
       {
