@@ -23,12 +23,11 @@ import {
   tournamentSchema, 
   TournamentFormData, 
   getDefaultTournamentData,
-  TOURNAMENT_TIERS,
   PARTICIPANT_SLOTS,
   TOURNAMENT_FORMATS,
-  GAME_FORMATS,
-  TournamentTierType
+  GAME_FORMATS
 } from '@/schemas/tournamentSchema';
+import { useTournamentTiers } from '@/hooks/useTournamentTiers';
 import { TournamentSPAPreview } from '@/components/TournamentSPAPreview';
 import { useAuth } from '@/hooks/useAuth';
 import { useTournaments } from '@/hooks/useTournaments';
@@ -58,6 +57,7 @@ export const EnhancedTournamentCreator: React.FC<EnhancedTournamentCreatorProps>
   const { user } = useAuth();
   const { isAdmin } = useAdminCheck();
   const { createTournament } = useTournaments();
+  const { getTierByLevel } = useTournamentTiers();
   
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -102,7 +102,7 @@ export const EnhancedTournamentCreator: React.FC<EnhancedTournamentCreatorProps>
   const getCurrentStepValidation = async () => {
     switch (currentStep) {
       case 1:
-        return await trigger(['name', 'description', 'tier', 'tournament_start', 'tournament_end', 'venue_address']);
+        return await trigger(['name', 'description', 'tier_level', 'tournament_start', 'tournament_end', 'venue_address']);
       case 2:
         return await trigger(['max_participants', 'tournament_type', 'game_format', 'entry_fee', 'prize_pool']);
       case 3:
@@ -152,11 +152,12 @@ export const EnhancedTournamentCreator: React.FC<EnhancedTournamentCreatorProps>
 
       const newTournament = await createTournament(tournamentData);
       
+      const selectedTier = getTierByLevel(data.tier_level);
       toast.success(
         <div>
           <p className="font-semibold">🏆 Giải đấu đã được tạo thành công!</p>
           <p className="text-sm text-muted-foreground">
-            {data.name} - {TOURNAMENT_TIERS[data.tier].name}
+            {data.name} - {selectedTier?.tier_name || `Tier ${data.tier_level}`}
           </p>
         </div>
       );
@@ -256,79 +257,7 @@ export const EnhancedTournamentCreator: React.FC<EnhancedTournamentCreatorProps>
 
         {/* Sidebar */}
         <div className="space-y-4">
-          {/* Tournament Tier Info */}
-          {watchedData.tier && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Badge variant="secondary">{watchedData.tier}</Badge>
-                  {TOURNAMENT_TIERS[watchedData.tier as TournamentTierType].name}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <p className="text-muted-foreground">
-                  {TOURNAMENT_TIERS[watchedData.tier as TournamentTierType].description}
-                </p>
-                <div className="flex justify-between">
-                  <span>Phí tối thiểu:</span>
-                  <span className="font-medium">
-                    {TOURNAMENT_TIERS[watchedData.tier as TournamentTierType].minFee.toLocaleString('vi-VN')}đ
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Phí tối đa:</span>
-                  <span className="font-medium">
-                    {TOURNAMENT_TIERS[watchedData.tier as TournamentTierType].maxFee.toLocaleString('vi-VN')}đ
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Enhanced SPA Points Preview */}
-          {watchedData.tier && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Badge variant="secondary">{watchedData.tier}</Badge>
-                  Điểm SPA dự kiến
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                {TOURNAMENT_TIERS[watchedData.tier as keyof typeof TOURNAMENT_TIERS] && (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="flex items-center gap-1">
-                        🏆 <span>Vô địch</span>
-                      </span>
-                      <Badge variant="default" className="text-xs">
-                        +{Math.round(100 * TOURNAMENT_TIERS[watchedData.tier as keyof typeof TOURNAMENT_TIERS].level)} SPA
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="flex items-center gap-1">
-                        🥈 <span>Á quân</span>
-                      </span>
-                      <Badge variant="secondary" className="text-xs">
-                        +{Math.round(50 * TOURNAMENT_TIERS[watchedData.tier as keyof typeof TOURNAMENT_TIERS].level)} SPA
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="flex items-center gap-1">
-                        🥉 <span>Hạng 3</span>
-                      </span>
-                      <Badge variant="outline" className="text-xs">
-                        +{Math.round(25 * TOURNAMENT_TIERS[watchedData.tier as keyof typeof TOURNAMENT_TIERS].level)} SPA
-                      </Badge>
-                    </div>
-                    <div className="pt-2 border-t text-xs text-muted-foreground">
-                      * Điểm thực tế có thể thay đổi theo số lượng tham gia
-                    </div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          )}
+          {/* Quick Stats */}
 
           {/* Quick Stats */}
           <Card>

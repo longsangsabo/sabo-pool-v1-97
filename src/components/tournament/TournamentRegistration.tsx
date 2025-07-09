@@ -31,7 +31,7 @@ import {
   PAYMENT_METHODS,
   EXPERIENCE_LEVELS
 } from '@/schemas/tournamentRegistrationSchema';
-import { TOURNAMENT_TIERS } from '@/schemas/tournamentSchema';
+
 import { useAuth } from '@/hooks/useAuth';
 import { useTournaments } from '@/hooks/useTournaments';
 import { supabase } from '@/integrations/supabase/client';
@@ -458,7 +458,7 @@ export const TournamentRegistration: React.FC<TournamentRegistrationProps> = ({
             </div>
             <Separator />
             <Badge variant="secondary">
-              Hạng {selectedTournament.tier}
+              Level {selectedTournament.tier_level || 1}
             </Badge>
           </CardContent>
         </Card>

@@ -23,10 +23,10 @@ import { vi } from 'date-fns/locale';
 
 import { 
   TournamentFormData, 
-  TOURNAMENT_TIERS, 
   TOURNAMENT_FORMATS, 
   GAME_FORMATS 
 } from '@/schemas/tournamentSchema';
+import { useTournamentTiers } from '@/hooks/useTournamentTiers';
 
 interface PreviewStepProps {
   form: UseFormReturn<TournamentFormData>;
@@ -35,6 +35,9 @@ interface PreviewStepProps {
 
 export const PreviewStep: React.FC<PreviewStepProps> = ({ form, onSubmit }) => {
   const watchedData = form.watch();
+  const { getTierByLevel } = useTournamentTiers();
+  
+  const selectedTier = watchedData.tier_level ? getTierByLevel(watchedData.tier_level) : null;
 
   const formatDateTime = (dateString: string) => {
     try {
@@ -71,7 +74,9 @@ export const PreviewStep: React.FC<PreviewStepProps> = ({ form, onSubmit }) => {
           <CardTitle className="flex items-center gap-2">
             <Trophy className="h-5 w-5" />
             {watchedData.name}
-            <Badge variant="secondary">{watchedData.tier}</Badge>
+            {selectedTier && (
+              <Badge variant="secondary">{selectedTier.tier_name}</Badge>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">

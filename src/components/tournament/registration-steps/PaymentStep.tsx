@@ -21,7 +21,6 @@ import {
   TournamentRegistrationFormData,
   PAYMENT_METHODS
 } from '@/schemas/tournamentRegistrationSchema';
-import { TOURNAMENT_TIERS } from '@/schemas/tournamentSchema';
 
 interface PaymentStepProps {
   form: UseFormReturn<TournamentRegistrationFormData>;
@@ -132,7 +131,7 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({
               
               <div className="flex justify-between items-center">
                 <span className="text-sm">Hạng giải:</span>
-                <Badge variant="secondary">Hạng {selectedTournament.tier}</Badge>
+                <Badge variant="secondary">Level {selectedTournament.tier_level || 1}</Badge>
               </div>
               
               <Separator />

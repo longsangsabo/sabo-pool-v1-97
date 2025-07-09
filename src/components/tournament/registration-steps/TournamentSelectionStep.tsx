@@ -19,7 +19,6 @@ import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 
 import { TournamentRegistrationFormData } from '@/schemas/tournamentRegistrationSchema';
-import { TOURNAMENT_TIERS } from '@/schemas/tournamentSchema';
 
 interface TournamentSelectionStepProps {
   form: UseFormReturn<TournamentRegistrationFormData>;
@@ -140,7 +139,6 @@ export const TournamentSelectionStep: React.FC<TournamentSelectionStepProps> = (
         {availableTournaments.map((tournament) => {
           const isSelected = selectedTournament?.id === tournament.id;
           const status = getTournamentStatus(tournament);
-          const tierInfo = TOURNAMENT_TIERS[tournament.tier as keyof typeof TOURNAMENT_TIERS];
 
           return (
             <Card 
@@ -161,7 +159,7 @@ export const TournamentSelectionStep: React.FC<TournamentSelectionStepProps> = (
                       {isSelected && <CheckCircle className="h-4 w-4 text-green-500" />}
                     </CardTitle>
                     <div className="flex flex-wrap gap-2">
-                      <Badge variant="secondary">Hạng {tournament.tier}</Badge>
+                      <Badge variant="secondary">Level {tournament.tier_level || 1}</Badge>
                       <Badge 
                         variant={status.color as any}
                         className="text-xs"
