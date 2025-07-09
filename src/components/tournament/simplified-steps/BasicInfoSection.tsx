@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Calendar, MapPin, Trophy, Building2 } from 'lucide-react';
 import { TournamentTierSelector } from '@/components/TournamentTierSelector';
 import { RankSelector } from '@/components/tournament/RankSelector';
@@ -116,18 +117,26 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
             {...register('venue_address')}
             className={`flex-1 ${errors.venue_address ? 'border-destructive' : ''}`}
           />
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={fillClubAddress}
-            disabled={!clubProfile?.address}
-            className="whitespace-nowrap"
-            title="Dùng địa chỉ CLB"
-          >
-            <Building2 className="h-4 w-4 mr-1" />
-            Địa chỉ CLB
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={fillClubAddress}
+                  disabled={!clubProfile?.address}
+                  className="whitespace-nowrap bg-primary/10 hover:bg-primary/20 border-primary/20 hover:border-primary/30 text-primary hover:text-primary transition-all duration-200"
+                >
+                  <Building2 className="h-4 w-4 mr-1" />
+                  Địa chỉ CLB
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Điền địa chỉ CLB của bạn</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         {errors.venue_address && (
           <p className="text-sm text-destructive">{String(errors.venue_address.message)}</p>
