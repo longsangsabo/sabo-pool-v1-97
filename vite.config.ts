@@ -41,8 +41,7 @@ export default defineConfig(({ mode }) => ({
           'ui-core': [
             '@radix-ui/react-dialog',
             '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-button',
-            '@radix-ui/react-card'
+            '@radix-ui/react-slot'
           ],
           'ui-forms': [
             '@radix-ui/react-form',
