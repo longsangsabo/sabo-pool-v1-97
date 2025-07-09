@@ -1,22 +1,5 @@
+
 import { z } from 'zod';
-
-// Tournament tier types - Extended for all ranks
-export const TOURNAMENT_TIERS = {
-  E: { name: 'Giải Hạng E+', minFee: 2000000, maxFee: 10000000, description: 'Giải đấu chuyên nghiệp cao nhất', level: 4 },
-  'E+': { name: 'Giải Hạng E', minFee: 1000000, maxFee: 5000000, description: 'Giải đấu chuyên nghiệp', level: 4 },
-  F: { name: 'Giải Hạng F+', minFee: 800000, maxFee: 3000000, description: 'Giải đấu xuất sắc cao', level: 3 },
-  'F+': { name: 'Giải Hạng F', minFee: 600000, maxFee: 2000000, description: 'Giải đấu xuất sắc', level: 3 },
-  G: { name: 'Giải Hạng G+', minFee: 400000, maxFee: 1500000, description: 'Giải đấu khá cao', level: 2 },
-  'G+': { name: 'Giải Hạng G', minFee: 300000, maxFee: 1000000, description: 'Giải đấu khá', level: 2 },
-  H: { name: 'Giải Hạng H+', minFee: 200000, maxFee: 800000, description: 'Giải đấu trung cấp cao', level: 2 },
-  'H+': { name: 'Giải Hạng H', minFee: 150000, maxFee: 600000, description: 'Giải đấu trung cấp', level: 2 },
-  I: { name: 'Giải Hạng I+', minFee: 100000, maxFee: 400000, description: 'Giải đấu cơ bản cao', level: 1 },
-  'I+': { name: 'Giải Hạng I', minFee: 80000, maxFee: 300000, description: 'Giải đấu cơ bản', level: 1 },
-  K: { name: 'Giải Hạng K+', minFee: 50000, maxFee: 200000, description: 'Giải đấu cho người mới cao', level: 1 },
-  'K+': { name: 'Giải Hạng K', minFee: 30000, maxFee: 150000, description: 'Giải đấu cho người mới', level: 1 },
-} as const;
-
-export type TournamentTierType = keyof typeof TOURNAMENT_TIERS;
 
 // Available participant slots
 export const PARTICIPANT_SLOTS = [4, 6, 8, 12, 16, 24, 32] as const;
@@ -37,7 +20,7 @@ export const GAME_FORMATS = {
   straight_pool: 'Straight Pool'
 } as const;
 
-// Validation schema
+// Validation schema - using tier_level instead of hardcoded tiers
 export const tournamentSchema = z.object({
   // Basic info (Step 1)
   name: z
@@ -50,9 +33,10 @@ export const tournamentSchema = z.object({
     .min(10, 'Mô tả phải có ít nhất 10 ký tự')
     .max(1000, 'Mô tả không được vượt quá 1000 ký tự'),
   
-  tier: z.enum(['E', 'E+', 'F', 'F+', 'G', 'G+', 'H', 'H+', 'I', 'I+', 'K', 'K+'], {
-    required_error: 'Vui lòng chọn hạng giải',
-  }),
+  tier_level: z
+    .number()
+    .min(1, 'Vui lòng chọn hạng giải')
+    .max(4, 'Hạng giải không hợp lệ'),
   
   tournament_start: z
     .string()
@@ -73,7 +57,7 @@ export const tournamentSchema = z.object({
   max_participants: z
     .number()
     .min(4, 'Tối thiểu 4 người tham gia')
-    .max(32, 'Tối đa 32 người tham gia')
+    .max(64, 'Tối đa 64 người tham gia')
     .refine((val) => PARTICIPANT_SLOTS.includes(val as any), {
       message: 'Số lượng tham gia phải là 4, 6, 8, 12, 16, 24 hoặc 32',
     }),
@@ -127,12 +111,6 @@ export const tournamentSchema = z.object({
 }, {
   message: 'Thời gian đóng đăng ký phải trước khi giải đấu bắt đầu',
   path: ['registration_end'],
-}).refine((data) => {
-  const tier = TOURNAMENT_TIERS[data.tier];
-  return data.entry_fee >= tier.minFee && data.entry_fee <= tier.maxFee;
-}, {
-  message: 'Phí đăng ký không phù hợp với hạng giải',
-  path: ['entry_fee'],
 });
 
 export type TournamentFormData = z.infer<typeof tournamentSchema>;
@@ -147,7 +125,7 @@ export const getDefaultTournamentData = (): Partial<TournamentFormData> => {
   nextWeek.setDate(nextWeek.getDate() + 7);
 
   return {
-    tier: 'I',
+    tier_level: 1,
     max_participants: 16,
     tournament_type: 'single_elimination',
     game_format: '9_ball',

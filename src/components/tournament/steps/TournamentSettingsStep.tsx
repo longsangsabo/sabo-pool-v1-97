@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
@@ -11,9 +12,9 @@ import {
   TournamentFormData, 
   PARTICIPANT_SLOTS, 
   TOURNAMENT_FORMATS, 
-  GAME_FORMATS,
-  TOURNAMENT_TIERS
+  GAME_FORMATS
 } from '@/schemas/tournamentSchema';
+import { useTournamentTiers } from '@/hooks/useTournamentTiers';
 
 interface TournamentSettingsStepProps {
   form: UseFormReturn<TournamentFormData>;
@@ -21,12 +22,16 @@ interface TournamentSettingsStepProps {
 
 export const TournamentSettingsStep: React.FC<TournamentSettingsStepProps> = ({ form }) => {
   const { register, watch, setValue, formState: { errors } } = form;
+  const { getTierByLevel, getSuggestedEntryFees } = useTournamentTiers();
   
   const watchedData = watch();
-  const selectedTier = watchedData.tier;
+  const selectedTierLevel = watchedData.tier_level;
   const maxParticipants = watchedData.max_participants;
   const entryFee = watchedData.entry_fee || 0;
   const prizePool = watchedData.prize_pool || 0;
+
+  const selectedTier = getTierByLevel(selectedTierLevel);
+  const suggestedFees = selectedTierLevel ? getSuggestedEntryFees(selectedTierLevel) : null;
 
   // Calculate suggested prize pool based on participants and entry fee
   const suggestedPrizePool = maxParticipants * entryFee * 0.8; // 80% of total collected
@@ -141,20 +146,20 @@ export const TournamentSettingsStep: React.FC<TournamentSettingsStepProps> = ({ 
         {errors.entry_fee && (
           <p className="text-sm text-destructive">{errors.entry_fee.message}</p>
         )}
-        {selectedTier && (
+        {selectedTier && suggestedFees && (
           <div className="text-xs text-muted-foreground space-y-1">
             <div>
-              Phí phù hợp với {TOURNAMENT_TIERS[selectedTier as keyof typeof TOURNAMENT_TIERS].name}: {' '}
-              {TOURNAMENT_TIERS[selectedTier as keyof typeof TOURNAMENT_TIERS].minFee.toLocaleString('vi-VN')}đ - {' '}
-              {TOURNAMENT_TIERS[selectedTier as keyof typeof TOURNAMENT_TIERS].maxFee.toLocaleString('vi-VN')}đ
+              Phí phù hợp với {selectedTier.tier_name}: {' '}
+              {suggestedFees.min.toLocaleString('vi-VN')}đ - {' '}
+              {suggestedFees.max.toLocaleString('vi-VN')}đ
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-xs">
-                Level {TOURNAMENT_TIERS[selectedTier as keyof typeof TOURNAMENT_TIERS].level}
+                Level {selectedTier.tier_level}
               </Badge>
               <span>•</span>
               <span>
-                Hệ số SPA: x{TOURNAMENT_TIERS[selectedTier as keyof typeof TOURNAMENT_TIERS].level}
+                Hệ số SPA: x{selectedTier.points_multiplier}
               </span>
             </div>
           </div>
