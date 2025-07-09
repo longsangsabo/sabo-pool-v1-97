@@ -13,6 +13,7 @@ import QuickTournamentCreator from './QuickTournamentCreator';
 import { DemoUserManager } from './DemoUserManager';
 import SystemMonitoring from './SystemMonitoring';
 import CreateAdminAccount from './CreateAdminAccount';
+import AutoTranslationWorkflow from './AutoTranslationWorkflow';
 
 const DevelopmentTools = () => {
   const { t } = useLanguage();
@@ -32,12 +33,13 @@ const DevelopmentTools = () => {
       </Alert>
 
       <Tabs defaultValue="admin" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-8">
+        <TabsList className="grid w-full grid-cols-9">
           <TabsTrigger value="admin">Create Admin</TabsTrigger>
           <TabsTrigger value="users">{t('admin.bulk_user_gen')}</TabsTrigger>
           <TabsTrigger value="demo">Demo Users</TabsTrigger>
           <TabsTrigger value="clubs">{t('admin.quick_club')}</TabsTrigger>
           <TabsTrigger value="tournaments">Tournament Test</TabsTrigger>
+          <TabsTrigger value="translation">Auto Translation</TabsTrigger>
           <TabsTrigger value="monitoring">System Monitor</TabsTrigger>
           <TabsTrigger value="data">{t('admin.test_data')}</TabsTrigger>
           <TabsTrigger value="reset">{t('admin.db_tools')}</TabsTrigger>
@@ -62,6 +64,10 @@ const DevelopmentTools = () => {
         <TabsContent value="tournaments" className="space-y-4">
           <QuickTournamentCreator />
           <TournamentTestingTools />
+        </TabsContent>
+        
+        <TabsContent value="translation" className="space-y-4">
+          <AutoTranslationWorkflow />
         </TabsContent>
         
         <TabsContent value="monitoring" className="space-y-4">
