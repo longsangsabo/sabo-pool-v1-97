@@ -691,6 +691,53 @@ export type Database = {
           },
         ]
       }
+      elo_rules: {
+        Row: {
+          condition_key: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          points_base: number
+          points_multiplier: number | null
+          rule_type: string
+          tier_level: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          condition_key: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          points_base: number
+          points_multiplier?: number | null
+          rule_type: string
+          tier_level?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          condition_key?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          points_base?: number
+          points_multiplier?: number | null
+          rule_type?: string
+          tier_level?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elo_rules_tier_level_fkey"
+            columns: ["tier_level"]
+            isOneToOne: false
+            referencedRelation: "tournament_tiers"
+            referencedColumns: ["tier_level"]
+          },
+        ]
+      }
       event_registrations: {
         Row: {
           created_at: string | null
@@ -2301,6 +2348,50 @@ export type Database = {
             foreignKeyName: "player_cues_player_id_fkey"
             columns: ["player_id"]
             isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      player_elo_decay: {
+        Row: {
+          created_at: string | null
+          decay_amount: number | null
+          decay_applied_at: string | null
+          id: string
+          last_match_date: string | null
+          last_tournament_date: string | null
+          player_id: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          decay_amount?: number | null
+          decay_applied_at?: string | null
+          id?: string
+          last_match_date?: string | null
+          last_tournament_date?: string | null
+          player_id: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          decay_amount?: number | null
+          decay_applied_at?: string | null
+          id?: string
+          last_match_date?: string | null
+          last_tournament_date?: string | null
+          player_id?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_elo_decay_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -4350,6 +4441,67 @@ export type Database = {
           },
         ]
       }
+      tournament_qualifications: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          player_id: string
+          qualification_date: string | null
+          qualification_type: string
+          qualified_for_tier_level: number | null
+          qualified_from_tournament_id: string | null
+          status: string | null
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          player_id: string
+          qualification_date?: string | null
+          qualification_type: string
+          qualified_for_tier_level?: number | null
+          qualified_from_tournament_id?: string | null
+          status?: string | null
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          player_id?: string
+          qualification_date?: string | null
+          qualification_type?: string
+          qualified_for_tier_level?: number | null
+          qualified_from_tournament_id?: string | null
+          status?: string | null
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_qualifications_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "tournament_qualifications_qualified_for_tier_level_fkey"
+            columns: ["qualified_for_tier_level"]
+            isOneToOne: false
+            referencedRelation: "tournament_tiers"
+            referencedColumns: ["tier_level"]
+          },
+          {
+            foreignKeyName: "tournament_qualifications_qualified_from_tournament_id_fkey"
+            columns: ["qualified_from_tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_realtime_stats: {
         Row: {
           bracket_generated: boolean | null
@@ -4576,6 +4728,42 @@ export type Database = {
           },
         ]
       }
+      tournament_tiers: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          min_participants: number | null
+          points_multiplier: number
+          qualification_required: boolean | null
+          tier_level: number
+          tier_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          min_participants?: number | null
+          points_multiplier?: number
+          qualification_required?: boolean | null
+          tier_level: number
+          tier_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          min_participants?: number | null
+          points_multiplier?: number
+          qualification_required?: boolean | null
+          tier_level?: number
+          tier_name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       tournament_workflow_steps: {
         Row: {
           automation_data: Json | null
@@ -4636,6 +4824,7 @@ export type Database = {
           created_by: string | null
           current_participants: number | null
           description: string | null
+          elo_multiplier: number | null
           end_date: string | null
           entry_fee: number | null
           first_prize: number | null
@@ -4655,12 +4844,14 @@ export type Database = {
           registration_end: string | null
           registration_start: string | null
           requires_approval: boolean | null
+          requires_qualification: boolean | null
           rules: string | null
           second_prize: number | null
           start_date: string | null
           status: string | null
           third_prize: number | null
           tier: string | null
+          tier_level: number | null
           tournament_end: string | null
           tournament_start: string | null
           tournament_type: string | null
@@ -4677,6 +4868,7 @@ export type Database = {
           created_by?: string | null
           current_participants?: number | null
           description?: string | null
+          elo_multiplier?: number | null
           end_date?: string | null
           entry_fee?: number | null
           first_prize?: number | null
@@ -4696,12 +4888,14 @@ export type Database = {
           registration_end?: string | null
           registration_start?: string | null
           requires_approval?: boolean | null
+          requires_qualification?: boolean | null
           rules?: string | null
           second_prize?: number | null
           start_date?: string | null
           status?: string | null
           third_prize?: number | null
           tier?: string | null
+          tier_level?: number | null
           tournament_end?: string | null
           tournament_start?: string | null
           tournament_type?: string | null
@@ -4718,6 +4912,7 @@ export type Database = {
           created_by?: string | null
           current_participants?: number | null
           description?: string | null
+          elo_multiplier?: number | null
           end_date?: string | null
           entry_fee?: number | null
           first_prize?: number | null
@@ -4737,12 +4932,14 @@ export type Database = {
           registration_end?: string | null
           registration_start?: string | null
           requires_approval?: boolean | null
+          requires_qualification?: boolean | null
           rules?: string | null
           second_prize?: number | null
           start_date?: string | null
           status?: string | null
           third_prize?: number | null
           tier?: string | null
+          tier_level?: number | null
           tournament_end?: string | null
           tournament_start?: string | null
           tournament_type?: string | null
@@ -4757,6 +4954,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clubs"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournaments_tier_level_fkey"
+            columns: ["tier_level"]
+            isOneToOne: false
+            referencedRelation: "tournament_tiers"
+            referencedColumns: ["tier_level"]
           },
         ]
       }
@@ -5248,6 +5452,10 @@ export type Database = {
         Args: { player_uuid: string }
         Returns: undefined
       }
+      apply_elo_decay: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       apply_points_decay: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -5320,6 +5528,16 @@ export type Database = {
       calculate_comeback_bonus: {
         Args: { p_player_id: string }
         Returns: number
+      }
+      calculate_enhanced_elo: {
+        Args: {
+          p_player_id: string
+          p_tournament_id: string
+          p_final_position: number
+          p_total_participants: number
+          p_match_results?: Json
+        }
+        Returns: Json
       }
       calculate_match_elo: {
         Args: { p_match_result_id: string }
