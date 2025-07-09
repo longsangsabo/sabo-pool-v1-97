@@ -424,18 +424,26 @@ const AutomationMonitor = () => {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="jobs" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="jobs" className="gap-2">
               <Settings className="w-4 h-4" />
-              Scheduled Jobs
+              Jobs
+            </TabsTrigger>
+            <TabsTrigger value="performance" className="gap-2">
+              <Activity className="w-4 h-4" />
+              Performance
+            </TabsTrigger>
+            <TabsTrigger value="alerts" className="gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              Alerts
             </TabsTrigger>
             <TabsTrigger value="logs" className="gap-2">
               <FileText className="w-4 h-4" />
-              System Logs
+              Logs
             </TabsTrigger>
             <TabsTrigger value="functions" className="gap-2">
               <Zap className="w-4 h-4" />
-              Test Functions
+              Functions
             </TabsTrigger>
           </TabsList>
 
@@ -648,6 +656,16 @@ const AutomationMonitor = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Performance Tab */}
+          <TabsContent value="performance" className="space-y-4">
+            <PerformanceMetrics />
+          </TabsContent>
+
+          {/* Alerts Tab */}
+          <TabsContent value="alerts" className="space-y-4">
+            <AlertAnalyzer />
           </TabsContent>
         </Tabs>
 
