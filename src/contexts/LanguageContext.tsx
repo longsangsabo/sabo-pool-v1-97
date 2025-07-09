@@ -15,18 +15,18 @@ const translations = {
   vi: {
     // Admin Navigation
     'admin.dashboard': 'Bảng điều khiển',
-    'admin.users': 'Quản lý Users',
-    'admin.clubs': 'Câu lạc bộ',
-    'admin.tournaments': 'Giải đấu',
-    'admin.transactions': 'Giao dịch',
-    'admin.analytics': 'Thống kê',
-    'admin.automation': 'Automation',
-    'admin.test_ranking': 'Test Ranking',
-    'admin.development': 'Development Tools',
+    'admin.users': 'Quản lý người dùng',
+    'admin.clubs': 'Quản lý câu lạc bộ',
+    'admin.tournaments': 'Quản lý giải đấu',
+    'admin.transactions': 'Quản lý giao dịch',
+    'admin.analytics': 'Phân tích thống kê',
+    'admin.automation': 'Tự động hóa',
+    'admin.test_ranking': 'Kiểm thử xếp hạng',
+    'admin.development': 'Công cụ phát triển',
     'admin.settings': 'Cài đặt',
     'admin.home': 'Về trang chủ',
     'admin.logout': 'Đăng xuất',
-    'admin.panel': 'Admin Panel',
+    'admin.panel': 'Bảng quản trị',
     
     // Admin Dashboard
     'admin.dashboard_title': 'Admin Dashboard',
@@ -94,7 +94,7 @@ const translations = {
     'admin.no_users_found': 'Không tìm thấy người dùng nào',
     
     // Development Tools
-    'admin.dev_tools': 'Development Tools',
+    'admin.dev_tools': 'Công cụ phát triển',
     'admin.dev_warning': 'Những công cụ này dành cho phát triển và kiểm thử. Sử dụng cẩn thận trong môi trường production.',
     'admin.bulk_user_gen': 'Tạo Người Dùng Hàng Loạt',
     'admin.bulk_user_desc': 'Tạo nhiều người dùng test với tên và thông tin thực tế',
@@ -194,7 +194,37 @@ const translations = {
     'common.close': 'Đóng',
     'common.confirm': 'Xác nhận',
     'common.yes': 'Có',
-    'common.no': 'Không'
+    'common.no': 'Không',
+    
+    // Tournament Pages
+    'tournament.page_title': 'Giải đấu',
+    'tournament.page_subtitle': 'Tham gia các giải đấu và thi đấu với người chơi khác',
+    'tournament.live_broadcast': 'Phát sóng trực tiếp',
+    'tournament.create_tournament': 'Tạo giải đấu',
+    'tournament.all': 'Tất cả',
+    'tournament.upcoming': 'Sắp diễn ra',
+    'tournament.registration_open': 'Đang mở đăng ký',
+    'tournament.ongoing': 'Đang diễn ra',
+    'tournament.completed': 'Đã kết thúc',
+    'tournament.no_tournaments': 'Không có giải đấu nào',
+    'tournament.no_tournaments_status': 'Không có giải đấu nào ở trạng thái',
+    'tournament.no_tournaments_created': 'Chưa có giải đấu nào được tạo',
+    'tournament.create_first': 'Tạo giải đấu đầu tiên',
+    'tournament.back_to_tournaments': 'Quay lại danh sách giải đấu',
+    'tournament.registration_updated': 'Trạng thái đăng ký đã được cập nhật!',
+    'tournament.created_success': 'Giải đấu đã được tạo thành công!',
+    
+    // Tournament Status
+    'tournament.status.upcoming': 'Sắp diễn ra',
+    'tournament.status.registration_open': 'Đang mở đăng ký',
+    'tournament.status.registration_closed': 'Đã đóng đăng ký',
+    'tournament.status.ongoing': 'Đang diễn ra',
+    'tournament.status.completed': 'Đã kết thúc',
+    
+    // Tournament Categories
+    'tournament.category.amateur': 'Nghiệp dư',
+    'tournament.category.professional': 'Chuyên nghiệp',
+    'tournament.category.championship': 'Vô địch'
   },
   en: {
     // Admin Navigation

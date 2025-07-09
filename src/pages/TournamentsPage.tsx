@@ -14,10 +14,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRealTimeTournamentState } from '@/hooks/useRealTimeTournamentState';
 import { useRealtimeTournamentSync } from '@/hooks/useRealtimeTournamentSync';
 import { useTournamentRegistrationFlow } from '@/hooks/useTournamentRegistrationFlow';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 
 const TournamentsPage: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { tournaments, loading, fetchTournaments } = useTournaments();
   const {
     loadRegistrationStatus,
@@ -64,13 +66,13 @@ const TournamentsPage: React.FC = () => {
     setRegistrationStatus(tournamentId, isRegistered);
     fetchTournaments();
     if (isRegistered) {
-      toast.success('Trạng thái đăng ký đã được cập nhật!');
+      toast.success(t('tournament.registration_updated'));
     }
   };
 
   const handleTournamentCreated = (tournament: any) => {
     setShowTournamentCreator(false);
-    toast.success('Giải đấu đã được tạo thành công!');
+    toast.success(t('tournament.created_success'));
     fetchTournaments();
   };
 
@@ -94,15 +96,15 @@ const TournamentsPage: React.FC = () => {
   const getStatusName = (status: string) => {
     switch (status) {
       case 'upcoming':
-        return 'Sắp diễn ra';
+        return t('tournament.status.upcoming');
       case 'registration_open':
-        return 'Đang mở đăng ký';
+        return t('tournament.status.registration_open');
       case 'registration_closed':
-        return 'Đã đóng đăng ký';
+        return t('tournament.status.registration_closed');
       case 'ongoing':
-        return 'Đang diễn ra';
+        return t('tournament.status.ongoing');
       case 'completed':
-        return 'Đã kết thúc';
+        return t('tournament.status.completed');
       default:
         return status;
     }
@@ -124,11 +126,11 @@ const TournamentsPage: React.FC = () => {
   const getCategoryName = (category: string) => {
     switch (category) {
       case 'amateur':
-        return 'Nghiệp dư';
+        return t('tournament.category.amateur');
       case 'professional':
-        return 'Chuyên nghiệp';
+        return t('tournament.category.professional');
       case 'championship':
-        return 'Vô địch';
+        return t('tournament.category.championship');
       default:
         return category;
     }
@@ -193,7 +195,7 @@ const TournamentsPage: React.FC = () => {
               onClick={() => setShowLiveBroadcast(false)}
               className="mb-4"
             >
-              ← Back to Tournaments
+              ← {t('tournament.back_to_tournaments')}
             </Button>
           </div>
           <TournamentBroadcasting />
@@ -209,9 +211,9 @@ const TournamentsPage: React.FC = () => {
         <div className='mb-6'>
           <div className='flex items-center justify-between'>
             <div>
-              <h1 className='text-3xl font-bold text-gray-900'>Giải đấu</h1>
+              <h1 className='text-3xl font-bold text-gray-900'>{t('tournament.page_title')}</h1>
               <p className='text-gray-600 mt-1'>
-                Tham gia các giải đấu và thi đấu với người chơi khác
+                {t('tournament.page_subtitle')}
               </p>
             </div>
             <div className="flex gap-2">
@@ -221,11 +223,11 @@ const TournamentsPage: React.FC = () => {
                 className="flex items-center gap-2"
               >
                 <Radio className="h-4 w-4 text-red-500" />
-                Live Broadcast
+                {t('tournament.live_broadcast')}
               </Button>
               <Button onClick={() => setShowTournamentCreator(true)}>
                 <Plus className='h-4 w-4 mr-2' />
-                Tạo giải đấu
+                {t('tournament.create_tournament')}
               </Button>
             </div>
           </div>
@@ -239,31 +241,31 @@ const TournamentsPage: React.FC = () => {
                 variant={selectedFilter === 'all' ? 'default' : 'outline'}
                 onClick={() => setSelectedFilter('all')}
               >
-                Tất cả
+                {t('tournament.all')}
               </Button>
               <Button
                 variant={selectedFilter === 'upcoming' ? 'default' : 'outline'}
                 onClick={() => setSelectedFilter('upcoming')}
               >
-                Sắp diễn ra
+                {t('tournament.upcoming')}
               </Button>
               <Button
                 variant={selectedFilter === 'registration_open' ? 'default' : 'outline'}
                 onClick={() => setSelectedFilter('registration_open')}
               >
-                Đang mở đăng ký
+                {t('tournament.registration_open')}
               </Button>
               <Button
                 variant={selectedFilter === 'ongoing' ? 'default' : 'outline'}
                 onClick={() => setSelectedFilter('ongoing')}
               >
-                Đang diễn ra
+                {t('tournament.ongoing')}
               </Button>
               <Button
                 variant={selectedFilter === 'completed' ? 'default' : 'outline'}
                 onClick={() => setSelectedFilter('completed')}
               >
-                Đã kết thúc
+                {t('tournament.completed')}
               </Button>
             </div>
           </CardContent>
@@ -284,16 +286,16 @@ const TournamentsPage: React.FC = () => {
           <div className='text-center py-12'>
             <Trophy className='h-12 w-12 mx-auto mb-4 text-gray-400' />
             <h3 className='text-lg font-medium text-gray-900 mb-2'>
-              Không có giải đấu nào
+              {t('tournament.no_tournaments')}
             </h3>
             <p className='text-gray-600 mb-4'>
               {selectedFilter === 'all'
-                ? 'Chưa có giải đấu nào được tạo'
-                : `Không có giải đấu nào ở trạng thái "${getStatusName(selectedFilter)}"`}
+                ? t('tournament.no_tournaments_created')
+                : `${t('tournament.no_tournaments_status')} "${getStatusName(selectedFilter)}"`}
             </p>
             <Button onClick={() => setShowTournamentCreator(true)}>
               <Plus className='h-4 w-4 mr-2' />
-              Tạo giải đấu đầu tiên
+              {t('tournament.create_first')}
             </Button>
           </div>
         )}
