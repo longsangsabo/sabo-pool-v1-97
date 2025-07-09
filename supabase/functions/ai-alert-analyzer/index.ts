@@ -22,7 +22,27 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { action, data } = await req.json();
+    const { action, data, model } = await req.json();
+    
+    // Model selection with smart defaults
+    const getOptimalModel = (action: string, userModel?: string): string => {
+      if (userModel && ['gpt-4.1-2025-04-14', 'gpt-4.1-mini-2025-04-14', 'o3-2025-04-16', 'o4-mini-2025-04-16'].includes(userModel)) {
+        return userModel;
+      }
+      
+      // Smart model recommendations based on task complexity
+      const taskModels = {
+        'analyze_alert': 'o3-2025-04-16',        // Complex reasoning needed
+        'predict_incidents': 'o3-2025-04-16',    // Deep analysis required  
+        'suggest_resolution': 'gpt-4.1-2025-04-14', // Balanced approach
+        'generate_summary': 'gpt-4.1-mini-2025-04-14', // Fast and efficient
+        'chat_query': 'gpt-4.1-2025-04-14'      // General purpose
+      };
+      
+      return taskModels[action as keyof typeof taskModels] || 'gpt-4.1-2025-04-14';
+    };
+    
+    const selectedModel = getOptimalModel(action, model);
 
     console.log('🤖 AI Alert Analyzer - Action:', action);
 
@@ -61,13 +81,13 @@ Hãy phân tích alert này và trả về JSON response với:
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'gpt-4o-mini',
+            model: selectedModel,
             messages: [
               { role: 'system', content: 'You are an expert system analyst specializing in alert analysis for pool/billiards gaming platforms. Respond only with valid JSON.' },
               { role: 'user', content: analysisPrompt }
             ],
-            temperature: 0.3,
-            max_tokens: 1500
+            temperature: selectedModel.includes('o3') ? 0.1 : 0.3, // Lower temp for reasoning models
+            max_tokens: selectedModel.includes('o3') ? 3000 : 1500
           }),
         });
 
@@ -80,7 +100,7 @@ Hãy phân tích alert này và trả về JSON response với:
           .insert({
             alert_id: alertData.id,
             analysis_data: analysis,
-            ai_model: 'gpt-4o-mini',
+            ai_model: selectedModel,
             created_at: new Date().toISOString()
           })
           .select()
@@ -125,13 +145,13 @@ Format: Markdown tiếng Việt, dễ đọc và chuyên nghiệp.
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'gpt-4o-mini',
+            model: selectedModel,
             messages: [
               { role: 'system', content: 'You are a technical report writer for gaming platform operations. Create detailed, actionable reports in Vietnamese.' },
               { role: 'user', content: summaryPrompt }
             ],
-            temperature: 0.4,
-            max_tokens: 2000
+            temperature: selectedModel.includes('o3') ? 0.2 : 0.4,
+            max_tokens: selectedModel.includes('o3') ? 4000 : 2000
           }),
         });
 
@@ -174,13 +194,13 @@ Format: Markdown với step-by-step instructions.
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'gpt-4o-mini',
+            model: selectedModel,
             messages: [
               { role: 'system', content: 'You are a senior DevOps engineer with expertise in gaming platform operations. Provide detailed, practical troubleshooting guides.' },
               { role: 'user', content: resolutionPrompt }
             ],
-            temperature: 0.2,
-            max_tokens: 2000
+            temperature: selectedModel.includes('o3') ? 0.1 : 0.2,
+            max_tokens: selectedModel.includes('o3') ? 3000 : 2000
           }),
         });
 
@@ -233,13 +253,13 @@ Trả về JSON với format:
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'gpt-4o-mini',
+            model: selectedModel,
             messages: [
               { role: 'system', content: 'You are a predictive analytics expert for system reliability. Analyze patterns and predict potential issues with high accuracy.' },
               { role: 'user', content: predictionPrompt }
             ],
-            temperature: 0.1,
-            max_tokens: 1500
+            temperature: selectedModel.includes('o3') ? 0.05 : 0.1,
+            max_tokens: selectedModel.includes('o3') ? 3000 : 1500
           }),
         });
 
@@ -276,13 +296,13 @@ Hãy trả lời câu hỏi một cách chi tiết, chính xác và hữu ích. 
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'gpt-4o-mini',
+            model: selectedModel,
             messages: [
               { role: 'system', content: 'You are a helpful AI assistant specializing in system monitoring and alert management for gaming platforms. Respond in Vietnamese when appropriate.' },
               { role: 'user', content: chatPrompt }
             ],
-            temperature: 0.5,
-            max_tokens: 1000
+            temperature: selectedModel.includes('o3') ? 0.3 : 0.5,
+            max_tokens: selectedModel.includes('o3') ? 2000 : 1000
           }),
         });
 

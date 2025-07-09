@@ -1,9 +1,10 @@
 import React from 'react';
-import { Code, AlertTriangle, BarChart3, ExternalLink } from 'lucide-react';
+import { Code, AlertTriangle, BarChart3, ExternalLink, Bot } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ModelManagement from './ModelManagement';
 import { useLanguage } from '@/contexts/LanguageContext';
 import QuickRealUserCreator from './QuickRealUserCreator';
 import QuickClubCreator from './QuickClubCreator';
@@ -57,12 +58,13 @@ const DevelopmentTools = () => {
       </Alert>
 
       <Tabs defaultValue="admin" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-9">
+        <TabsList className="grid w-full grid-cols-10">
           <TabsTrigger value="admin">Create Admin</TabsTrigger>
           <TabsTrigger value="users">{t('admin.bulk_user_gen')}</TabsTrigger>
           <TabsTrigger value="demo">Demo Users</TabsTrigger>
           <TabsTrigger value="clubs">{t('admin.quick_club')}</TabsTrigger>
           <TabsTrigger value="tournaments">Tournament Test</TabsTrigger>
+          <TabsTrigger value="models">AI Models</TabsTrigger>
           <TabsTrigger value="translation">Auto Translation</TabsTrigger>
           <TabsTrigger value="monitoring">System Monitor</TabsTrigger>
           <TabsTrigger value="data">{t('admin.test_data')}</TabsTrigger>
@@ -88,6 +90,10 @@ const DevelopmentTools = () => {
         <TabsContent value="tournaments" className="space-y-4">
           <QuickTournamentCreator />
           <TournamentTestingTools />
+        </TabsContent>
+        
+        <TabsContent value="models" className="space-y-4">
+          <ModelManagement />
         </TabsContent>
         
         <TabsContent value="translation" className="space-y-4">

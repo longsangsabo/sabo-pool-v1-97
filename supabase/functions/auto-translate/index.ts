@@ -26,7 +26,7 @@ serve(async (req) => {
   }
 
   try {
-    const { keys, sourceLanguage, targetLanguage, context }: TranslationRequest = await req.json();
+    const { keys, sourceLanguage, targetLanguage, context, model }: TranslationRequest & { model?: string } = await req.json();
 
     if (!keys || !Array.isArray(keys) || keys.length === 0) {
       return new Response(
@@ -39,6 +39,18 @@ serve(async (req) => {
     }
 
     console.log(`🔄 Translating ${keys.length} keys from ${sourceLanguage} to ${targetLanguage}`);
+
+    // Smart model selection for translation tasks
+    const getTranslationModel = (userModel?: string): string => {
+      if (userModel && ['gpt-4.1-2025-04-14', 'gpt-4.1-mini-2025-04-14', 'o3-2025-04-16', 'o4-mini-2025-04-16'].includes(userModel)) {
+        return userModel;
+      }
+      
+      // Default to fast and cost-effective model for translation
+      return 'gpt-4.1-mini-2025-04-14';
+    };
+    
+    const selectedModel = getTranslationModel(model);
 
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     
@@ -70,13 +82,13 @@ Ví dụ output: {"admin.dashboard": "Bảng điều khiển", "tournament.creat
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: selectedModel,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.3,
-        max_tokens: 2000,
+        temperature: selectedModel.includes('o3') ? 0.1 : 0.3,
+        max_tokens: selectedModel.includes('o3') ? 3000 : 2000,
       }),
     });
 
