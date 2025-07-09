@@ -142,18 +142,18 @@ export class RewardsService {
     const templates = {
       basic: {
         positions: [
-          { position: 1, items: ['Cúp', 'Giấy khen'] },
-          { position: 2, items: ['Huy chương bạc'] },
-          { position: 3, items: ['Huy chương đồng'] },
+          { position: 1, name: 'Vô địch', eloPoints: 100, spaPoints: 1000, cashPrize: 0, items: ['Cúp', 'Giấy khen'], isVisible: true },
+          { position: 2, name: 'Á quân', eloPoints: 60, spaPoints: 800, cashPrize: 0, items: ['Huy chương bạc'], isVisible: true },
+          { position: 3, name: 'Hạng ba', eloPoints: 40, spaPoints: 600, cashPrize: 0, items: ['Huy chương đồng'], isVisible: true },
         ],
         specialAwards: [],
       },
       premium: {
         positions: [
-          { position: 1, items: ['Cúp vàng', 'Giấy khen', 'Áo phông'] },
-          { position: 2, items: ['Cúp bạc', 'Giấy khen'] },
-          { position: 3, items: ['Cúp đồng', 'Giấy khen'] },
-          { position: 4, items: ['Giấy khen'] },
+          { position: 1, name: 'Vô địch', eloPoints: 120, spaPoints: 1200, cashPrize: 0, items: ['Cúp vàng', 'Giấy khen', 'Áo phông'], isVisible: true },
+          { position: 2, name: 'Á quân', eloPoints: 75, spaPoints: 950, cashPrize: 0, items: ['Cúp bạc', 'Giấy khen'], isVisible: true },
+          { position: 3, name: 'Hạng ba', eloPoints: 50, spaPoints: 700, cashPrize: 0, items: ['Cúp đồng', 'Giấy khen'], isVisible: true },
+          { position: 4, name: 'Hạng tư', eloPoints: 25, spaPoints: 450, cashPrize: 0, items: ['Giấy khen'], isVisible: true },
         ],
         specialAwards: [
           {
@@ -166,10 +166,10 @@ export class RewardsService {
       },
       championship: {
         positions: [
-          { position: 1, items: ['Cúp vô địch', 'Huy chương vàng', 'Áo phông', 'Que tặng'] },
-          { position: 2, items: ['Cúp á quân', 'Huy chương bạc', 'Áo phông'] },
-          { position: 3, items: ['Cúp hạng ba', 'Huy chương đồng', 'Áo phông'] },
-          { position: 4, items: ['Huy chương khuyến khích'] },
+          { position: 1, name: 'Vô địch', eloPoints: 150, spaPoints: 1500, cashPrize: 0, items: ['Cúp vô địch', 'Huy chương vàng', 'Áo phông', 'Que tặng'], isVisible: true },
+          { position: 2, name: 'Á quân', eloPoints: 100, spaPoints: 1200, cashPrize: 0, items: ['Cúp á quân', 'Huy chương bạc', 'Áo phông'], isVisible: true },
+          { position: 3, name: 'Hạng ba', eloPoints: 70, spaPoints: 900, cashPrize: 0, items: ['Cúp hạng ba', 'Huy chương đồng', 'Áo phông'], isVisible: true },
+          { position: 4, name: 'Hạng tư', eloPoints: 40, spaPoints: 600, cashPrize: 0, items: ['Huy chương khuyến khích'], isVisible: true },
         ],
         specialAwards: [
           {

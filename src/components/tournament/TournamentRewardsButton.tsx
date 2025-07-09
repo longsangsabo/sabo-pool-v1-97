@@ -83,6 +83,17 @@ export const TournamentRewardsButton: React.FC<TournamentRewardsButtonProps> = (
 
           {/* Full Rewards Table */}
           <TournamentRewards 
+            rewards={{
+              totalPrize: 0,
+              showPrizes: false,
+              positions: [
+                { position: 1, name: 'Vô địch', eloPoints: championRewards.eloPoints, spaPoints: championRewards.spaPoints, cashPrize: 0, items: ['Cúp vô địch'], isVisible: true },
+                { position: 2, name: 'Á quân', eloPoints: Math.round(championRewards.eloPoints * 0.6), spaPoints: Math.round(championRewards.spaPoints * 0.8), cashPrize: 0, items: ['Huy chương bạc'], isVisible: true },
+                { position: 3, name: 'Hạng ba', eloPoints: Math.round(championRewards.eloPoints * 0.4), spaPoints: Math.round(championRewards.spaPoints * 0.6), cashPrize: 0, items: ['Huy chương đồng'], isVisible: true },
+                { position: 8, name: 'Top 8', eloPoints: top8Rewards.eloPoints, spaPoints: top8Rewards.spaPoints, cashPrize: 0, items: [], isVisible: true }
+              ],
+              specialAwards: []
+            }}
             rank={playerRank}
             showElo={true}
             showSpa={true}
