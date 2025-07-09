@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useMobileOptimization } from '@/hooks/useMobileOptimization';
 import { PerformanceMetrics } from './PerformanceMetrics';
 import { AlertAnalyzer } from './AlertAnalyzer';
+import { CacheManager } from './CacheManager';
 import MobileOptimizedTable from '@/components/mobile/MobileOptimizedTable';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -424,7 +425,7 @@ const AutomationMonitor = () => {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="jobs" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="jobs" className="gap-2">
               <Settings className="w-4 h-4" />
               Jobs
@@ -436,6 +437,10 @@ const AutomationMonitor = () => {
             <TabsTrigger value="alerts" className="gap-2">
               <AlertTriangle className="w-4 h-4" />
               Alerts
+            </TabsTrigger>
+            <TabsTrigger value="cache" className="gap-2">
+              <Database className="w-4 h-4" />
+              Cache
             </TabsTrigger>
             <TabsTrigger value="logs" className="gap-2">
               <FileText className="w-4 h-4" />
@@ -666,6 +671,11 @@ const AutomationMonitor = () => {
           {/* Alerts Tab */}
           <TabsContent value="alerts" className="space-y-4">
             <AlertAnalyzer />
+          </TabsContent>
+
+          {/* Cache Tab */}
+          <TabsContent value="cache" className="space-y-4">
+            <CacheManager />
           </TabsContent>
         </Tabs>
 

@@ -5682,6 +5682,17 @@ export type Database = {
         }
         Relationships: []
       }
+      mv_leaderboard_stats: {
+        Row: {
+          active_players: number | null
+          avg_elo: number | null
+          last_updated: string | null
+          max_elo: number | null
+          min_elo: number | null
+          total_players: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       admin_add_users_to_tournament: {
@@ -5851,6 +5862,10 @@ export type Database = {
         Returns: undefined
       }
       cleanup_expired_challenges: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      cleanup_old_data: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
@@ -6095,6 +6110,27 @@ export type Database = {
         Args: { notification_ids: string[] }
         Returns: undefined
       }
+      optimize_leaderboard_query: {
+        Args: {
+          p_limit?: number
+          p_offset?: number
+          p_city?: string
+          p_search?: string
+        }
+        Returns: {
+          id: string
+          player_id: string
+          ranking_points: number
+          total_wins: number
+          total_matches: number
+          win_rate: number
+          full_name: string
+          display_name: string
+          avatar_url: string
+          city: string
+          district: string
+        }[]
+      }
       populate_initial_leaderboard_data: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -6125,6 +6161,10 @@ export type Database = {
         Returns: undefined
       }
       refresh_current_month_leaderboard: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      refresh_leaderboard_stats: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
