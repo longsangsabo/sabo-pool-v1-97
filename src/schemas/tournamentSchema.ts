@@ -1,10 +1,11 @@
 
 import { z } from 'zod';
+import { TournamentType, GameFormat, TournamentTier } from '@/types/tournament-enums';
 
 // Available participant slots
 export const PARTICIPANT_SLOTS = [4, 6, 8, 12, 16, 24, 32] as const;
 
-// Tournament format types
+// Tournament format types (backward compatible)
 export const TOURNAMENT_FORMATS = {
   single_elimination: 'Loại trực tiếp',
   double_elimination: 'Loại kép', 
@@ -12,7 +13,7 @@ export const TOURNAMENT_FORMATS = {
   swiss: 'Swiss System'
 } as const;
 
-// Game formats
+// Game formats (backward compatible)
 export const GAME_FORMATS = {
   '8_ball': '8-Ball',
   '9_ball': '9-Ball', 
@@ -67,11 +68,11 @@ export const tournamentSchema = z.object({
       message: 'Số lượng tham gia phải là 4, 6, 8, 12, 16, 24 hoặc 32',
     }),
   
-  tournament_type: z.enum(['single_elimination', 'double_elimination', 'round_robin', 'swiss'], {
+  tournament_type: z.nativeEnum(TournamentType, {
     required_error: 'Vui lòng chọn hình thức thi đấu',
   }),
   
-  game_format: z.enum(['8_ball', '9_ball', '10_ball', 'straight_pool'], {
+  game_format: z.nativeEnum(GameFormat, {
     required_error: 'Vui lòng chọn môn thi đấu',
   }),
   
@@ -146,10 +147,10 @@ export const getDefaultTournamentData = (): Partial<TournamentFormData> => {
   nextWeek.setDate(nextWeek.getDate() + 7);
 
   return {
-    tier_level: 1,
+    tier_level: TournamentTier.K,
     max_participants: 16,
-    tournament_type: 'single_elimination',
-    game_format: '9_ball',
+    tournament_type: TournamentType.SINGLE_ELIMINATION,
+    game_format: GameFormat.NINE_BALL,
     entry_fee: 100000,
     prize_pool: 0,
     registration_start: now.toISOString().slice(0, 16),
