@@ -6,6 +6,50 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// OpenAI pricing per 1M tokens (as of 2025)
+const OPENAI_PRICING = {
+  'gpt-4.1-2025-04-14': { input: 2.50, output: 10.00 },
+  'gpt-4.1-mini-2025-04-14': { input: 0.15, output: 0.60 },
+  'o3-2025-04-16': { input: 15.00, output: 60.00 },
+  'o4-mini-2025-04-16': { input: 3.00, output: 12.00 }
+} as const;
+
+function calculateOpenAICost(modelId: string, promptTokens: number, completionTokens: number): number {
+  const pricing = OPENAI_PRICING[modelId as keyof typeof OPENAI_PRICING];
+  if (!pricing) return 0;
+  
+  const inputCost = (promptTokens / 1000000) * pricing.input;
+  const outputCost = (completionTokens / 1000000) * pricing.output;
+  
+  return inputCost + outputCost;
+}
+
+async function logOpenAIUsage(supabase: any, usage: {
+  model_id: string;
+  task_type: string;
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+  cost_usd: number;
+  response_time_ms: number;
+  success: boolean;
+  error_message?: string;
+  user_id?: string;
+  function_name: string;
+}): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from('openai_usage_logs')
+      .insert([usage]);
+
+    if (error) {
+      console.error('Failed to log OpenAI usage:', error);
+    }
+  } catch (error) {
+    console.error('Error logging OpenAI usage:', error);
+  }
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -74,6 +118,7 @@ Hãy phân tích alert này và trả về JSON response với:
   "related_patterns": ["pattern1", "pattern2"]
 }`;
 
+        const startTime = Date.now();
         const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -93,6 +138,27 @@ Hãy phân tích alert này và trả về JSON response với:
 
         const aiData = await aiResponse.json();
         const analysis = JSON.parse(aiData.choices[0].message.content);
+        const responseTime = Date.now() - startTime;
+
+        // Log usage data
+        const usage = aiData.usage || {};
+        const promptTokens = usage.prompt_tokens || 0;
+        const completionTokens = usage.completion_tokens || 0;
+        const totalTokens = usage.total_tokens || 0;
+        const cost = calculateOpenAICost(selectedModel, promptTokens, completionTokens);
+
+        // Log to database (fire and forget)
+        logOpenAIUsage(supabase, {
+          model_id: selectedModel,
+          task_type: 'alert_analysis',
+          prompt_tokens: promptTokens,
+          completion_tokens: completionTokens,
+          total_tokens: totalTokens,
+          cost_usd: cost,
+          response_time_ms: responseTime,
+          success: true,
+          function_name: 'ai-alert-analyzer'
+        }).catch(err => console.error('Failed to log usage:', err));
 
         // Store analysis in database
         const { data: savedAnalysis, error } = await supabase
@@ -138,6 +204,7 @@ Hãy tạo một báo cáo tóm tắt bao gồm:
 Format: Markdown tiếng Việt, dễ đọc và chuyên nghiệp.
 `;
 
+        const startTime = Date.now();
         const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {

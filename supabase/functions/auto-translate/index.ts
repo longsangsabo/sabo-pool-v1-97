@@ -1,10 +1,60 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Initialize Supabase client for logging
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+// OpenAI pricing per 1M tokens (as of 2025)
+const OPENAI_PRICING = {
+  'gpt-4.1-2025-04-14': { input: 2.50, output: 10.00 },
+  'gpt-4.1-mini-2025-04-14': { input: 0.15, output: 0.60 },
+  'o3-2025-04-16': { input: 15.00, output: 60.00 },
+  'o4-mini-2025-04-16': { input: 3.00, output: 12.00 }
+} as const;
+
+function calculateOpenAICost(modelId: string, promptTokens: number, completionTokens: number): number {
+  const pricing = OPENAI_PRICING[modelId as keyof typeof OPENAI_PRICING];
+  if (!pricing) return 0;
+  
+  const inputCost = (promptTokens / 1000000) * pricing.input;
+  const outputCost = (completionTokens / 1000000) * pricing.output;
+  
+  return inputCost + outputCost;
+}
+
+async function logOpenAIUsage(usage: {
+  model_id: string;
+  task_type: string;
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+  cost_usd: number;
+  response_time_ms: number;
+  success: boolean;
+  error_message?: string;
+  user_id?: string;
+  function_name: string;
+}): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from('openai_usage_logs')
+      .insert([usage]);
+
+    if (error) {
+      console.error('Failed to log OpenAI usage:', error);
+    }
+  } catch (error) {
+    console.error('Error logging OpenAI usage:', error);
+  }
+}
 
 interface TranslationRequest {
   keys: string[];
@@ -75,6 +125,7 @@ Ví dụ output: {"admin.dashboard": "Bảng điều khiển", "tournament.creat
 
     const userPrompt = `Hãy dịch các keys sau: ${JSON.stringify(keys)}`;
 
+    const startTime = Date.now();
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -99,6 +150,27 @@ Ví dụ output: {"admin.dashboard": "Bảng điều khiển", "tournament.creat
 
     const data = await response.json();
     const translatedContent = data.choices[0].message.content;
+    const responseTime = Date.now() - startTime;
+
+    // Log usage data
+    const usage = data.usage || {};
+    const promptTokens = usage.prompt_tokens || 0;
+    const completionTokens = usage.completion_tokens || 0;
+    const totalTokens = usage.total_tokens || 0;
+    const cost = calculateOpenAICost(selectedModel, promptTokens, completionTokens);
+
+    // Log to database (fire and forget)
+    logOpenAIUsage({
+      model_id: selectedModel,
+      task_type: 'translation',
+      prompt_tokens: promptTokens,
+      completion_tokens: completionTokens,
+      total_tokens: totalTokens,
+      cost_usd: cost,
+      response_time_ms: responseTime,
+      success: true,
+      function_name: 'auto-translate'
+    }).catch(err => console.error('Failed to log usage:', err));
 
     let translations: Record<string, string>;
     

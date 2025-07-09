@@ -2195,6 +2195,96 @@ export type Database = {
         }
         Relationships: []
       }
+      openai_model_configs: {
+        Row: {
+          cost_limit_daily: number | null
+          cost_limit_monthly: number | null
+          created_at: string
+          enabled: boolean
+          id: string
+          max_requests_per_hour: number | null
+          model_id: string
+          priority: number
+          task_type: string
+          updated_at: string
+        }
+        Insert: {
+          cost_limit_daily?: number | null
+          cost_limit_monthly?: number | null
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          max_requests_per_hour?: number | null
+          model_id: string
+          priority?: number
+          task_type: string
+          updated_at?: string
+        }
+        Update: {
+          cost_limit_daily?: number | null
+          cost_limit_monthly?: number | null
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          max_requests_per_hour?: number | null
+          model_id?: string
+          priority?: number
+          task_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      openai_usage_logs: {
+        Row: {
+          completion_tokens: number
+          cost_usd: number
+          created_at: string
+          error_message: string | null
+          function_name: string
+          id: string
+          model_id: string
+          prompt_tokens: number
+          response_time_ms: number
+          success: boolean
+          task_type: string
+          timestamp: string
+          total_tokens: number
+          user_id: string | null
+        }
+        Insert: {
+          completion_tokens?: number
+          cost_usd?: number
+          created_at?: string
+          error_message?: string | null
+          function_name: string
+          id?: string
+          model_id: string
+          prompt_tokens?: number
+          response_time_ms?: number
+          success?: boolean
+          task_type: string
+          timestamp?: string
+          total_tokens?: number
+          user_id?: string | null
+        }
+        Update: {
+          completion_tokens?: number
+          cost_usd?: number
+          created_at?: string
+          error_message?: string | null
+          function_name?: string
+          id?: string
+          model_id?: string
+          prompt_tokens?: number
+          response_time_ms?: number
+          success?: boolean
+          task_type?: string
+          timestamp?: string
+          total_tokens?: number
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string | null

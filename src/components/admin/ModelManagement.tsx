@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Settings, BarChart3, Zap, Brain, Code, Star } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Settings, BarChart3, Zap, Brain, Code, Star, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,7 @@ import { ModelSelector, GPT_MODELS } from '@/components/ModelSelector';
 import { useToast } from '@/components/ui/use-toast';
 import ModelTestingDemo from './ModelTestingDemo';
 import AdminModelSettings from './AdminModelSettings';
+import { getModelUsageStats, getOpenAIUsageStats } from '@/lib/openai-usage-tracker';
 
 interface ModelConfig {
   taskType: string;
@@ -52,7 +53,46 @@ const mockDefaultConfigs: ModelConfig[] = [
 const ModelManagement: React.FC = () => {
   const { toast } = useToast();
   const [configs, setConfigs] = useState<ModelConfig[]>(mockDefaultConfigs);
-  const [usageStats] = useState<UsageStats[]>(mockUsageStats);
+  const [usageStats, setUsageStats] = useState<UsageStats[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalCost, setTotalCost] = useState(0);
+  const [totalRequests, setTotalRequests] = useState(0);
+
+  useEffect(() => {
+    const fetchRealUsageData = async () => {
+      try {
+        setLoading(true);
+        const [modelStats, rawLogs] = await Promise.all([
+          getModelUsageStats(),
+          getOpenAIUsageStats(30)
+        ]);
+
+        setUsageStats(modelStats);
+        
+        // Calculate totals from raw logs
+        const totalCostValue = rawLogs.reduce((sum, log) => sum + log.cost_usd, 0);
+        const totalRequestsValue = rawLogs.length;
+        
+        setTotalCost(totalCostValue);
+        setTotalRequests(totalRequestsValue);
+      } catch (error) {
+        console.error('Failed to fetch usage data:', error);
+        toast({
+          title: "Cảnh báo",
+          description: "Không thể tải dữ liệu thực tế, đang hiển thị dữ liệu mẫu",
+          variant: "destructive",
+        });
+        // Fallback to mock data
+        setUsageStats(mockUsageStats);
+        setTotalCost(mockUsageStats.reduce((sum, stat) => sum + stat.cost, 0));
+        setTotalRequests(mockUsageStats.reduce((sum, stat) => sum + stat.requests, 0));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRealUsageData();
+  }, [toast]);
 
   const handleModelChange = (taskType: string, modelId: string) => {
     setConfigs(prev => prev.map(config => 
@@ -93,18 +133,23 @@ const ModelManagement: React.FC = () => {
   };
 
   const getTotalCost = () => {
-    return usageStats.reduce((sum, stat) => sum + stat.cost, 0);
+    return totalCost;
   };
 
   const getTotalRequests = () => {
-    return usageStats.reduce((sum, stat) => sum + stat.requests, 0);
+    return totalRequests;
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Settings className="w-6 h-6 text-blue-600" />
-        <h1 className="text-2xl font-bold">Model Management</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Settings className="w-6 h-6 text-blue-600" />
+          <h1 className="text-2xl font-bold">Model Management</h1>
+        </div>
+        <Button onClick={() => window.location.reload()} variant="outline" size="sm">
+          🔄 Refresh Data
+        </Button>
       </div>
 
       <Alert>
@@ -171,6 +216,15 @@ const ModelManagement: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-4">
+          {usageStats.length === 0 && !loading && (
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                Chưa có dữ liệu sử dụng thực tế. Dữ liệu sẽ được ghi lại khi các Edge Functions được sử dụng.
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <CardHeader className="pb-2">
