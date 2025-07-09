@@ -31,14 +31,54 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
-          utils: ['date-fns', 'clsx', 'tailwind-merge'],
+          // Core React libraries
+          'react-vendor': ['react', 'react-dom'],
+          
+          // Routing
+          'router': ['react-router-dom'],
+          
+          // UI Components (split by usage frequency)
+          'ui-core': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-button',
+            '@radix-ui/react-card'
+          ],
+          'ui-forms': [
+            '@radix-ui/react-form',
+            '@radix-ui/react-select',
+            '@radix-ui/react-checkbox',
+            'react-hook-form'
+          ],
+          'ui-advanced': [
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-accordion',
+            '@radix-ui/react-navigation-menu'
+          ],
+          
+          // Data & State Management
+          'data': ['@tanstack/react-query', '@supabase/supabase-js'],
+          
+          // Utilities
+          'utils': ['date-fns', 'clsx', 'tailwind-merge'],
+          
+          // Charts & Visualization (lazy load)
+          'charts': ['recharts', 'd3'],
+          
+          // Performance & Virtualization
+          'performance': ['react-window', 'react-window-infinite-loader'],
+          
+          // Less frequently used libraries
+          'misc': ['framer-motion', 'react-helmet-async']
         },
       },
     },
     chunkSizeWarningLimit: 1000,
+    // Enable build optimizations
+    target: 'esnext',
+    minify: 'esbuild',
+    // Split CSS
+    cssCodeSplit: true,
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom'],
