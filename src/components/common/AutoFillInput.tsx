@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { forwardRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { useProfileContext } from '@/contexts/ProfileContext';
 
@@ -7,12 +7,11 @@ interface AutoFillInputProps extends React.ComponentProps<typeof Input> {
   fieldName: string;
 }
 
-export const AutoFillInput: React.FC<AutoFillInputProps> = ({ 
+export const AutoFillInput = forwardRef<HTMLInputElement, AutoFillInputProps>(({ 
   fieldType, 
   fieldName, 
   ...props 
-}) => {
-  const inputRef = useRef<HTMLInputElement>(null);
+}, ref) => {
   const { playerProfile, clubProfile } = useProfileContext();
   
   // Handle focus - auto-fill on focus if empty
@@ -22,25 +21,30 @@ export const AutoFillInput: React.FC<AutoFillInputProps> = ({
       props.onFocus(event);
     }
     
-    if (!inputRef.current || inputRef.current.value) return;
+    const target = event.target as HTMLInputElement;
+    if (!target || target.value) return;
     
     if (fieldType === 'player' && playerProfile && playerProfile[fieldName as keyof typeof playerProfile]) {
       const value = playerProfile[fieldName as keyof typeof playerProfile];
       if (value !== null && value !== undefined) {
-        inputRef.current.value = String(value);
-        // Trigger input event for React form libraries
+        target.value = String(value);
+        // Trigger both input and change events for React Hook Form
         const inputEvent = new Event('input', { bubbles: true });
-        inputRef.current.dispatchEvent(inputEvent);
+        const changeEvent = new Event('change', { bubbles: true });
+        target.dispatchEvent(inputEvent);
+        target.dispatchEvent(changeEvent);
       }
     }
     
     if (fieldType === 'club' && clubProfile && clubProfile[fieldName as keyof typeof clubProfile]) {
       const value = clubProfile[fieldName as keyof typeof clubProfile];
       if (value !== null && value !== undefined) {
-        inputRef.current.value = String(value);
-        // Trigger input event
+        target.value = String(value);
+        // Trigger both input and change events for React Hook Form
         const inputEvent = new Event('input', { bubbles: true });
-        inputRef.current.dispatchEvent(inputEvent);
+        const changeEvent = new Event('change', { bubbles: true });
+        target.dispatchEvent(inputEvent);
+        target.dispatchEvent(changeEvent);
       }
     }
   };
@@ -48,10 +52,12 @@ export const AutoFillInput: React.FC<AutoFillInputProps> = ({
   return (
     <Input
       {...props}
-      ref={inputRef}
+      ref={ref}
       onFocus={handleFocus}
       data-autofill={fieldType}
       name={fieldName}
     />
   );
-};
+});
+
+AutoFillInput.displayName = 'AutoFillInput';

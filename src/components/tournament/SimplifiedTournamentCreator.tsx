@@ -177,8 +177,24 @@ const SimplifiedTournamentCreatorContent: React.FC<SimplifiedTournamentCreatorPr
     clubFields: ['venue_address', 'contact_info']
   });
 
-  const { watch, setValue, formState: { errors, isValid } } = form;
+  const { watch, setValue, formState: { errors, isValid, isDirty } } = form;
   const watchedData = watch();
+
+  // Add debugging
+  console.log('Form state:', {
+    errors,
+    isValid,
+    isDirty,
+    watchedData: {
+      name: watchedData.name,
+      venue_address: watchedData.venue_address,
+      tier_level: watchedData.tier_level,
+      tournament_start: watchedData.tournament_start,
+      tournament_end: watchedData.tournament_end,
+      entry_fee: watchedData.entry_fee,
+      max_participants: watchedData.max_participants
+    }
+  });
 
   // Permission check
   const canCreateTournament = isAdmin || user?.role === 'club_owner';
@@ -205,8 +221,23 @@ const SimplifiedTournamentCreatorContent: React.FC<SimplifiedTournamentCreatorPr
     const essentialFields = ['name', 'tier_level', 'tournament_start', 'tournament_end', 'venue_address', 'entry_fee', 'max_participants'];
     const filledFields = essentialFields.filter(field => {
       const value = watchedData[field as keyof SimplifiedTournamentFormData];
-      return value !== null && value !== undefined && value !== '' && value !== 0;
+      // For tier_level, entry_fee, max_participants, check if they're > 0
+      if (field === 'tier_level' || field === 'entry_fee' || field === 'max_participants') {
+        return value !== null && value !== undefined && typeof value === 'number' && value > 0;
+      }
+      // For strings, check if they're not empty
+      return value !== null && value !== undefined && String(value).trim() !== '';
     });
+    
+    console.log('Progress calculation:', {
+      essentialFields,
+      filledFields: filledFields.map(field => ({
+        field,
+        value: watchedData[field as keyof SimplifiedTournamentFormData]
+      })),
+      progress: Math.round((filledFields.length / essentialFields.length) * 100)
+    });
+    
     return Math.round((filledFields.length / essentialFields.length) * 100);
   };
 
@@ -454,12 +485,12 @@ const SimplifiedTournamentCreatorContent: React.FC<SimplifiedTournamentCreatorPr
                   <div className="flex gap-2">
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button 
-                          type="button"
-                          onClick={handleConfirmSubmit}
-                          disabled={isSubmitting || !isValid || progress < 100}
-                          className="bg-gradient-to-r from-primary to-primary/80"
-                        >
+                         <Button 
+                           type="button"
+                           onClick={handleConfirmSubmit}
+                           disabled={isSubmitting || !isValid}
+                           className="bg-gradient-to-r from-primary to-primary/80"
+                         >
                           {isSubmitting ? (
                             <>
                               <Clock className="h-4 w-4 mr-2 animate-spin" />
