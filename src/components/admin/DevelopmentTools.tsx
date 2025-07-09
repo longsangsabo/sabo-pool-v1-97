@@ -58,17 +58,17 @@ const DevelopmentTools = () => {
       </Alert>
 
       <Tabs defaultValue="admin" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-10">
-          <TabsTrigger value="admin">Create Admin</TabsTrigger>
-          <TabsTrigger value="users">{t('admin.bulk_user_gen')}</TabsTrigger>
-          <TabsTrigger value="demo">Demo Users</TabsTrigger>
-          <TabsTrigger value="clubs">{t('admin.quick_club')}</TabsTrigger>
-          <TabsTrigger value="tournaments">Tournament Test</TabsTrigger>
-          <TabsTrigger value="models">AI Models</TabsTrigger>
-          <TabsTrigger value="translation">Auto Translation</TabsTrigger>
-          <TabsTrigger value="monitoring">System Monitor</TabsTrigger>
-          <TabsTrigger value="data">{t('admin.test_data')}</TabsTrigger>
-          <TabsTrigger value="reset">{t('admin.db_tools')}</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 gap-1">
+          <TabsTrigger value="admin" className="text-xs lg:text-sm">Admin</TabsTrigger>
+          <TabsTrigger value="users" className="text-xs lg:text-sm">Users</TabsTrigger>
+          <TabsTrigger value="demo" className="text-xs lg:text-sm">Demo</TabsTrigger>
+          <TabsTrigger value="clubs" className="text-xs lg:text-sm">Clubs</TabsTrigger>
+          <TabsTrigger value="tournaments" className="text-xs lg:text-sm">Tournaments</TabsTrigger>
+          <TabsTrigger value="models" className="text-xs lg:text-sm">AI Models</TabsTrigger>
+          <TabsTrigger value="translation" className="text-xs lg:text-sm">Translation</TabsTrigger>
+          <TabsTrigger value="monitoring" className="text-xs lg:text-sm">Monitor</TabsTrigger>
+          <TabsTrigger value="data" className="text-xs lg:text-sm">Data</TabsTrigger>
+          <TabsTrigger value="reset" className="text-xs lg:text-sm">Reset</TabsTrigger>
         </TabsList>
         
         <TabsContent value="admin" className="space-y-4">
