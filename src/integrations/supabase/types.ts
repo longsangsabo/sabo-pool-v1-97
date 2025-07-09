@@ -4832,6 +4832,7 @@ export type Database = {
           game_format: string | null
           id: string
           is_public: boolean | null
+          is_visible: boolean | null
           management_status: string | null
           matches_scheduled: boolean | null
           max_participants: number | null
@@ -4877,6 +4878,7 @@ export type Database = {
           game_format?: string | null
           id?: string
           is_public?: boolean | null
+          is_visible?: boolean | null
           management_status?: string | null
           matches_scheduled?: boolean | null
           max_participants?: number | null
@@ -4922,6 +4924,7 @@ export type Database = {
           game_format?: string | null
           id?: string
           is_public?: boolean | null
+          is_visible?: boolean | null
           management_status?: string | null
           matches_scheduled?: boolean | null
           max_participants?: number | null
