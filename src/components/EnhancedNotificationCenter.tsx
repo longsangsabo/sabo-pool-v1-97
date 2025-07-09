@@ -36,7 +36,7 @@ const EnhancedNotificationCenter = () => {
       await respondToChallenge.mutateAsync({
         challengeId,
         status,
-        proposalData,
+        message: proposalData?.message || 'Response via notification',
       });
     } catch (error) {
       console.error('Error responding to challenge:', error);

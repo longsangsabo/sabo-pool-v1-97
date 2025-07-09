@@ -20,11 +20,11 @@ const EnhancedChallengesList = () => {
   const {
     receivedChallenges,
     sentChallenges,
-    suggestedClubs,
     loadingReceived,
     loadingSent,
     respondToChallenge,
-    confirmMatch,
+    acceptChallenge,
+    declineChallenge,
   } = useEnhancedChallenges();
 
   const [showResponseModal, setShowResponseModal] = useState(false);
@@ -68,7 +68,7 @@ const EnhancedChallengesList = () => {
 
   const handleRespond = async (
     status: 'accepted' | 'declined',
-    proposalData?: ChallengeProposal
+    message?: string
   ) => {
     if (!selectedChallenge) return;
 
@@ -76,7 +76,7 @@ const EnhancedChallengesList = () => {
       await respondToChallenge.mutateAsync({
         challengeId: selectedChallenge.id,
         status,
-        proposalData,
+        message,
       });
       setShowResponseModal(false);
       setSelectedChallenge(null);
@@ -85,11 +85,19 @@ const EnhancedChallengesList = () => {
     }
   };
 
-  const handleConfirmMatch = async (challengeId: string) => {
+  const handleAccept = async (challengeId: string) => {
     try {
-      await confirmMatch.mutateAsync(challengeId);
+      await acceptChallenge(challengeId);
     } catch (error) {
-      console.error('Error confirming match:', error);
+      console.error('Error accepting challenge:', error);
+    }
+  };
+
+  const handleDecline = async (challengeId: string) => {
+    try {
+      await declineChallenge(challengeId);
+    } catch (error) {
+      console.error('Error declining challenge:', error);
     }
   };
 
@@ -224,7 +232,7 @@ const EnhancedChallengesList = () => {
                   {challenge.status === 'accepted' && (
                     <Button
                       size='sm'
-                      onClick={() => handleConfirmMatch(challenge.id)}
+                      onClick={() => handleAccept(challenge.id)}
                       className='w-full bg-blue-500 hover:bg-blue-600'
                     >
                       <CheckCircle className='w-4 h-4 mr-2' />
@@ -308,13 +316,15 @@ const EnhancedChallengesList = () => {
       {/* Challenge Response Modal */}
       <ChallengeResponseModal
         challenge={selectedChallenge}
-        suggestedClubs={suggestedClubs}
+        suggestedClubs={[]}
         isOpen={showResponseModal}
         onClose={() => {
           setShowResponseModal(false);
           setSelectedChallenge(null);
         }}
-        onRespond={handleRespond}
+        onRespond={(status: 'accepted' | 'declined', proposalData?: ChallengeProposal) => 
+          handleRespond(status, proposalData?.message)
+        }
       />
     </div>
   );
