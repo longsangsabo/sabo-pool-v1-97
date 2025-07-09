@@ -92,12 +92,12 @@ class TranslationService {
   }
 
   // Queue a page for translation
-  async queuePageForTranslation(pagePath: string, componentName: string): Promise<void> {
+  async queuePageForTranslation(pagePath: string, componentName: string, customKeys?: string[]): Promise<void> {
     try {
       console.log(`📝 Đưa trang vào hàng đợi dịch thuật: ${pagePath}`);
       
-      // Generate sample translation keys for demo
-      const translationKeys = [
+      // Use custom keys if provided, otherwise generate sample keys
+      const translationKeys = customKeys || [
         `${componentName.toLowerCase()}.title`,
         `${componentName.toLowerCase()}.description`,
         `${componentName.toLowerCase()}.button.action`
@@ -191,41 +191,113 @@ class TranslationService {
     }
   }
 
-  // Mock AI translation API call
+  // Real translation API call using Edge Function
   async callTranslationAPI(keys: string[], sourceLanguage: string, targetLanguage: string): Promise<Record<string, string>> {
     try {
-      // Mock translation mapping
-      const mockTranslations: Record<string, string> = {};
-      
-      keys.forEach(key => {
-        if (targetLanguage === 'vi') {
-          // Generate Vietnamese translations based on key patterns
-          if (key.includes('title')) {
-            mockTranslations[key] = `Tiêu đề ${key.split('.')[0]}`;
-          } else if (key.includes('description')) {
-            mockTranslations[key] = `Mô tả cho ${key.split('.')[0]}`;
-          } else if (key.includes('button')) {
-            mockTranslations[key] = `Nút bấm`;
-          } else {
-            mockTranslations[key] = `[Dịch tự động] ${key}`;
-          }
-        } else {
-          mockTranslations[key] = `[Auto-translated] ${key}`;
-        }
-      });
-      
-      return mockTranslations;
+      // Try to use the real Edge Function
+      const { data, error } = await fetch('/api/translate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          keys,
+          sourceLanguage,
+          targetLanguage,
+          context: 'Pool billiards gaming application'
+        })
+      }).then(res => res.json()).catch(() => ({ error: 'Network error' }));
+
+      if (error) {
+        console.warn('Edge function unavailable, using fallback:', error);
+        return this.generateFallbackTranslations(keys, targetLanguage);
+      }
+
+      return data.translations || this.generateFallbackTranslations(keys, targetLanguage);
     } catch (error) {
       console.error('Lỗi API dịch thuật:', error);
-      
-      // Fallback: basic translation
-      const translations: Record<string, string> = {};
-      keys.forEach(key => {
-        translations[key] = `[Dịch tự động] ${key}`;
-      });
-      
-      return translations;
+      return this.generateFallbackTranslations(keys, targetLanguage);
     }
+  }
+
+  // Enhanced fallback translations with better context
+  private generateFallbackTranslations(keys: string[], targetLanguage: string): Record<string, string> {
+    const translations: Record<string, string> = {};
+    
+    const translationMap: Record<string, string> = {
+      // Navigation & Common
+      'home': 'Trang chủ',
+      'tournaments': 'Giải đấu', 
+      'clubs': 'Câu lạc bộ',
+      'rankings': 'Xếp hạng',
+      'profile': 'Hồ sơ',
+      'login': 'Đăng nhập',
+      'sign_up': 'Đăng ký',
+      'logout': 'Đăng xuất',
+      
+      // Tournament related
+      'create_tournament': 'Tạo giải đấu',
+      'join_tournament': 'Tham gia giải đấu',
+      'tournament_registration': 'Đăng ký giải đấu',
+      'registration_open': 'Đang mở đăng ký',
+      'entry_fee': 'Phí tham gia',
+      'search_tournaments': 'Tìm kiếm giải đấu',
+      
+      // Club related
+      'pool_clubs': 'Câu lạc bộ bida',
+      'register_new_club': 'Đăng ký CLB mới',
+      'club_directory': 'Danh bạ CLB',
+      'operating_hours': 'Giờ hoạt động',
+      'business_license': 'Giấy phép kinh doanh',
+      
+      // Common actions
+      'search': 'Tìm kiếm',
+      'create': 'Tạo',
+      'join': 'Tham gia',
+      'register': 'Đăng ký',
+      'edit': 'Chỉnh sửa',
+      'delete': 'Xóa',
+      'save': 'Lưu',
+      'cancel': 'Hủy',
+      'confirm': 'Xác nhận',
+    };
+    
+    keys.forEach(key => {
+      if (targetLanguage === 'vi') {
+        // Extract the actual text from key patterns
+        const keyLower = key.toLowerCase();
+        let translated = translationMap[keyLower];
+        
+        if (!translated) {
+          // Try to find partial matches
+          for (const [englishKey, vietnameseText] of Object.entries(translationMap)) {
+            if (keyLower.includes(englishKey)) {
+              translated = vietnameseText;
+              break;
+            }
+          }
+        }
+        
+        if (!translated) {
+          // Generate based on key patterns
+          if (key.includes('title')) {
+            translated = `Tiêu đề ${key.split('.')[0]}`;
+          } else if (key.includes('description')) {
+            translated = `Mô tả cho ${key.split('.')[0]}`;
+          } else if (key.includes('button')) {
+            translated = `Nút bấm`;
+          } else {
+            translated = `[Dịch tự động] ${key}`;
+          }
+        }
+        
+        translations[key] = translated;
+      } else {
+        translations[key] = `[Auto-translated] ${key}`;
+      }
+    });
+    
+    return translations;
   }
 
   // Get translation statistics

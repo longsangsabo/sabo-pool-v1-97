@@ -16,6 +16,8 @@ import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/comp
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAutoTranslation, translationService } from '@/services/translationService';
+import { useTranslationScanner } from '@/utils/translationScanner';
 import { 
   Clock, 
   CheckCircle, 
@@ -78,6 +80,8 @@ const AutomationMonitor = () => {
   const { user } = useAuth();
   // CRITICAL: All hooks MUST be called at the top level BEFORE any returns
   const { isMobile } = useMobileOptimization();
+  const { getStats, getTasks, batchTranslate, clearTasks } = useAutoTranslation();
+  const { scanAndTranslate } = useTranslationScanner();
   
   const [cronJobs, setCronJobs] = useState<CronJob[]>([]);
   const [systemLogs, setSystemLogs] = useState<SystemLog[]>([]);
@@ -85,6 +89,9 @@ const AutomationMonitor = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedJob, setSelectedJob] = useState<CronJob | null>(null);
   const [showJobDetails, setShowJobDetails] = useState(false);
+  const [translationStats, setTranslationStats] = useState<any>(null);
+  const [translationTasks, setTranslationTasks] = useState<any[]>([]);
+  const [isScanning, setIsScanning] = useState(false);
 
   const loadAutomationData = async () => {
     try {
@@ -110,6 +117,12 @@ const AutomationMonitor = () => {
       } else {
         setSystemLogs(logs || []);
       }
+
+      // Load translation data
+      const stats = await getStats();
+      const tasks = getTasks();
+      setTranslationStats(stats);
+      setTranslationTasks(tasks);
     } catch (error) {
       console.error('Error loading automation data:', error);
       toast.error('Lỗi khi tải dữ liệu automation');
@@ -178,6 +191,26 @@ const AutomationMonitor = () => {
         case 'database_health_monitoring':
           result = await supabase.functions.invoke('database-health-monitoring');
           break;
+        case 'scan_translations':
+          setIsScanning(true);
+          try {
+            const scanResult = await scanAndTranslate();
+            toast.success(`Đã scan ${scanResult.totalTexts} text cần dịch trong ${scanResult.totalFiles} files`);
+            await loadAutomationData();
+            return;
+          } finally {
+            setIsScanning(false);
+          }
+        case 'batch_translate':
+          await batchTranslate();
+          toast.success('Đã khởi động dịch hàng loạt');
+          await loadAutomationData();
+          return;
+        case 'clear_translation_tasks':
+          clearTasks();
+          toast.success('Đã xóa tất cả tasks dịch thuật');
+          await loadAutomationData();
+          return;
         default:
           throw new Error(`Unknown function: ${functionName}`);
       }
