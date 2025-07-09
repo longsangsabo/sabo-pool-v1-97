@@ -102,8 +102,8 @@ export const TournamentRewards: React.FC<TournamentRewardsProps> = ({
   onEdit,
   isEditable = false,
 }) => {
-  const hasCashPrizes = rewards.showPrizes && rewards.positions.some(p => p.cashPrize > 0);
-  const hasSpecialAwards = rewards.specialAwards.length > 0;
+  const hasCashPrizes = rewards?.showPrizes && rewards.positions?.some(p => p.cashPrize > 0);
+  const hasSpecialAwards = rewards?.specialAwards?.length > 0;
 
   return (
     <div className={`space-y-4 ${className}`}>
