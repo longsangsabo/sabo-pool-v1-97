@@ -44,7 +44,6 @@ export default defineConfig(({ mode }) => ({
             '@radix-ui/react-slot'
           ],
           'ui-forms': [
-            '@radix-ui/react-form',
             '@radix-ui/react-select',
             '@radix-ui/react-checkbox',
             'react-hook-form'
