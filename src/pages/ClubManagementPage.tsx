@@ -4,16 +4,12 @@ import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building, Trophy, Users, Settings, BarChart3, Bell, CreditCard, Calendar } from 'lucide-react';
-import SimpleRankVerification from '@/components/SimpleRankVerification';
-import ClubMemberManagement from '@/components/ClubMemberManagement';
-import ClubStatsDashboard from '@/components/ClubStatsDashboard';
+import { BarChart3, Trophy, Users, Bell, Settings } from 'lucide-react';
+import ClubOverviewTab from '@/components/ClubOverviewTab';
+import ClubTournamentsTab from '@/components/ClubTournamentsTab';
+import ClubMembersTab from '@/components/ClubMembersTab';
 import ClubNotifications from '@/components/ClubNotifications';
-import ClubSettings from '@/components/ClubSettings';
-import ClubDashboardOverview from '@/components/ClubDashboardOverview';
-import ClubProfileForm from '@/components/ClubProfileForm';
-import TournamentPaymentManager from '@/components/TournamentPaymentManager';
-import ClubTournamentManagement from '@/components/ClubTournamentManagement';
+import ClubSettingsTab from '@/components/ClubSettingsTab';
 
 const ClubManagementPage = () => {
   const { user, profile, loading } = useAuth();
@@ -75,59 +71,39 @@ const ClubManagementPage = () => {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-1">
-          <TabsTrigger value="overview" className="flex items-center gap-1 px-2 py-2">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1">
+          <TabsTrigger value="overview" className="flex items-center gap-2 px-3 py-2">
             <BarChart3 className="w-4 h-4" />
-            <span className="hidden md:inline text-xs lg:text-sm">Tổng quan</span>
+            <span className="text-sm">Tổng quan</span>
           </TabsTrigger>
-          <TabsTrigger value="rank-verification" className="flex items-center gap-1 px-2 py-2">
+          <TabsTrigger value="tournaments" className="flex items-center gap-2 px-3 py-2">
             <Trophy className="w-4 h-4" />
-            <span className="hidden md:inline text-xs lg:text-sm">Xác thực</span>
+            <span className="text-sm">Giải đấu</span>
           </TabsTrigger>
-          <TabsTrigger value="tournaments" className="flex items-center gap-1 px-2 py-2">
-            <Calendar className="w-4 h-4" />
-            <span className="hidden md:inline text-xs lg:text-sm">Giải đấu</span>
-          </TabsTrigger>
-          <TabsTrigger value="payment-manager" className="flex items-center gap-1 px-2 py-2 bg-blue-50 border-blue-200">
-            <CreditCard className="w-4 h-4 text-blue-600" />
-            <span className="text-xs lg:text-sm font-medium text-blue-600">Thanh toán</span>
-          </TabsTrigger>
-          <TabsTrigger value="members" className="flex items-center gap-1 px-2 py-2">
+          <TabsTrigger value="members" className="flex items-center gap-2 px-3 py-2">
             <Users className="w-4 h-4" />
-            <span className="hidden md:inline text-xs lg:text-sm">Thành viên</span>
+            <span className="text-sm">Thành viên</span>
           </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-1 px-2 py-2">
+          <TabsTrigger value="notifications" className="flex items-center gap-2 px-3 py-2">
             <Bell className="w-4 h-4" />
-            <span className="hidden lg:inline text-xs lg:text-sm">Thông báo</span>
+            <span className="text-sm">Thông báo</span>
           </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center gap-1 px-2 py-2">
+          <TabsTrigger value="settings" className="flex items-center gap-2 px-3 py-2">
             <Settings className="w-4 h-4" />
-            <span className="hidden lg:inline text-xs lg:text-sm">Cài đặt</span>
-          </TabsTrigger>
-          <TabsTrigger value="profile" className="flex items-center gap-1 px-2 py-2">
-            <Building className="w-4 h-4" />
-            <span className="hidden lg:inline text-xs lg:text-sm">Hồ sơ CLB</span>
+            <span className="text-sm">Cài đặt</span>
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
-          <ClubDashboardOverview />
-        </TabsContent>
-
-        <TabsContent value="rank-verification">
-          <SimpleRankVerification />
+          <ClubOverviewTab />
         </TabsContent>
 
         <TabsContent value="tournaments">
-          <ClubTournamentManagement />
-        </TabsContent>
-
-        <TabsContent value="payment-manager">
-          <TournamentPaymentManager />
+          <ClubTournamentsTab />
         </TabsContent>
 
         <TabsContent value="members">
-          <ClubMemberManagement />
+          <ClubMembersTab />
         </TabsContent>
 
         <TabsContent value="notifications">
@@ -135,11 +111,7 @@ const ClubManagementPage = () => {
         </TabsContent>
 
         <TabsContent value="settings">
-          <ClubSettings />
-        </TabsContent>
-
-        <TabsContent value="profile">
-          <ClubProfileForm />
+          <ClubSettingsTab />
         </TabsContent>
       </Tabs>
     </div>
