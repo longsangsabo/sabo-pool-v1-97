@@ -451,11 +451,7 @@ const ProfilePage = () => {
         />
 
         {/* New Profile Tabs */}
-        <ProfileTabs
-          activeTab="basic"
-          onTabChange={() => {}}
-          userRole={profile.role}
-        >
+        <ProfileTabs userRole={profile.role}>
           <TabsContent value="basic">
             <BasicProfileTab
               profile={profile}
