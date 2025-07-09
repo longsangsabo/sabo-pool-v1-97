@@ -195,7 +195,7 @@ class PerformanceMonitor {
     try {
       const { supabase } = await import('@/integrations/supabase/client');
       
-      await supabase.from('performance_metrics').insert({
+      await supabase.from('performance_metrics' as any).insert({
         metric_name: metric.name,
         metric_value: metric.value,
         metadata: metric.metadata || {},
@@ -211,7 +211,7 @@ class PerformanceMonitor {
     try {
       const { supabase } = await import('@/integrations/supabase/client');
       
-      await supabase.from('api_performance_metrics').insert({
+      await supabase.from('api_performance_metrics' as any).insert({
         endpoint: apiCall.endpoint,
         method: apiCall.method,
         duration: apiCall.duration,
@@ -237,7 +237,7 @@ class PerformanceMonitor {
           timestamp: new Date(metric.timestamp).toISOString()
         }));
 
-        await supabase.from('performance_metrics').insert(formattedMetrics);
+        await supabase.from('performance_metrics' as any).insert(formattedMetrics);
         this.metrics = [];
       } catch (error) {
         console.error('Failed to send performance metrics:', error);
@@ -257,7 +257,7 @@ class PerformanceMonitor {
           timestamp: new Date(call.timestamp).toISOString()
         }));
 
-        await supabase.from('api_performance_metrics').insert(formattedAPIMetrics);
+        await supabase.from('api_performance_metrics' as any).insert(formattedAPIMetrics);
         this.apiCalls = [];
       } catch (error) {
         console.error('Failed to send API metrics:', error);

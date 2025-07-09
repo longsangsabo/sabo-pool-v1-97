@@ -210,7 +210,7 @@ class AnalyticsTracker {
     try {
       const { supabase } = await import('@/integrations/supabase/client');
       
-      await supabase.from('analytics_events').insert({
+      await supabase.from('analytics_events' as any).insert({
         event_name: event.name,
         properties: event.properties || {},
         user_id: event.userId,
@@ -241,7 +241,7 @@ class AnalyticsTracker {
         timestamp: new Date(event.timestamp).toISOString()
       }));
 
-      await supabase.from('analytics_events').insert(formattedEvents);
+      await supabase.from('analytics_events' as any).insert(formattedEvents);
       
       console.log(`[Analytics] Sent ${formattedEvents.length} events`);
     } catch (error) {

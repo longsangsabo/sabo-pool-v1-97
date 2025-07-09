@@ -86,6 +86,72 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_events: {
+        Row: {
+          created_at: string
+          event_name: string
+          id: string
+          properties: Json | null
+          session_id: string
+          timestamp: string
+          url: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_name: string
+          id?: string
+          properties?: Json | null
+          session_id: string
+          timestamp?: string
+          url: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_name?: string
+          id?: string
+          properties?: Json | null
+          session_id?: string
+          timestamp?: string
+          url?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      api_performance_metrics: {
+        Row: {
+          created_at: string
+          duration: number
+          endpoint: string
+          id: string
+          method: string
+          status: number
+          timestamp: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          duration: number
+          endpoint: string
+          id?: string
+          method: string
+          status: number
+          timestamp?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          duration?: number
+          endpoint?: string
+          id?: string
+          method?: string
+          status?: number
+          timestamp?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       approval_logs: {
         Row: {
           action: string
@@ -737,6 +803,42 @@ export type Database = {
             referencedColumns: ["tier_level"]
           },
         ]
+      }
+      error_logs: {
+        Row: {
+          created_at: string
+          error_message: string
+          error_type: string
+          id: string
+          stack_trace: string | null
+          timestamp: string
+          url: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_message: string
+          error_type: string
+          id?: string
+          stack_trace?: string | null
+          timestamp?: string
+          url: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string
+          error_type?: string
+          id?: string
+          stack_trace?: string | null
+          timestamp?: string
+          url?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       event_registrations: {
         Row: {
@@ -2189,6 +2291,36 @@ export type Database = {
           total_amount?: number
           tracking_number?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      performance_metrics: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json | null
+          metric_name: string
+          metric_value: number
+          timestamp: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          metric_name: string
+          metric_value: number
+          timestamp?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          metric_name?: string
+          metric_value?: number
+          timestamp?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -5396,6 +5528,39 @@ export type Database = {
           total_spent?: number | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      web_vitals_metrics: {
+        Row: {
+          created_at: string
+          id: string
+          metric_name: string
+          metric_value: number
+          rating: string | null
+          timestamp: string
+          url: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metric_name: string
+          metric_value: number
+          rating?: string | null
+          timestamp?: string
+          url: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metric_name?: string
+          metric_value?: number
+          rating?: string | null
+          timestamp?: string
+          url?: string
+          user_id?: string | null
         }
         Relationships: []
       }

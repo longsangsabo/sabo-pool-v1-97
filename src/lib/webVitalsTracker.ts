@@ -1,4 +1,4 @@
-import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals';
+import { onCLS, onINP, onFCP, onLCP, onTTFB } from 'web-vitals';
 
 interface WebVitalsMetric {
   name: string;
@@ -20,11 +20,11 @@ class WebVitalsTracker {
 
   private initializeTracking() {
     // Track Core Web Vitals
-    getCLS(this.onVitalsReport.bind(this, 'CLS'));
-    getFID(this.onVitalsReport.bind(this, 'FID'));
-    getFCP(this.onVitalsReport.bind(this, 'FCP'));
-    getLCP(this.onVitalsReport.bind(this, 'LCP'));
-    getTTFB(this.onVitalsReport.bind(this, 'TTFB'));
+    onCLS(this.onVitalsReport.bind(this, 'CLS'));
+    onINP(this.onVitalsReport.bind(this, 'INP'));
+    onFCP(this.onVitalsReport.bind(this, 'FCP'));
+    onLCP(this.onVitalsReport.bind(this, 'LCP'));
+    onTTFB(this.onVitalsReport.bind(this, 'TTFB'));
 
     // Send metrics periodically
     setInterval(() => {
@@ -79,7 +79,7 @@ class WebVitalsTracker {
       // Send to Supabase for storage
       const { supabase } = await import('@/integrations/supabase/client');
       
-      await supabase.from('web_vitals_metrics').insert({
+      await supabase.from('web_vitals_metrics' as any).insert({
         metric_name: metric.name,
         metric_value: metric.value,
         rating: metric.rating,
@@ -111,7 +111,7 @@ class WebVitalsTracker {
         timestamp: new Date(metric.timestamp).toISOString()
       }));
 
-      await supabase.from('web_vitals_metrics').insert(formattedMetrics);
+      await supabase.from('web_vitals_metrics' as any).insert(formattedMetrics);
       
       console.log(`[WebVitals] Sent ${formattedMetrics.length} metrics`);
     } catch (error) {

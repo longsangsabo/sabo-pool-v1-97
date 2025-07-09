@@ -27,6 +27,16 @@ interface MetricCard {
   description?: string;
 }
 
+// Helper function to map web vitals ratings to our status types
+const mapWebVitalsRating = (rating: 'good' | 'needs-improvement' | 'poor'): 'good' | 'warning' | 'critical' => {
+  switch (rating) {
+    case 'good': return 'good';
+    case 'needs-improvement': return 'warning';
+    case 'poor': return 'critical';
+    default: return 'warning';
+  }
+};
+
 export const MonitoringDashboard: React.FC = () => {
   const [webVitals, setWebVitals] = useState<any[]>([]);
   const [performanceMetrics, setPerformanceMetrics] = useState<any>({});
@@ -106,7 +116,7 @@ export const MonitoringDashboard: React.FC = () => {
         title: 'Largest Contentful Paint',
         value: latestLCP ? Math.round(latestLCP.value) : 0,
         unit: 'ms',
-        status: latestLCP?.rating || 'good',
+        status: latestLCP?.rating ? mapWebVitalsRating(latestLCP.rating) : 'good',
         trend: 'stable',
         description: 'Latest LCP measurement'
       },
@@ -114,7 +124,7 @@ export const MonitoringDashboard: React.FC = () => {
         title: 'First Input Delay',
         value: latestFID ? Math.round(latestFID.value) : 0,
         unit: 'ms',
-        status: latestFID?.rating || 'good',
+        status: latestFID?.rating ? mapWebVitalsRating(latestFID.rating) : 'good',
         trend: 'stable',
         description: 'Latest FID measurement'
       },
@@ -122,7 +132,7 @@ export const MonitoringDashboard: React.FC = () => {
         title: 'Cumulative Layout Shift',
         value: latestCLS ? (latestCLS.value * 1000).toFixed(0) : 0,
         unit: 'score',
-        status: latestCLS?.rating || 'good',
+        status: latestCLS?.rating ? mapWebVitalsRating(latestCLS.rating) : 'good',
         trend: 'stable',
         description: 'Latest CLS measurement (×1000)'
       },
@@ -284,7 +294,7 @@ export const MonitoringDashboard: React.FC = () => {
                         </span>
                         <Badge 
                           variant="outline" 
-                          className={getStatusColor(rating)}
+                          className={getStatusColor(mapWebVitalsRating(rating as any))}
                         >
                           {rating}
                         </Badge>
