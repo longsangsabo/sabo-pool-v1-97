@@ -129,11 +129,6 @@ export class TournamentService {
         .from('tournaments')
         .select(`
           *,
-          club_profiles (
-            id,
-            club_name,
-            address
-          ),
           tournament_registrations (
             id,
             player_id,
@@ -176,16 +171,11 @@ export class TournamentService {
     showDeleted?: boolean;
   } = {}): Promise<{ tournaments: EnhancedTournament[]; total: number }> {
     try {
+      console.log('Fetching tournaments, showDeleted:', filters.showDeleted); // Debug log
+      
       let query = supabase
         .from('tournaments')
-        .select(`
-          *,
-          club_profiles (
-            id,
-            club_name,
-            address
-          )
-        `, { count: 'exact' });
+        .select('*', { count: 'exact' });
 
       // Filter by deleted status
       if (filters.showDeleted) {
@@ -221,10 +211,11 @@ export class TournamentService {
       const { data: tournaments, error, count } = await query;
 
       if (error) {
-        console.error('Error fetching tournaments:', error);
+        console.error('Supabase error:', error);
         return { tournaments: [], total: 0 };
       }
 
+      console.log('Fetched tournaments:', tournaments?.length || 0); // Debug log
       const enhancedTournaments = tournaments?.map(t => this.enhanceTournamentData(t)) || [];
 
       return {

@@ -20,6 +20,7 @@ import { TournamentService } from '@/services/TournamentService';
 import { TournamentActions } from './TournamentActions';
 import { EnhancedTournament } from '@/types/tournament-extended';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const TournamentManagement: React.FC = () => {
   const [tournaments, setTournaments] = useState<EnhancedTournament[]>([]);
@@ -40,11 +41,69 @@ const TournamentManagement: React.FC = () => {
         limit: 50
       });
       setTournaments(result.tournaments);
+      
+      // Nếu không có dữ liệu và chưa có tournament nào, tạo dữ liệu mẫu
+      if (result.tournaments.length === 0 && !showDeleted && searchTerm === '') {
+        await createSampleTournaments();
+      }
     } catch (error) {
       console.error('Error fetching tournaments:', error);
       toast.error('Lỗi khi tải danh sách giải đấu');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Tạo giải đấu mẫu nếu không có dữ liệu
+  const createSampleTournaments = async () => {
+    try {
+      const sampleTournaments = [
+        {
+          name: 'Giải đấu Pool 8 Ball - Cúp mùa đông',
+          description: 'Giải đấu 8-ball dành cho người chơi hạng K-A',
+          tournament_type: 'single_elimination',
+          max_participants: 16,
+          current_participants: 8,
+          registration_start: new Date().toISOString(),
+          registration_end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          tournament_start: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+          tournament_end: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000 + 6 * 60 * 60 * 1000).toISOString(),
+          venue_address: 'CLB Billiards Sài Gòn, Quận 1, TP.HCM',
+          entry_fee: 50000,
+          prize_pool: 800000,
+          status: 'registration_open'
+        },
+        {
+          name: 'Giải Pool 9 Ball Professional',
+          description: 'Giải đấu 9-ball dành cho người chơi chuyên nghiệp',
+          tournament_type: 'double_elimination',
+          max_participants: 32,
+          current_participants: 12,
+          registration_start: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+          registration_end: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+          tournament_start: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(),
+          tournament_end: new Date(Date.now() + 23 * 24 * 60 * 60 * 1000).toISOString(),
+          venue_address: 'CLB Pool Arena, Quận 3, TP.HCM',
+          entry_fee: 200000,
+          prize_pool: 6400000,
+          status: 'upcoming'
+        }
+      ];
+
+      for (const tournament of sampleTournaments) {
+        const { error } = await supabase.from('tournaments').insert(tournament);
+        if (error) {
+          console.error('Error creating sample tournament:', error);
+        }
+      }
+      
+      toast.success('Đã tạo dữ liệu giải đấu mẫu');
+      // Refresh lại danh sách
+      setTimeout(() => {
+        fetchTournaments();
+      }, 1000);
+    } catch (error) {
+      console.error('Error creating sample tournaments:', error);
     }
   };
 
@@ -249,12 +308,18 @@ const TournamentManagement: React.FC = () => {
                 <h3 className="text-lg font-medium mb-2">
                   {showDeleted ? 'Không có giải đấu nào đã bị xóa' : 'Không có giải đấu nào'}
                 </h3>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground mb-4">
                   {showDeleted 
                     ? 'Tất cả giải đấu đang hoạt động bình thường'
-                    : 'Tạo giải đấu đầu tiên để bắt đầu'
+                    : 'Hệ thống sẽ tự động tạo dữ liệu mẫu để bạn có thể thử nghiệm'
                   }
                 </p>
+                {!showDeleted && (
+                  <Button onClick={createSampleTournaments} variant="outline">
+                    <Trophy className="h-4 w-4 mr-2" />
+                    Tạo dữ liệu mẫu
+                  </Button>
+                )}
               </CardContent>
             </Card>
           )}
