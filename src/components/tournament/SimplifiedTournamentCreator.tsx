@@ -48,6 +48,7 @@ import { AdvancedSettingsSection } from './simplified-steps/AdvancedSettingsSect
 import { SimplifiedTournamentPreview } from './SimplifiedTournamentPreview';
 import { TournamentTemplateSelector } from './TournamentTemplateSelector';
 import { ConfirmationModal } from './ConfirmationModal';
+import { PrizeManagementModal, type PrizeStructure } from './PrizeManagementModal';
 
 // Simplified schema - only essential fields required
 const simplifiedTournamentSchema = z.object({
@@ -147,6 +148,8 @@ const SimplifiedTournamentCreatorContent: React.FC<SimplifiedTournamentCreatorPr
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showPrizeModal, setShowPrizeModal] = useState(false);
+  const [prizeStructure, setPrizeStructure] = useState<PrizeStructure | undefined>(undefined);
   const [completedSections, setCompletedSections] = useState<string[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -297,6 +300,21 @@ const SimplifiedTournamentCreatorContent: React.FC<SimplifiedTournamentCreatorPr
       setValue('prize_pool', suggested);
     }
   }, [watchedData.max_participants, watchedData.entry_fee]);
+
+  // Handle prize modal events
+  React.useEffect(() => {
+    const handleOpenPrizeModal = (event: CustomEvent) => {
+      setShowPrizeModal(true);
+    };
+    
+    window.addEventListener('openPrizeModal' as any, handleOpenPrizeModal);
+    return () => window.removeEventListener('openPrizeModal' as any, handleOpenPrizeModal);
+  }, []);
+
+  const handlePrizeSave = (structure: PrizeStructure) => {
+    setPrizeStructure(structure);
+    setValue('prize_pool', structure.totalPrize);
+  };
 
   const onSubmit = async (data: SimplifiedTournamentFormData) => {
     try {
@@ -533,6 +551,16 @@ const SimplifiedTournamentCreatorContent: React.FC<SimplifiedTournamentCreatorPr
             form.handleSubmit(onSubmit)();
           }}
           isSubmitting={isSubmitting}
+        />
+
+        {/* Prize Management Modal */}
+        <PrizeManagementModal
+          isOpen={showPrizeModal}
+          onClose={() => setShowPrizeModal(false)}
+          onSave={handlePrizeSave}
+          initialPrizes={prizeStructure}
+          entryFee={watchedData.entry_fee || 0}
+          maxParticipants={watchedData.max_participants || 16}
         />
       </div>
     </TooltipProvider>

@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Users, DollarSign, Trophy, Settings, Target } from 'lucide-react';
 import { PARTICIPANT_SLOTS, TOURNAMENT_FORMATS, GAME_FORMATS } from '@/schemas/tournamentSchema';
 
@@ -166,10 +167,30 @@ export const TournamentSettingsSection: React.FC<TournamentSettingsSectionProps>
         </div>
       </div>
 
-      {/* Prize Distribution Preview */}
-      {prizePool > 0 && (
-        <div className="p-3 bg-muted rounded-lg space-y-2">
-          <h4 className="text-sm font-medium">Phân chia giải thưởng</h4>
+      {/* Prize Pool with Edit Button */}
+      <div className="p-3 bg-muted rounded-lg space-y-3">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-medium">Giải thưởng</h4>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                const event = new CustomEvent('openPrizeModal', {
+                  detail: { entryFee, maxParticipants, prizePool }
+                });
+                window.dispatchEvent(event);
+              }
+            }}
+            className="text-xs"
+          >
+            <Trophy className="h-3 w-3 mr-1" />
+            Chỉnh sửa giải thưởng
+          </Button>
+        </div>
+        
+        {prizePool > 0 ? (
           <div className="grid grid-cols-3 gap-2 text-xs">
             <div className="text-center">
               <Badge className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-xs">1st</Badge>
@@ -184,8 +205,12 @@ export const TournamentSettingsSection: React.FC<TournamentSettingsSectionProps>
               <div className="mt-1">{Math.floor(prizePool * 0.2).toLocaleString('vi-VN')}đ</div>
             </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="text-center text-muted-foreground text-xs py-2">
+            Nhấn "Chỉnh sửa giải thưởng" để cấu hình chi tiết
+          </div>
+        )}
+      </div>
     </div>
   );
 };
