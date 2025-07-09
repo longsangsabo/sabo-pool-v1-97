@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useMobileOptimization } from '@/hooks/useMobileOptimization';
 import { PerformanceMetrics } from './PerformanceMetrics';
 import { AlertAnalyzer } from './AlertAnalyzer';
-import { CacheManager } from './CacheManager';
+// Temporarily disable CacheManager to fix React error
+// import { CacheManager } from './CacheManager';
 import MobileOptimizedTable from '@/components/mobile/MobileOptimizedTable';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -673,9 +674,17 @@ const AutomationMonitor = () => {
             <AlertAnalyzer />
           </TabsContent>
 
-          {/* Cache Tab */}
+          {/* Cache Tab - TEMPORARILY DISABLED */}
           <TabsContent value="cache" className="space-y-4">
-            <CacheManager />
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center text-muted-foreground">
+                  <Database className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg font-medium">Cache Manager tạm thời bị vô hiệu hóa</p>
+                  <p className="text-sm">Đang khắc phục lỗi React infinite render</p>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
 
