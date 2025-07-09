@@ -9,7 +9,8 @@ import {
   Calendar, 
   Target,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Shield
 } from 'lucide-react';
 import { useTournamentTiers } from '@/hooks/useTournamentTiers';
 import { GAME_FORMATS, TOURNAMENT_FORMATS } from '@/schemas/tournamentSchema';
@@ -38,6 +39,19 @@ export const SimplifiedTournamentPreview: React.FC<SimplifiedTournamentPreviewPr
   });
 
   const prizeDistribution = calculatePrizeDistribution(data.prize_pool || 0);
+
+  const getEligibleRanksDisplay = () => {
+    if (data.allow_all_ranks) return 'Tất cả hạng';
+    if (!data.eligible_ranks || data.eligible_ranks.length === 0) return 'Chưa chọn hạng';
+    
+    // Check for continuous ranges
+    const sortedRanks = [...data.eligible_ranks].sort((a, b) => {
+      const ranks = ['K', 'K+', 'I', 'I+', 'H', 'H+', 'G', 'G+', 'F', 'F+', 'E', 'E+'];
+      return ranks.indexOf(a) - ranks.indexOf(b);
+    });
+    
+    return sortedRanks.join(', ');
+  };
 
   return (
     <div className="space-y-4">
@@ -93,6 +107,15 @@ export const SimplifiedTournamentPreview: React.FC<SimplifiedTournamentPreviewPr
                 {GAME_FORMATS[data.game_format as keyof typeof GAME_FORMATS] || '8-Ball'} - {' '}
                 {TOURNAMENT_FORMATS[data.tournament_type as keyof typeof TOURNAMENT_FORMATS] || 'Loại trực tiếp'}
               </span>
+            </div>
+
+            <div className="flex items-center gap-2 text-sm">
+              <Shield className="h-4 w-4 text-muted-foreground" />
+              <span className="truncate">Hạng: {getEligibleRanksDisplay()}</span>
+              {(data.allow_all_ranks || (data.eligible_ranks && data.eligible_ranks.length > 0)) ? 
+                <CheckCircle className="h-4 w-4 text-green-500" /> : 
+                <AlertCircle className="h-4 w-4 text-orange-500" />
+              }
             </div>
           </div>
 

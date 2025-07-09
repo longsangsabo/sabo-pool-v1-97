@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Calendar, MapPin, Trophy } from 'lucide-react';
 import { TournamentTierSelector } from '@/components/TournamentTierSelector';
 import { AutoFillInput } from '@/components/common/AutoFillInput';
+import { RankSelector } from '@/components/tournament/RankSelector';
 
 interface BasicInfoSectionProps {
   form: UseFormReturn<any>;
@@ -46,6 +47,9 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
           <p className="text-sm text-destructive">{String(errors.tier_level.message)}</p>
         )}
       </div>
+
+      {/* Rank Eligibility */}
+      <RankSelector form={form} />
 
       {/* Date & Time */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

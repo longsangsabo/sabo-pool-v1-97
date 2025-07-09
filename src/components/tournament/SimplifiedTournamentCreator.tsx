@@ -61,6 +61,10 @@ const simplifiedTournamentSchema = z.object({
   entry_fee: z.number().min(0, 'Phí tham gia không được âm'),
   max_participants: z.number().min(4, 'Tối thiểu 4 người tham gia'),
   
+  // Rank eligibility
+  eligible_ranks: z.array(z.enum(['K', 'K+', 'I', 'I+', 'H', 'H+', 'G', 'G+', 'F', 'F+', 'E', 'E+'])).default([]),
+  allow_all_ranks: z.boolean().default(true),
+  
   // Optional fields with defaults
   description: z.string().default(''),
   tournament_type: z.string().default('single_elimination'),
@@ -72,6 +76,15 @@ const simplifiedTournamentSchema = z.object({
   contact_info: z.string().default(''),
   is_public: z.boolean().default(true),
   requires_approval: z.boolean().default(false),
+}).refine((data) => {
+  // Validate rank eligibility
+  if (!data.allow_all_ranks && (!data.eligible_ranks || data.eligible_ranks.length === 0)) {
+    return false;
+  }
+  return true;
+}, {
+  message: 'Vui lòng chọn ít nhất một hạng hoặc cho phép tất cả hạng',
+  path: ['eligible_ranks'],
 });
 
 type SimplifiedTournamentFormData = z.infer<typeof simplifiedTournamentSchema>;
@@ -167,6 +180,8 @@ const SimplifiedTournamentCreatorContent: React.FC<SimplifiedTournamentCreatorPr
       tournament_type: 'single_elimination',
       game_format: '8_ball',
       prize_pool: 0,
+      eligible_ranks: [],
+      allow_all_ranks: true,
       is_public: true,
       requires_approval: false,
       rules: '',

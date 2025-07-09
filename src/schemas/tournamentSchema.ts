@@ -20,6 +20,11 @@ export const GAME_FORMATS = {
   straight_pool: 'Straight Pool'
 } as const;
 
+// Available ranks for tournaments
+export const AVAILABLE_RANKS = [
+  'K', 'K+', 'I', 'I+', 'H', 'H+', 'G', 'G+', 'F', 'F+', 'E', 'E+'
+] as const;
+
 // Validation schema - using tier_level instead of hardcoded tiers
 export const tournamentSchema = z.object({
   // Basic info (Step 1)
@@ -97,6 +102,13 @@ export const tournamentSchema = z.object({
     .min(5, 'Thông tin liên hệ phải có ít nhất 5 ký tự')
     .optional(),
     
+  // Rank eligibility
+  eligible_ranks: z
+    .array(z.enum(['K', 'K+', 'I', 'I+', 'H', 'H+', 'G', 'G+', 'F', 'F+', 'E', 'E+']))
+    .optional(),
+  
+  allow_all_ranks: z.boolean().default(false),
+  
   min_rank_requirement: z.string().optional(),
   max_rank_requirement: z.string().optional(),
   requires_approval: z.boolean().default(false),
@@ -111,6 +123,15 @@ export const tournamentSchema = z.object({
 }, {
   message: 'Thời gian đóng đăng ký phải trước khi giải đấu bắt đầu',
   path: ['registration_end'],
+}).refine((data) => {
+  // Validate rank eligibility
+  if (!data.allow_all_ranks && (!data.eligible_ranks || data.eligible_ranks.length === 0)) {
+    return false;
+  }
+  return true;
+}, {
+  message: 'Vui lòng chọn ít nhất một hạng hoặc cho phép tất cả hạng',
+  path: ['eligible_ranks'],
 });
 
 export type TournamentFormData = z.infer<typeof tournamentSchema>;
@@ -135,6 +156,8 @@ export const getDefaultTournamentData = (): Partial<TournamentFormData> => {
     registration_end: tomorrow.toISOString().slice(0, 16),
     tournament_start: nextWeek.toISOString().slice(0, 16),
     tournament_end: nextWeek.toISOString().slice(0, 16),
+    eligible_ranks: [],
+    allow_all_ranks: true,
     requires_approval: false,
     is_public: true,
   };
