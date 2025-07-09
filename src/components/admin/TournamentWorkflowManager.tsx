@@ -16,13 +16,15 @@ import {
   Target,
   Settings,
   Eye,
-  Zap
+  Zap,
+  Trash2
 } from 'lucide-react';
 import { useRealtimeTournamentSync } from '@/hooks/useRealtimeTournamentSync';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import TournamentAutomation from './TournamentAutomation';
 import TournamentAnalytics from './TournamentAnalytics';
+import TournamentManagement from './TournamentManagement';
 
 interface TournamentWorkflow {
   id: string;
@@ -288,8 +290,9 @@ const TournamentWorkflowManager: React.FC = () => {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="workflows" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="workflows">Tournament Workflows</TabsTrigger>
+          <TabsTrigger value="management">Quản lý giải đấu</TabsTrigger>
           <TabsTrigger value="automation">Automation</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
@@ -425,6 +428,10 @@ const TournamentWorkflowManager: React.FC = () => {
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+
+        <TabsContent value="management">
+          <TournamentManagement />
         </TabsContent>
 
         <TabsContent value="automation">

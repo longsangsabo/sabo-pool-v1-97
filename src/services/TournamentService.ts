@@ -173,6 +173,7 @@ export class TournamentService {
     search?: string;
     limit?: number;
     offset?: number;
+    showDeleted?: boolean;
   } = {}): Promise<{ tournaments: EnhancedTournament[]; total: number }> {
     try {
       let query = supabase
@@ -185,6 +186,13 @@ export class TournamentService {
             address
           )
         `, { count: 'exact' });
+
+      // Filter by deleted status
+      if (filters.showDeleted) {
+        query = query.not('deleted_at', 'is', null);
+      } else {
+        query = query.is('deleted_at', null);
+      }
 
       // Apply filters
       if (filters.status && filters.status.length > 0) {
@@ -230,26 +238,78 @@ export class TournamentService {
   }
 
   /**
-   * Delete tournament
+   * Delete tournament (soft delete)
+   * @param tournamentId ID của giải đấu cần xóa
+   * @param permanent Nếu true, xóa vĩnh viễn. Nếu false, đánh dấu là đã xóa (soft delete)
    */
-  static async deleteTournament(id: string): Promise<boolean> {
+  static async deleteTournament(tournamentId: string, permanent: boolean = false): Promise<boolean> {
+    try {
+      if (permanent) {
+        // Xóa vĩnh viễn
+        const { error } = await supabase
+          .from('tournaments')
+          .delete()
+          .eq('id', tournamentId);
+        
+        if (error) {
+          console.error('Error permanently deleting tournament:', error);
+          toast.error('Có lỗi xảy ra khi xóa vĩnh viễn giải đấu');
+          return false;
+        }
+        
+        toast.success('Đã xóa vĩnh viễn giải đấu!');
+      } else {
+        // Soft delete - Chỉ đánh dấu là đã xóa
+        const { error } = await supabase
+          .from('tournaments')
+          .update({ 
+            deleted_at: new Date().toISOString(), 
+            status: 'cancelled',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', tournamentId);
+        
+        if (error) {
+          console.error('Error soft deleting tournament:', error);
+          toast.error('Có lỗi xảy ra khi xóa giải đấu');
+          return false;
+        }
+        
+        toast.success('Đã xóa giải đấu!');
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error deleting tournament:', error);
+      toast.error('Có lỗi xảy ra khi xóa giải đấu');
+      return false;
+    }
+  }
+
+  /**
+   * Khôi phục giải đấu đã xóa (chỉ áp dụng cho soft delete)
+   */
+  static async restoreTournament(tournamentId: string): Promise<boolean> {
     try {
       const { error } = await supabase
         .from('tournaments')
-        .delete()
-        .eq('id', id);
-
+        .update({ 
+          deleted_at: null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', tournamentId);
+      
       if (error) {
-        console.error('Error deleting tournament:', error);
-        toast.error('Có lỗi xảy ra khi xóa giải đấu');
+        console.error('Error restoring tournament:', error);
+        toast.error('Có lỗi xảy ra khi khôi phục giải đấu');
         return false;
       }
-
-      toast.success('Xóa giải đấu thành công!');
+      
+      toast.success('Đã khôi phục giải đấu!');
       return true;
     } catch (error) {
-      console.error('Failed to delete tournament:', error);
-      toast.error('Có lỗi xảy ra khi xóa giải đấu');
+      console.error('Error restoring tournament:', error);
+      toast.error('Có lỗi xảy ra khi khôi phục giải đấu');
       return false;
     }
   }

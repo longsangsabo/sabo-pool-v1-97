@@ -4823,6 +4823,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           current_participants: number | null
+          deleted_at: string | null
           description: string | null
           elo_multiplier: number | null
           end_date: string | null
@@ -4867,6 +4868,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           current_participants?: number | null
+          deleted_at?: string | null
           description?: string | null
           elo_multiplier?: number | null
           end_date?: string | null
@@ -4911,6 +4913,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           current_participants?: number | null
+          deleted_at?: string | null
           description?: string | null
           elo_multiplier?: number | null
           end_date?: string | null
