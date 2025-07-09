@@ -1,4 +1,5 @@
-import { supabase } from '@/integrations/supabase/client';
+// Simplified Translation Service - Local Storage Based
+// This version works without database dependencies
 
 interface TranslationTask {
   id: string;
@@ -22,12 +23,34 @@ interface PageContent {
 class TranslationService {
   private static instance: TranslationService;
   private knownPages: Set<string> = new Set();
+  private tasks: TranslationTask[] = [];
 
   static getInstance(): TranslationService {
     if (!TranslationService.instance) {
       TranslationService.instance = new TranslationService();
     }
     return TranslationService.instance;
+  }
+
+  constructor() {
+    // Load tasks from localStorage
+    const savedTasks = localStorage.getItem('translation_tasks');
+    if (savedTasks) {
+      try {
+        this.tasks = JSON.parse(savedTasks);
+      } catch (error) {
+        console.error('Error loading translation tasks:', error);
+        this.tasks = [];
+      }
+    }
+  }
+
+  private saveTasks(): void {
+    try {
+      localStorage.setItem('translation_tasks', JSON.stringify(this.tasks));
+    } catch (error) {
+      console.error('Error saving translation tasks:', error);
+    }
   }
 
   // Detect new pages by monitoring route changes
@@ -65,17 +88,6 @@ class TranslationService {
       });
     }
 
-    // Tìm các hardcoded text cần dịch
-    const textMatches = componentContent.match(/>([^<{]+)</g);
-    if (textMatches) {
-      textMatches.forEach(match => {
-        const text = match.replace(/>/g, '').replace(/</g, '').trim();
-        if (text.length > 1 && !text.match(/^\d+$/) && !text.match(/^[A-Z_]+$/)) {
-          keys.push(`hardcoded.${text.toLowerCase().replace(/\s+/g, '_')}`);
-        }
-      });
-    }
-
     return keys;
   }
 
@@ -84,32 +96,34 @@ class TranslationService {
     try {
       console.log(`📝 Đưa trang vào hàng đợi dịch thuật: ${pagePath}`);
       
-      // Giả lập việc đọc nội dung component
-      const translationKeys = this.extractTranslationKeys('');
+      // Generate sample translation keys for demo
+      const translationKeys = [
+        `${componentName.toLowerCase()}.title`,
+        `${componentName.toLowerCase()}.description`,
+        `${componentName.toLowerCase()}.button.action`
+      ];
       
-      const translationTask: Partial<TranslationTask> = {
+      const newTask: TranslationTask = {
+        id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         page_path: pagePath,
         component_name: componentName,
         source_language: 'en',
         target_language: 'vi',
         translation_keys: translationKeys,
-        status: 'pending'
+        status: 'pending',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
 
-      // Lưu vào database (cần tạo bảng translation_tasks)
-      const { data, error } = await supabase
-        .from('translation_tasks')
-        .insert(translationTask);
+      this.tasks.push(newTask);
+      this.saveTasks();
 
-      if (error) {
-        console.error('Lỗi khi lưu task dịch thuật:', error);
-        return;
-      }
-
-      console.log('✅ Đã thêm task dịch thuật:', data);
+      console.log('✅ Đã thêm task dịch thuật:', newTask);
       
-      // Tự động bắt đầu dịch
-      this.processTranslationQueue();
+      // Auto-process with a small delay
+      setTimeout(() => {
+        this.processTranslationQueue();
+      }, 1000);
       
     } catch (error) {
       console.error('Lỗi khi tạo task dịch thuật:', error);
@@ -119,18 +133,9 @@ class TranslationService {
   // Process translation queue
   async processTranslationQueue(): Promise<void> {
     try {
-      const { data: pendingTasks, error } = await supabase
-        .from('translation_tasks')
-        .select('*')
-        .eq('status', 'pending')
-        .limit(5);
+      const pendingTasks = this.tasks.filter(task => task.status === 'pending').slice(0, 5);
 
-      if (error) {
-        console.error('Lỗi khi lấy tasks chờ dịch:', error);
-        return;
-      }
-
-      if (!pendingTasks || pendingTasks.length === 0) {
+      if (pendingTasks.length === 0) {
         return;
       }
 
@@ -148,93 +153,78 @@ class TranslationService {
   // Translate a specific task
   async translateTask(task: TranslationTask): Promise<void> {
     try {
-      // Cập nhật status thành processing
-      await supabase
-        .from('translation_tasks')
-        .update({ status: 'processing' })
-        .eq('id', task.id);
+      // Update status to processing
+      const taskIndex = this.tasks.findIndex(t => t.id === task.id);
+      if (taskIndex !== -1) {
+        this.tasks[taskIndex].status = 'processing';
+        this.tasks[taskIndex].updated_at = new Date().toISOString();
+        this.saveTasks();
+      }
 
       console.log(`🔄 Bắt đầu dịch: ${task.page_path}`);
 
-      // Gọi AI translation service
+      // Simulate translation process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Generate mock translations
       const translations = await this.callTranslationAPI(task.translation_keys, task.source_language, task.target_language);
       
-      // Cập nhật translation dictionary
-      await this.updateTranslationDictionary(translations, task.target_language);
-
-      // Cập nhật status thành completed
-      await supabase
-        .from('translation_tasks')
-        .update({ 
-          status: 'completed',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', task.id);
+      // Update status to completed
+      if (taskIndex !== -1) {
+        this.tasks[taskIndex].status = 'completed';
+        this.tasks[taskIndex].updated_at = new Date().toISOString();
+        this.saveTasks();
+      }
 
       console.log(`✅ Dịch thành công: ${task.page_path}`);
 
     } catch (error) {
       console.error(`❌ Lỗi khi dịch ${task.page_path}:`, error);
       
-      // Cập nhật status thành failed
-      await supabase
-        .from('translation_tasks')
-        .update({ status: 'failed' })
-        .eq('id', task.id);
+      // Update status to failed
+      const taskIndex = this.tasks.findIndex(t => t.id === task.id);
+      if (taskIndex !== -1) {
+        this.tasks[taskIndex].status = 'failed';
+        this.tasks[taskIndex].updated_at = new Date().toISOString();
+        this.saveTasks();
+      }
     }
   }
 
-  // Call AI translation API (OpenAI/Google Translate)
+  // Mock AI translation API call
   async callTranslationAPI(keys: string[], sourceLanguage: string, targetLanguage: string): Promise<Record<string, string>> {
     try {
-      const { data, error } = await supabase.functions.invoke('auto-translate', {
-        body: {
-          keys,
-          sourceLanguage,
-          targetLanguage,
-          context: 'Pool/Billiards gaming platform'
+      // Mock translation mapping
+      const mockTranslations: Record<string, string> = {};
+      
+      keys.forEach(key => {
+        if (targetLanguage === 'vi') {
+          // Generate Vietnamese translations based on key patterns
+          if (key.includes('title')) {
+            mockTranslations[key] = `Tiêu đề ${key.split('.')[0]}`;
+          } else if (key.includes('description')) {
+            mockTranslations[key] = `Mô tả cho ${key.split('.')[0]}`;
+          } else if (key.includes('button')) {
+            mockTranslations[key] = `Nút bấm`;
+          } else {
+            mockTranslations[key] = `[Dịch tự động] ${key}`;
+          }
+        } else {
+          mockTranslations[key] = `[Auto-translated] ${key}`;
         }
       });
-
-      if (error) throw error;
-
-      return data.translations || {};
+      
+      return mockTranslations;
     } catch (error) {
       console.error('Lỗi API dịch thuật:', error);
       
-      // Fallback: dịch cơ bản
+      // Fallback: basic translation
       const translations: Record<string, string> = {};
       keys.forEach(key => {
         translations[key] = `[Dịch tự động] ${key}`;
       });
       
       return translations;
-    }
-  }
-
-  // Update translation dictionary in LanguageContext
-  async updateTranslationDictionary(translations: Record<string, string>, language: 'vi' | 'en'): Promise<void> {
-    try {
-      // Lưu vào database để sync với LanguageContext
-      const { error } = await supabase
-        .from('translation_dictionary')
-        .upsert(
-          Object.entries(translations).map(([key, value]) => ({
-            key,
-            language,
-            value,
-            updated_at: new Date().toISOString()
-          })),
-          { onConflict: 'key,language' }
-        );
-
-      if (error) {
-        console.error('Lỗi khi cập nhật từ điển dịch thuật:', error);
-      } else {
-        console.log(`✅ Đã cập nhật ${Object.keys(translations).length} bản dịch`);
-      }
-    } catch (error) {
-      console.error('Lỗi khi lưu bản dịch:', error);
     }
   }
 
@@ -247,19 +237,16 @@ class TranslationService {
     lastTranslated: string | null;
   }> {
     try {
-      const { data: stats, error } = await supabase
-        .from('translation_tasks')
-        .select('status, updated_at')
-        .order('updated_at', { ascending: false });
-
-      if (error) throw error;
+      const sortedTasks = [...this.tasks].sort((a, b) => 
+        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+      );
 
       const result = {
-        totalTasks: stats?.length || 0,
-        pendingTasks: stats?.filter(t => t.status === 'pending').length || 0,
-        completedTasks: stats?.filter(t => t.status === 'completed').length || 0,
-        failedTasks: stats?.filter(t => t.status === 'failed').length || 0,
-        lastTranslated: stats?.[0]?.updated_at || null
+        totalTasks: this.tasks.length,
+        pendingTasks: this.tasks.filter(t => t.status === 'pending').length,
+        completedTasks: this.tasks.filter(t => t.status === 'completed').length,
+        failedTasks: this.tasks.filter(t => t.status === 'failed').length,
+        lastTranslated: sortedTasks[0]?.updated_at || null
       };
 
       return result;
@@ -275,6 +262,13 @@ class TranslationService {
     }
   }
 
+  // Get all tasks
+  getAllTasks(): TranslationTask[] {
+    return [...this.tasks].sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }
+
   // Manually trigger translation for a specific page
   async manualTranslate(pagePath: string, componentName: string): Promise<void> {
     console.log(`🔧 Dịch thủ công: ${pagePath}`);
@@ -285,6 +279,13 @@ class TranslationService {
   async batchTranslateAll(): Promise<void> {
     console.log('🚀 Bắt đầu dịch hàng loạt tất cả trang');
     await this.processTranslationQueue();
+  }
+
+  // Clear all tasks (for testing)
+  clearAllTasks(): void {
+    this.tasks = [];
+    this.saveTasks();
+    console.log('🗑️ Đã xóa tất cả tasks dịch thuật');
   }
 }
 
@@ -304,9 +305,24 @@ export const useAutoTranslation = () => {
     translationService.batchTranslateAll();
   };
 
+  const getStats = () => {
+    return translationService.getTranslationStats();
+  };
+
+  const getTasks = () => {
+    return translationService.getAllTasks();
+  };
+
+  const clearTasks = () => {
+    translationService.clearAllTasks();
+  };
+
   return {
     detectPage,
     manualTranslate,
-    batchTranslate
+    batchTranslate,
+    getStats,
+    getTasks,
+    clearTasks
   };
 };

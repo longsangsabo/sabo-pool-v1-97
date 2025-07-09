@@ -52,37 +52,26 @@ const AutoTranslationWorkflow: React.FC = () => {
   const [tasks, setTasks] = useState<TranslationTask[]>([]);
   const [loading, setLoading] = useState(false);
   
-  const { batchTranslate, manualTranslate } = useAutoTranslation();
+  const { batchTranslate, manualTranslate, getStats, getTasks, clearTasks } = useAutoTranslation();
 
   useEffect(() => {
     loadStats();
     loadTasks();
     
-    // Setup realtime listener for translation tasks
-    const channel = supabase
-      .channel('translation-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'translation_tasks'
-        },
-        () => {
-          loadStats();
-          loadTasks();
-        }
-      )
-      .subscribe();
+    // Set up periodic refresh for demo
+    const interval = setInterval(() => {
+      loadStats();
+      loadTasks();
+    }, 5000);
 
     return () => {
-      supabase.removeChannel(channel);
+      clearInterval(interval);
     };
   }, []);
 
   const loadStats = async () => {
     try {
-      const statsData = await translationService.getTranslationStats();
+      const statsData = await getStats();
       setStats(statsData);
     } catch (error) {
       console.error('Lỗi khi tải thống kê:', error);
@@ -91,14 +80,8 @@ const AutoTranslationWorkflow: React.FC = () => {
 
   const loadTasks = async () => {
     try {
-      const { data, error } = await supabase
-        .from('translation_tasks')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (error) throw error;
-      setTasks(data || []);
+      const tasks = getTasks();
+      setTasks(tasks);
     } catch (error) {
       console.error('Lỗi khi tải tasks:', error);
     }
@@ -111,6 +94,11 @@ const AutoTranslationWorkflow: React.FC = () => {
 
     try {
       await batchTranslate();
+      // Refresh data after translation
+      setTimeout(() => {
+        loadStats();
+        loadTasks();
+      }, 1000);
       toast.success('✅ Workflow dịch thuật hoàn thành');
     } catch (error) {
       console.error('Lỗi workflow:', error);
@@ -410,6 +398,21 @@ const AutoTranslationWorkflow: React.FC = () => {
                   Hãy chắc chắn trước khi thực hiện.
                 </AlertDescription>
               </Alert>
+              
+              <div className="mt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    clearTasks();
+                    loadStats();
+                    loadTasks();
+                    toast.success('🗑️ Đã xóa tất cả tasks dịch thuật');
+                  }}
+                  className="w-full"
+                >
+                  Xóa tất cả Tasks (Demo)
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
