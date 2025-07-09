@@ -52,9 +52,12 @@ export const NotificationPreferences = () => {
   // Update preferences mutation
   const updatePreferencesMutation = useMutation({
     mutationFn: async (updates: Partial<NotificationPreferences>) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
       const { data, error } = await supabase
         .from('notification_preferences')
-        .upsert(updates)
+        .upsert({ ...updates, user_id: user.id })
         .select()
         .single();
 
