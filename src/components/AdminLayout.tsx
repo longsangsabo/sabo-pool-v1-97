@@ -1,6 +1,6 @@
 
-import { useEffect, ReactNode, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminCheck } from '@/hooks/useAdminCheck';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -9,11 +9,7 @@ import LanguageToggle from './admin/LanguageToggle';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 
-interface AdminLayoutProps {
-  children: ReactNode;
-}
-
-const AdminLayout = ({ children }: AdminLayoutProps) => {
+const AdminLayout = () => {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, isLoading: adminLoading } = useAdminCheck();
   const { t } = useLanguage();
@@ -78,7 +74,9 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           </div>
           <LanguageToggle />
         </header>
-        <main className='flex-1 p-4 lg:p-8 overflow-auto'>{children}</main>
+        <main className='flex-1 p-4 lg:p-8 overflow-auto'>
+          <Outlet />
+        </main>
       </div>
     </div>
   );

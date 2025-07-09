@@ -15,29 +15,24 @@ const AdminClubs = () => {
 
   if (adminLoading) {
     return (
-      <AdminLayout>
-        <div className='flex items-center justify-center h-64'>
-          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500'></div>
-        </div>
-      </AdminLayout>
+      <div className='flex items-center justify-center h-64'>
+        <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500'></div>
+      </div>
     );
   }
 
   if (!isAdmin) {
     return (
-      <AdminLayout>
-        <div className='flex items-center justify-center h-64'>
-          <div className='text-center'>
-            <h2 className='text-2xl font-bold text-gray-900 mb-4'>{t('common.access_denied')}</h2>
-            <p className='text-gray-600'>{t('common.no_permission')}</p>
-          </div>
+      <div className='flex items-center justify-center h-64'>
+        <div className='text-center'>
+          <h2 className='text-2xl font-bold text-gray-900 mb-4'>{t('common.access_denied')}</h2>
+          <p className='text-gray-600'>{t('common.no_permission')}</p>
         </div>
-      </AdminLayout>
+      </div>
     );
   }
 
   return (
-    <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-2">
           <Building className="w-6 h-6 text-blue-600" />
@@ -65,8 +60,7 @@ const AdminClubs = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </AdminLayout>
-  );
+    );
 };
 
 export default AdminClubs;

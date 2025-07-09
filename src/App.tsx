@@ -214,18 +214,20 @@ const App = () => {
                         <Route path="club-management" element={<AuthWrapper><ClubManagementPage /></AuthWrapper>} />
                       </Route>
                       
-                      {/* Admin routes - standalone with AdminLayout */}
-                      <Route path="/admin" element={<AdminDashboard />} />
-                      <Route path="/admin/users" element={<AdminUsers />} />
-                      <Route path="/admin/tournaments" element={<AdminTournaments />} />
-                      <Route path="/admin/transactions" element={<AdminTransactions />} />
-                      <Route path="/admin/clubs" element={<AdminClubs />} />
-                      <Route path="/admin/analytics" element={<AdminAnalytics />} />
-                      <Route path="/admin/automation" element={<AdminAutomation />} />
-                      <Route path="/admin/development" element={<AdminDevelopment />} />
-                      <Route path="/admin/settings" element={<AdminSettings />} />
-                      <Route path="/admin/test-ranking" element={<AdminTestRanking />} />
-                      <Route path="/admin/monitoring" element={<AdminMonitoringPage />} />
+                       {/* Admin routes - nested with AdminLayout wrapper */}
+                      <Route path="/admin" element={<AdminLayout />}>
+                        <Route index element={<AdminDashboard />} />
+                        <Route path="users" element={<AdminUsers />} />
+                        <Route path="tournaments" element={<AdminTournaments />} />
+                        <Route path="transactions" element={<AdminTransactions />} />
+                        <Route path="clubs" element={<AdminClubs />} />
+                        <Route path="analytics" element={<AdminAnalytics />} />
+                        <Route path="automation" element={<AdminAutomation />} />
+                        <Route path="development" element={<AdminDevelopment />} />
+                        <Route path="settings" element={<AdminSettings />} />
+                        <Route path="test-ranking" element={<AdminTestRanking />} />
+                        <Route path="monitoring" element={<AdminMonitoringPage />} />
+                      </Route>
                       
                       {/* Auth routes - standalone without layout */}
                       <Route path="/login" element={<LoginPage />} />

@@ -53,8 +53,6 @@ export default function AdminTestRanking() {
   }
 
   return (
-    <AdminLayout>
-      <RankingSystemTest />
-    </AdminLayout>
+    <RankingSystemTest />
   );
 }
