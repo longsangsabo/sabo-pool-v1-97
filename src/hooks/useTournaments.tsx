@@ -78,10 +78,18 @@ export const useTournaments = (userId?: string) => {
     setError(null);
 
     try {
-      // Use TournamentRepository instead of direct Supabase calls
-      const data = await TournamentRepository.getTournaments({
-        limit: 100 // Default limit
-      });
+      // Dùng TournamentService thay vì TournamentRepository để có filter is_visible
+      const result = await fetch('/api/tournaments?includeHidden=false');
+      
+      // Fallback sử dụng direct query với filter is_visible
+      const { data, error } = await supabase
+        .from('tournaments')
+        .select('*')
+        .is('deleted_at', null)  // Không lấy tournaments đã soft delete
+        .eq('is_visible', true)  // Chỉ lấy tournaments visible
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
       
       // Map database response to Tournament type
       const mappedTournaments = (data || []).map(tournament => ({
