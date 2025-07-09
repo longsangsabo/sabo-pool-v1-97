@@ -1,30 +1,31 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Medal, Award, Star, Users, Gift, DollarSign, InfoIcon } from 'lucide-react';
-import { RankingService } from '@/services/rankingService';
+import { Button } from '@/components/ui/button';
+import { Trophy, Medal, Award, Star, Users, Gift, DollarSign, InfoIcon, Edit } from 'lucide-react';
+import { TournamentRewards as TournamentRewardsType } from '@/types/tournament-extended';
 import type { RankCode, TournamentPosition } from '@/utils/eloConstants';
-import type { PrizeStructure } from './PrizeManagementModal';
 
 interface TournamentRewardsProps {
-  rank: RankCode;
+  rewards: TournamentRewardsType;
+  rank?: RankCode;
   showElo?: boolean;
   showSpa?: boolean;
   className?: string;
-  prizeStructure?: PrizeStructure;
   entryFee?: number;
   maxParticipants?: number;
+  onEdit?: () => void;
+  isEditable?: boolean;
 }
 
-const PositionIcon = ({ position }: { position: TournamentPosition }) => {
-  const iconMap = {
-    CHAMPION: <Trophy className="w-5 h-5 text-yellow-500" />,
-    RUNNER_UP: <Medal className="w-5 h-5 text-gray-400" />,
-    THIRD_PLACE: <Award className="w-5 h-5 text-amber-600" />,
-    FOURTH_PLACE: <Star className="w-5 h-5 text-blue-500" />,
-    TOP_8: <Users className="w-5 h-5 text-green-500" />,
-    TOP_16: <Users className="w-5 h-5 text-purple-500" />,
-    PARTICIPATION: <Gift className="w-5 h-5 text-gray-500" />
+const PositionIcon = ({ position }: { position: number }) => {
+  const iconMap: Record<number, React.ReactNode> = {
+    1: <Trophy className="w-5 h-5 text-yellow-500" />,
+    2: <Medal className="w-5 h-5 text-gray-400" />,
+    3: <Award className="w-5 h-5 text-amber-600" />,
+    4: <Star className="w-5 h-5 text-blue-500" />,
+    8: <Users className="w-5 h-5 text-green-500" />,
+    16: <Users className="w-5 h-5 text-purple-500" />,
   };
   
   return iconMap[position] || <Gift className="w-5 h-5 text-gray-500" />;
@@ -41,7 +42,7 @@ const RewardRow = ({
   showSpa,
   showCash 
 }: {
-  position: TournamentPosition | number;
+  position: number;
   positionName: string;
   eloReward: number;
   spaReward: number;
@@ -51,19 +52,11 @@ const RewardRow = ({
   showSpa: boolean;
   showCash: boolean;
 }) => {
-  const getPositionIcon = (pos: TournamentPosition | number) => {
-    if (pos === 'CHAMPION' || pos === 1) return <Trophy className="w-5 h-5 text-yellow-500" />;
-    if (pos === 'RUNNER_UP' || pos === 2) return <Medal className="w-5 h-5 text-gray-400" />;
-    if (pos === 'THIRD_PLACE' || pos === 3) return <Award className="w-5 h-5 text-amber-600" />;
-    if (pos === 'FOURTH_PLACE' || pos === 4) return <Star className="w-5 h-5 text-blue-500" />;
-    return <Users className="w-5 h-5 text-green-500" />;
-  };
-
   return (
     <div className="grid grid-cols-4 gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-sm">
       {/* Position */}
       <div className="flex items-center gap-2">
-        {getPositionIcon(position)}
+        <PositionIcon position={position} />
         <span className="font-medium">{positionName}</span>
       </div>
       
@@ -99,26 +92,40 @@ const RewardRow = ({
 };
 
 export const TournamentRewards: React.FC<TournamentRewardsProps> = ({ 
-  rank, 
+  rewards,
+  rank,
   showElo = true, 
   showSpa = true,
   className = "",
-  prizeStructure,
   entryFee = 0,
-  maxParticipants = 0
+  maxParticipants = 0,
+  onEdit,
+  isEditable = false,
 }) => {
-  const positions = RankingService.getTournamentPositions();
-  const hasCashPrizes = prizeStructure && prizeStructure.positions.some(p => p.cashPrize > 0);
-  const hasSpecialAwards = prizeStructure && prizeStructure.specialAwards.length > 0;
+  const hasCashPrizes = rewards.showPrizes && rewards.positions.some(p => p.cashPrize > 0);
+  const hasSpecialAwards = rewards.specialAwards.length > 0;
 
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Main Rewards Table */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-yellow-500" />
-            Phần thưởng giải đấu - Hạng {rank}
+          <CardTitle className="flex items-center gap-2 justify-between">
+            <div className="flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-yellow-500" />
+              Phần thưởng giải đấu{rank && ` - Hạng ${rank}`}
+            </div>
+            {isEditable && onEdit && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onEdit}
+              >
+                <Edit className="w-4 h-4 mr-1" />
+                Chỉnh sửa
+              </Button>
+            )}
           </CardTitle>
         </CardHeader>
         
@@ -132,48 +139,22 @@ export const TournamentRewards: React.FC<TournamentRewardsProps> = ({
           </div>
           
           {/* Position Rewards */}
-          {prizeStructure ? (
-            prizeStructure.positions
-              .filter(p => p.isVisible)
-              .map((position) => {
-                const tournamentPos = positions[position.position - 1];
-                const eloReward = RankingService.calculateTournamentElo(tournamentPos);
-                const spaReward = RankingService.calculateTournamentSpa(tournamentPos, rank);
-                
-                return (
-                  <RewardRow
-                    key={position.position}
-                    position={position.position}
-                    positionName={position.name}
-                    eloReward={eloReward}
-                    spaReward={spaReward}
-                    cashPrize={position.cashPrize}
-                    items={position.items}
-                    showElo={showElo}
-                    showSpa={showSpa}
-                    showCash={prizeStructure.showPrizes}
-                  />
-                );
-              })
-          ) : (
-            positions.map(position => {
-              const eloReward = RankingService.calculateTournamentElo(position);
-              const spaReward = RankingService.calculateTournamentSpa(position, rank);
-              
-              return (
-                <RewardRow
-                  key={position}
-                  position={position}
-                  positionName={RankingService.formatPosition(position)}
-                  eloReward={eloReward}
-                  spaReward={spaReward}
-                  showElo={showElo}
-                  showSpa={showSpa}
-                  showCash={false}
-                />
-              );
-            })
-          )}
+          {rewards.positions
+            .filter(p => p.isVisible)
+            .map((position) => (
+              <RewardRow
+                key={position.position}
+                position={position.position}
+                positionName={position.name}
+                eloReward={position.eloPoints}
+                spaReward={position.spaPoints}
+                cashPrize={position.cashPrize}
+                items={position.items}
+                showElo={showElo}
+                showSpa={showSpa}
+                showCash={rewards.showPrizes}
+              />
+            ))}
         </CardContent>
       </Card>
 
@@ -187,7 +168,7 @@ export const TournamentRewards: React.FC<TournamentRewardsProps> = ({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {prizeStructure!.specialAwards.map((award) => (
+            {rewards.specialAwards.map((award) => (
               <div key={award.id} className="flex justify-between items-center p-2 rounded bg-muted/50 text-sm">
                 <div>
                   <div className="font-medium">{award.name}</div>
@@ -205,7 +186,7 @@ export const TournamentRewards: React.FC<TournamentRewardsProps> = ({
       )}
 
       {/* Financial Summary */}
-      {prizeStructure && entryFee > 0 && maxParticipants > 0 && (
+      {rewards.showPrizes && entryFee > 0 && maxParticipants > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm">
@@ -223,17 +204,17 @@ export const TournamentRewards: React.FC<TournamentRewardsProps> = ({
             <div className="flex justify-between">
               <span>Giải thưởng:</span>
               <span className="font-medium">
-                {prizeStructure.totalPrize.toLocaleString('vi-VN')}₫
+                {rewards.totalPrize.toLocaleString('vi-VN')}₫
               </span>
             </div>
             <div className="flex justify-between font-medium border-t pt-2">
               <span>Lợi nhuận CLB:</span>
               <span className={
-                (maxParticipants * entryFee - prizeStructure.totalPrize) >= 0 
+                (maxParticipants * entryFee - rewards.totalPrize) >= 0 
                   ? 'text-green-600' 
                   : 'text-red-600'
               }>
-                {(maxParticipants * entryFee - prizeStructure.totalPrize).toLocaleString('vi-VN')}₫
+                {(maxParticipants * entryFee - rewards.totalPrize).toLocaleString('vi-VN')}₫
               </span>
             </div>
           </CardContent>
