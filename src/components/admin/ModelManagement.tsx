@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ModelSelector, GPT_MODELS } from '@/components/ModelSelector';
 import { useToast } from '@/components/ui/use-toast';
 import ModelTestingDemo from './ModelTestingDemo';
+import AdminModelSettings from './AdminModelSettings';
 
 interface ModelConfig {
   taskType: string;
@@ -117,6 +118,7 @@ const ModelManagement: React.FC = () => {
       <Tabs defaultValue="configuration" className="space-y-4">
         <TabsList>
           <TabsTrigger value="configuration">Cấu hình Model</TabsTrigger>
+          <TabsTrigger value="admin-settings">Admin Settings</TabsTrigger>
           <TabsTrigger value="analytics">Thống kê sử dụng</TabsTrigger>
           <TabsTrigger value="testing">Test Models</TabsTrigger>
         </TabsList>
@@ -162,6 +164,10 @@ const ModelManagement: React.FC = () => {
               Lưu cấu hình
             </Button>
           </div>
+        </TabsContent>
+
+        <TabsContent value="admin-settings" className="space-y-4">
+          <AdminModelSettings />
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-4">
