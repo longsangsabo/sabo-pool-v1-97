@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { useRealtimeTournamentSync } from './useRealtimeTournamentSync';
 import { toast } from 'sonner';
 import {
   Tournament,
@@ -72,36 +73,22 @@ export const useTournaments = (userId?: string) => {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Add realtime sync
+  const { lastUpdate } = useRealtimeTournamentSync();
 
   const fetchTournaments = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      // Dùng TournamentService thay vì TournamentRepository để có filter is_visible
-      const result = await fetch('/api/tournaments?includeHidden=false');
+      // Sử dụng TournamentService để đảm bảo tính nhất quán
+      const result = await (await import('@/services/TournamentService')).TournamentService.getAllVisibleTournaments();
       
-      // Fallback sử dụng direct query với filter is_visible
-      const { data, error } = await supabase
-        .from('tournaments')
-        .select('*')
-        .is('deleted_at', null)  // Không lấy tournaments đã soft delete
-        .eq('is_visible', true)  // Chỉ lấy tournaments visible
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      
-      // Map database response to Tournament type
-      const mappedTournaments = (data || []).map(tournament => ({
-        ...tournament,
-        organizer_id: tournament.created_by,
-        tournament_type: tournament.tournament_type as Tournament['tournament_type'],
-        game_format: tournament.game_format as Tournament['game_format'],
-        status: tournament.status as Tournament['status'],
-      }));
-      
-      setTournaments(mappedTournaments as Tournament[]);
+      // Cast to Tournament type - the TournamentService returns compatible data
+      setTournaments(result as unknown as Tournament[]);
     } catch (err) {
+      console.error('Error fetching tournaments:', err);
       setError(
         err instanceof Error ? err.message : 'Failed to fetch tournaments'
       );
@@ -568,6 +555,14 @@ export const useTournaments = (userId?: string) => {
   useEffect(() => {
     fetchTournaments();
   }, [fetchTournaments]);
+
+  // Auto-refresh when tournaments change via realtime
+  useEffect(() => {
+    if (lastUpdate) {
+      console.log('Realtime update detected, refreshing tournaments');
+      fetchTournaments();
+    }
+  }, [lastUpdate, fetchTournaments]);
 
   return {
     tournaments,

@@ -7,43 +7,34 @@ export const useRealtimeTournamentSync = (tournamentId?: string) => {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
   useEffect(() => {
-    if (!tournamentId) return;
-
+    console.log('Setting up tournament sync for:', tournamentId);
+    
+    // Listen to all tournament changes, not just specific tournament
     const channel = supabase
-      .channel(`tournament_${tournamentId}`)
+      .channel('tournament_changes')
       .on(
         'postgres_changes',
         {
-          event: 'UPDATE',
+          event: '*',
           schema: 'public',
-          table: 'tournaments',
-          filter: `id=eq.${tournamentId}`
+          table: 'tournaments'
         },
         (payload) => {
+          console.log('Tournament change detected:', payload);
           setLastUpdate(new Date());
-          const tournament = payload.new as any;
           
-          if (tournament.status === 'ongoing') {
-            toast.success('Giải đấu đã bắt đầu!');
-          } else if (tournament.status === 'completed') {
-            toast.info('Giải đấu đã kết thúc!');
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'tournament_matches',
-          filter: `tournament_id=eq.${tournamentId}`
-        },
-        (payload) => {
-          setLastUpdate(new Date());
-          const match = payload.new as any;
-          
-          if (match.status === 'completed' && match.winner_id) {
-            toast.info('Có kết quả trận đấu mới!');
+          // Show toast for tournament status changes
+          if (payload.eventType === 'UPDATE') {
+            const oldRecord = payload.old as any;
+            const newRecord = payload.new as any;
+            
+            if (oldRecord?.is_visible !== newRecord?.is_visible) {
+              if (!newRecord.is_visible) {
+                toast.info(`Giải đấu "${newRecord.name}" đã bị hủy`);
+              } else {
+                toast.success(`Giải đấu "${newRecord.name}" đã được khôi phục`);
+              }
+            }
           }
         }
       )

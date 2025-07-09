@@ -181,7 +181,8 @@ export class TournamentService {
       if (filters.showDeleted) {
         query = query.not('deleted_at', 'is', null);
       } else {
-        query = query.is('deleted_at', null);
+        query = query.is('deleted_at', null)
+             .eq('is_visible', true); // Only show visible tournaments for users
       }
 
       // Apply filters
@@ -229,6 +230,22 @@ export class TournamentService {
   }
 
   /**
+   * Get all visible tournaments for public display (user-facing method)
+   */
+  static async getAllVisibleTournaments(): Promise<EnhancedTournament[]> {
+    try {
+      const result = await this.getTournaments({
+        showDeleted: false,
+        limit: 100
+      });
+      return result.tournaments;
+    } catch (error) {
+      console.error('Failed to fetch visible tournaments:', error);
+      return [];
+    }
+  }
+
+  /**
    * Delete tournament (soft delete)
    * @param tournamentId ID của giải đấu cần xóa
    * @param permanent Nếu true, xóa vĩnh viễn. Nếu false, đánh dấu là đã xóa (soft delete)
@@ -250,11 +267,12 @@ export class TournamentService {
         
         toast.success('Đã xóa vĩnh viễn giải đấu!');
       } else {
-        // Soft delete - Chỉ đánh dấu là đã xóa
+        // Soft delete - Chỉ đánh dấu là đã xóa và ẩn khỏi users
         const { error } = await supabase
           .from('tournaments')
           .update({ 
             deleted_at: new Date().toISOString(), 
+            is_visible: false, // Ẩn khỏi users
             status: 'cancelled',
             updated_at: new Date().toISOString()
           })
@@ -286,6 +304,7 @@ export class TournamentService {
         .from('tournaments')
         .update({ 
           deleted_at: null,
+          is_visible: true, // Hiển thị lại cho users
           updated_at: new Date().toISOString()
         })
         .eq('id', tournamentId);
