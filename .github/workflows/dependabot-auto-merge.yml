@@ -1,0 +1,68 @@
+name: Dependabot Auto-merge
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  dependabot-auto-merge:
+    name: Auto-merge Dependabot PRs
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    
+    steps:
+      - name: Check if PR is from Dependabot
+        id: check-dependabot
+        run: |
+          if [[ "${{ github.actor }}" == "dependabot[bot]" ]]; then
+            echo "is_dependabot=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_dependabot=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get Dependabot metadata
+        id: dependabot-metadata
+        if: steps.check-dependabot.outputs.is_dependabot == 'true'
+        uses: dependabot/fetch-metadata@v1
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Wait for CI checks
+        if: steps.check-dependabot.outputs.is_dependabot == 'true'
+        uses: fountainhead/action-wait-for-check@v1.1.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: 'CI/CD Pipeline'
+          ref: ${{ github.event.pull_request.head.sha }}
+          timeoutSeconds: 1800 # 30 minutes
+
+      - name: Auto-merge minor and patch updates
+        if: |
+          steps.check-dependabot.outputs.is_dependabot == 'true' && 
+          (steps.dependabot-metadata.outputs.update-type == 'version-update:semver-patch' || 
+           steps.dependabot-metadata.outputs.update-type == 'version-update:semver-minor')
+        run: |
+          echo "Auto-merging ${{ steps.dependabot-metadata.outputs.update-type }} update"
+          gh pr merge --auto --merge "${{ github.event.pull_request.html_url }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Request review for major updates
+        if: |
+          steps.check-dependabot.outputs.is_dependabot == 'true' && 
+          steps.dependabot-metadata.outputs.update-type == 'version-update:semver-major'
+        run: |
+          echo "Major update detected - requesting review"
+          gh pr edit "${{ github.event.pull_request.html_url }}" --add-label "needs-review"
+          gh pr review "${{ github.event.pull_request.html_url }}" --request-changes --body "Major version update detected. Please review changes before merging."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add security label for security updates
+        if: |
+          steps.check-dependabot.outputs.is_dependabot == 'true' && 
+          contains(github.event.pull_request.title, 'security')
+        run: |
+          gh pr edit "${{ github.event.pull_request.html_url }}" --add-label "security"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
