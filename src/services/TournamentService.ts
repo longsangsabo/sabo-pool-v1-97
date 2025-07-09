@@ -61,7 +61,10 @@ export class TournamentService {
       // Insert tournament
       const { data: tournament, error } = await supabase
         .from('tournaments')
-        .insert(tournamentData)
+        .insert({
+          ...tournamentData,
+          created_by: (await supabase.auth.getUser()).data.user?.id
+        })
         .select()
         .single();
 
