@@ -50,9 +50,9 @@ export const ChallengeExpiryManager = () => {
       return data.map(challenge => ({
         id: challenge.id,
         challenger_id: challenge.challenger_id,
-        challenger_name: challenge.challenger?.full_name || 'Unknown',
+        challenger_name: Array.isArray(challenge.challenger) ? challenge.challenger[0]?.full_name || 'Unknown' : 'Unknown',
         opponent_id: challenge.opponent_id,
-        opponent_name: challenge.opponent?.full_name || 'Unknown',
+        opponent_name: Array.isArray(challenge.opponent) ? challenge.opponent[0]?.full_name || 'Unknown' : 'Unknown',
         expires_at: challenge.expires_at,
         status: challenge.status,
         created_at: challenge.created_at
