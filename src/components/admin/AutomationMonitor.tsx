@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useMobileOptimization } from '@/hooks/useMobileOptimization';
+import MobileOptimizedTable from '@/components/mobile/MobileOptimizedTable';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -292,9 +294,11 @@ const AutomationMonitor = () => {
 
   const summary = getAutomationSummary();
 
+  const { isMobile } = useMobileOptimization();
+
   return (
     <TooltipProvider>
-      <div className="space-y-6 p-6">
+      <div className={`space-y-4 lg:space-y-6 p-4 lg:p-6 ${isMobile ? 'max-w-full' : ''}`}>
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
