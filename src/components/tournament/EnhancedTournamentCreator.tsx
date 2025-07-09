@@ -32,6 +32,9 @@ import { TournamentSPAPreview } from '@/components/TournamentSPAPreview';
 import { useAuth } from '@/hooks/useAuth';
 import { useTournaments } from '@/hooks/useTournaments';
 import { useAdminCheck } from '@/hooks/useAdminCheck';
+import { ProfileProvider } from '@/contexts/ProfileContext';
+import { useAutoFillForm } from '@/hooks/useAutoFillForm';
+import { AutoFillButton } from '@/components/common/AutoFillButton';
 
 import { BasicInfoStep } from './steps/BasicInfoStep';
 import { TournamentSettingsStep } from './steps/TournamentSettingsStep';
@@ -50,7 +53,7 @@ const STEPS = [
   { id: 4, title: 'Xem trước & Xác nhận', icon: CheckCircle },
 ];
 
-export const EnhancedTournamentCreator: React.FC<EnhancedTournamentCreatorProps> = ({
+const TournamentCreatorContent: React.FC<EnhancedTournamentCreatorProps> = ({
   onSuccess,
   onCancel
 }) => {
@@ -66,6 +69,11 @@ export const EnhancedTournamentCreator: React.FC<EnhancedTournamentCreatorProps>
     resolver: zodResolver(tournamentSchema),
     defaultValues: getDefaultTournamentData(),
     mode: 'onChange'
+  });
+
+  // Auto-fill functionality
+  const { fillClubInfo, hasClubProfile } = useAutoFillForm(form, {
+    clubFields: ['venue_address', 'contact_info']
   });
 
   const { watch, trigger, formState: { errors, isValid } } = form;
@@ -193,10 +201,19 @@ export const EnhancedTournamentCreator: React.FC<EnhancedTournamentCreatorProps>
       {/* Header */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-6 w-6 text-primary" />
-            Tạo giải đấu mới
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="h-6 w-6 text-primary" />
+              Tạo giải đấu mới
+            </CardTitle>
+            <AutoFillButton 
+              formRef={{ current: null }}
+              type="club"
+              size="sm"
+              onClick={() => fillClubInfo()}
+              disabled={!hasClubProfile}
+            />
+          </div>
           
           {/* Progress */}
           <div className="space-y-4">
@@ -344,6 +361,14 @@ export const EnhancedTournamentCreator: React.FC<EnhancedTournamentCreatorProps>
         </CardContent>
       </Card>
     </div>
+  );
+};
+
+export const EnhancedTournamentCreator: React.FC<EnhancedTournamentCreatorProps> = (props) => {
+  return (
+    <ProfileProvider>
+      <TournamentCreatorContent {...props} />
+    </ProfileProvider>
   );
 };
 
