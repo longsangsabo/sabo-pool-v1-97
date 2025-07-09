@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Trophy, Plus, Calendar, MapPin, Users, Eye, Settings, Check, Clock, Radio } from 'lucide-react';
-import { EnhancedTournamentCreator } from '@/components/tournament/EnhancedTournamentCreator';
+import { SimplifiedTournamentCreator } from '@/components/tournament/SimplifiedTournamentCreator';
 import TournamentBroadcasting from '@/components/tournament/TournamentBroadcasting';
 import { TournamentRegistrationDashboard } from '@/components/tournament/TournamentRegistrationDashboard';
 import TournamentCard from '@/components/tournament/TournamentCard';
@@ -187,7 +187,7 @@ const TournamentsPage: React.FC = () => {
     return (
       <div className='min-h-screen bg-gray-50'>
         <div className='max-w-7xl mx-auto px-4 py-6'>
-          <EnhancedTournamentCreator 
+          <SimplifiedTournamentCreator 
             onSuccess={handleTournamentCreated}
             onCancel={() => setShowTournamentCreator(false)}
           />
