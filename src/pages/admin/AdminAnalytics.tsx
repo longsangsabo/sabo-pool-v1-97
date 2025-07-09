@@ -1,10 +1,12 @@
 
 import React from 'react';
-import { TrendingUp, Users, Trophy, CreditCard, Calendar } from 'lucide-react';
+import { TrendingUp, Users, Trophy, CreditCard, Calendar, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import AdminLayout from '@/components/AdminLayout';
 import { useAdminCheck } from '@/hooks/useAdminCheck';
+import DashboardChart from '@/components/charts/DashboardChart';
+import RevenueChart from '@/components/charts/RevenueChart';
+import AdminStatsGrid from '@/components/admin/AdminStatsGrid';
 
 const AdminAnalytics = () => {
   const { isAdmin, isLoading: adminLoading } = useAdminCheck();
@@ -33,33 +35,37 @@ const AdminAnalytics = () => {
       title: 'Tổng doanh thu',
       value: '2.5B VND',
       change: '+15%',
+      trend: 'up' as const,
       icon: CreditCard,
       color: 'text-green-600',
-      period: 'Tháng này',
+      subtitle: 'Tháng này',
     },
     {
       title: 'Người dùng hoạt động',
       value: '1,847',
       change: '+12%',
+      trend: 'up' as const,
       icon: Users,
       color: 'text-blue-600',
-      period: '30 ngày qua',
+      subtitle: '30 ngày qua',
     },
     {
       title: 'Giải đấu hoàn thành',
       value: '45',
       change: '+8%',
+      trend: 'up' as const,
       icon: Trophy,
       color: 'text-yellow-600',
-      period: 'Quý này',
+      subtitle: 'Quý này',
     },
     {
       title: 'Tỷ lệ tăng trưởng',
       value: '23%',
       change: '+5%',
+      trend: 'up' as const,
       icon: TrendingUp,
       color: 'text-purple-600',
-      period: 'So với quý trước',
+      subtitle: 'So với quý trước',
     },
   ];
 
@@ -77,30 +83,9 @@ const AdminAnalytics = () => {
           <p className='text-gray-600'>Báo cáo chi tiết về hoạt động của hệ thống</p>
         </div>
 
-        <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-4'>
-          {analytics.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Card key={item.title}>
-                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                  <CardTitle className='text-sm font-medium'>{item.title}</CardTitle>
-                  <Icon className={`h-4 w-4 ${item.color}`} />
-                </CardHeader>
-                <CardContent>
-                  <div className='text-2xl font-bold'>{item.value}</div>
-                  <div className='flex items-center justify-between'>
-                    <Badge variant='outline' className='text-green-600'>
-                      {item.change}
-                    </Badge>
-                    <p className='text-xs text-gray-500'>{item.period}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+        <AdminStatsGrid stats={analytics} />
 
-        <div className='grid gap-6 md:grid-cols-2'>
+        <div className='grid gap-6 lg:grid-cols-3'>
           <Card>
             <CardHeader>
               <CardTitle>Top CLB theo doanh thu</CardTitle>
@@ -157,6 +142,35 @@ const AdminAnalytics = () => {
               </div>
             </CardContent>
           </Card>
+
+          <div className="lg:col-span-1">
+            <DashboardChart 
+              data={[
+                { name: 'Mon', value: 120, previous: 100 },
+                { name: 'Tue', value: 150, previous: 120 },
+                { name: 'Wed', value: 180, previous: 140 },
+                { name: 'Thu', value: 165, previous: 160 },
+                { name: 'Fri', value: 190, previous: 170 },
+                { name: 'Sat', value: 220, previous: 200 },
+                { name: 'Sun', value: 200, previous: 180 }
+              ]}
+              title="Hoạt động tuần này"
+              color="hsl(var(--primary))"
+            />
+          </div>
+        </div>
+
+        <div className="grid gap-6">
+          <RevenueChart 
+            data={[
+              { month: 'Jan', revenue: 400000000, target: 450000000 },
+              { month: 'Feb', revenue: 450000000, target: 450000000 },
+              { month: 'Mar', revenue: 380000000, target: 450000000 },
+              { month: 'Apr', revenue: 520000000, target: 450000000 },
+              { month: 'May', revenue: 480000000, target: 450000000 },
+              { month: 'Jun', revenue: 550000000, target: 450000000 }
+            ]}
+          />
         </div>
       </div>
     );
