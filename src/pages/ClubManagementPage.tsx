@@ -4,7 +4,7 @@ import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building, Trophy, Users, Settings, BarChart3, Bell, CreditCard } from 'lucide-react';
+import { Building, Trophy, Users, Settings, BarChart3, Bell, CreditCard, Calendar } from 'lucide-react';
 import SimpleRankVerification from '@/components/SimpleRankVerification';
 import ClubMemberManagement from '@/components/ClubMemberManagement';
 import ClubStatsDashboard from '@/components/ClubStatsDashboard';
@@ -13,6 +13,7 @@ import ClubSettings from '@/components/ClubSettings';
 import ClubDashboardOverview from '@/components/ClubDashboardOverview';
 import ClubProfileForm from '@/components/ClubProfileForm';
 import TournamentPaymentManager from '@/components/TournamentPaymentManager';
+import ClubTournamentManagement from '@/components/ClubTournamentManagement';
 
 const ClubManagementPage = () => {
   const { user, profile, loading } = useAuth();
@@ -74,7 +75,7 @@ const ClubManagementPage = () => {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-1">
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-1">
           <TabsTrigger value="overview" className="flex items-center gap-1 px-2 py-2">
             <BarChart3 className="w-4 h-4" />
             <span className="hidden md:inline text-xs lg:text-sm">Tổng quan</span>
@@ -82,6 +83,10 @@ const ClubManagementPage = () => {
           <TabsTrigger value="rank-verification" className="flex items-center gap-1 px-2 py-2">
             <Trophy className="w-4 h-4" />
             <span className="hidden md:inline text-xs lg:text-sm">Xác thực</span>
+          </TabsTrigger>
+          <TabsTrigger value="tournaments" className="flex items-center gap-1 px-2 py-2">
+            <Calendar className="w-4 h-4" />
+            <span className="hidden md:inline text-xs lg:text-sm">Giải đấu</span>
           </TabsTrigger>
           <TabsTrigger value="payment-manager" className="flex items-center gap-1 px-2 py-2 bg-blue-50 border-blue-200">
             <CreditCard className="w-4 h-4 text-blue-600" />
@@ -111,6 +116,10 @@ const ClubManagementPage = () => {
 
         <TabsContent value="rank-verification">
           <SimpleRankVerification />
+        </TabsContent>
+
+        <TabsContent value="tournaments">
+          <ClubTournamentManagement />
         </TabsContent>
 
         <TabsContent value="payment-manager">
