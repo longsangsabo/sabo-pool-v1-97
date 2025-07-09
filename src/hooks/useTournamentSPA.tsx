@@ -1,12 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { RankingService } from '@/services/rankingService';
+import type { RankCode, TournamentPosition } from '@/utils/eloConstants';
 
 interface TournamentSPAParams {
   tournamentId: string;
   playerId: string;
   position: number;
-  playerRank: string;
+  playerRank: RankCode;
   tournamentType?: string;
 }
 
@@ -16,17 +18,30 @@ export function useTournamentSPA() {
   const calculateTournamentSPAMutation = useMutation({
     mutationFn: async ({ position, playerRank, tournamentType = 'normal' }: {
       position: number;
-      playerRank: string;
+      playerRank: RankCode;
       tournamentType?: string;
     }) => {
-      const { data, error } = await supabase.rpc('calculate_tournament_spa', {
-        p_position: position,
-        p_player_rank: playerRank,
-        p_tournament_type: tournamentType
-      });
+      // Use RankingService instead of database RPC
+      const tournamentPosition = RankingService.getTournamentPositions().find(pos => {
+        if (pos === 'CHAMPION') return position === 1;
+        if (pos === 'RUNNER_UP') return position === 2;
+        if (pos === 'THIRD_PLACE') return position === 3;
+        if (pos === 'FOURTH_PLACE') return position === 4;
+        if (pos === 'TOP_8') return position <= 8;
+        if (pos === 'TOP_16') return position <= 16;
+        return true; // PARTICIPATION
+      }) || 'PARTICIPATION';
 
-      if (error) throw error;
-      return data as number;
+      let spaPoints = RankingService.calculateTournamentSpa(tournamentPosition, playerRank);
+      
+      // Apply tournament type multipliers
+      if (tournamentType === 'season') {
+        spaPoints = Math.floor(spaPoints * 1.5);
+      } else if (tournamentType === 'open') {
+        spaPoints = Math.floor(spaPoints * 2.0);
+      }
+
+      return spaPoints;
     }
   });
 
@@ -81,6 +96,17 @@ export function useTournamentSPA() {
     }
   });
 
+  // Helper function to get all tournament rewards for a rank
+  const getAllTournamentRewards = (playerRank: RankCode) => {
+    const positions = RankingService.getTournamentPositions();
+    return positions.map(position => ({
+      position,
+      positionDisplay: RankingService.formatPosition(position),
+      eloPoints: RankingService.calculateTournamentElo(position),
+      spaPoints: RankingService.calculateTournamentSpa(position, playerRank)
+    }));
+  };
+
   return {
     calculateTournamentSPA: (params: Omit<TournamentSPAParams, 'playerId' | 'tournamentId'>) =>
       calculateTournamentSPAMutation.mutateAsync(params),
@@ -88,7 +114,12 @@ export function useTournamentSPA() {
     awardTournamentSPA: (params: TournamentSPAParams) =>
       awardTournamentSPAMutation.mutateAsync(params),
     
-    loading: calculateTournamentSPAMutation.isPending || awardTournamentSPAMutation.isPending
+    loading: calculateTournamentSPAMutation.isPending || awardTournamentSPAMutation.isPending,
+    
+    // Additional utility methods using RankingService
+    previewRewards: getAllTournamentRewards,
+    
+    getRankingService: () => RankingService
   };
 }
 

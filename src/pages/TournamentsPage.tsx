@@ -9,18 +9,35 @@ import { EnhancedTournamentCreator } from '@/components/tournament/EnhancedTourn
 import TournamentBroadcasting from '@/components/tournament/TournamentBroadcasting';
 import { TournamentRegistrationDashboard } from '@/components/tournament/TournamentRegistrationDashboard';
 import TournamentCard from '@/components/tournament/TournamentCard';
+import { EnhancedTournamentCard } from '@/components/tournament/EnhancedTournamentCard';
 import { useTournaments } from '@/hooks/useTournaments';
+import { useTournamentService } from '@/hooks/useTournamentService';
 import { useAuth } from '@/hooks/useAuth';
 import { useRealTimeTournamentState } from '@/hooks/useRealTimeTournamentState';
 import { useRealtimeTournamentSync } from '@/hooks/useRealtimeTournamentSync';
 import { useTournamentRegistrationFlow } from '@/hooks/useTournamentRegistrationFlow';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { RankingService } from '@/services/rankingService';
+import type { RankCode } from '@/utils/eloConstants';
 import { toast } from 'sonner';
 
 const TournamentsPage: React.FC = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const { tournaments, loading, fetchTournaments } = useTournaments();
+  
+  // Use new tournament service for enhanced functionality
+  const {
+    registerForTournament,
+    cancelRegistration,
+    calculateTournamentRewards,
+    getAllTournamentRewards,
+    checkUserRegistration,
+    autoUpdateTournamentStatus,
+    isRegistering,
+    isCancelling
+  } = useTournamentService();
+  
   const {
     loadRegistrationStatus,
     setRegistrationStatus,
@@ -67,6 +84,15 @@ const TournamentsPage: React.FC = () => {
     fetchTournaments();
     if (isRegistered) {
       toast.success(t('tournament.registration_updated'));
+    }
+  };
+
+  const handleTournamentRegister = async (tournamentId: string) => {
+    try {
+      await registerForTournament(tournamentId);
+      updateRegistrationStatus(tournamentId, true);
+    } catch (error) {
+      console.error('Registration failed:', error);
     }
   };
 
@@ -274,10 +300,13 @@ const TournamentsPage: React.FC = () => {
         {/* Tournaments Grid */}
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
           {filteredTournaments.map(tournament => (
-            <TournamentCard
+            <EnhancedTournamentCard
               key={tournament.id}
               tournament={tournament}
+              playerRank={'K' as RankCode}
               onView={handleViewTournament}
+              onRegister={handleTournamentRegister}
+              isRegistered={isRegistered(tournament.id)}
             />
           ))}
         </div>

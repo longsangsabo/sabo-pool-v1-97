@@ -15,6 +15,10 @@ import {
   TournamentTier,
   TOURNAMENT_TIERS,
 } from '../types/tournament';
+// Import new service layer
+import { RankingService } from '@/services/rankingService';
+import { TournamentRepository } from '@/repositories/tournamentRepository';
+import { TOURNAMENT_STATUS } from '@/constants/tournamentConstants';
 
 export interface TournamentParticipant {
   id: string;
@@ -74,12 +78,10 @@ export const useTournaments = (userId?: string) => {
     setError(null);
 
     try {
-      const { data, error } = await supabase
-        .from('tournaments')
-        .select('*')
-        .order('tournament_start', { ascending: true });
-
-      if (error) throw error;
+      // Use TournamentRepository instead of direct Supabase calls
+      const data = await TournamentRepository.getTournaments({
+        limit: 100 // Default limit
+      });
       
       // Map database response to Tournament type
       const mappedTournaments = (data || []).map(tournament => ({
@@ -214,17 +216,14 @@ export const useTournaments = (userId?: string) => {
       try {
         if (!user?.id) throw new Error('Must be logged in');
 
-        const { data, error } = await supabase
-          .from('tournament_registrations')
-          .insert({
-            tournament_id: tournamentId,
-            player_id: user.id,
-            registration_status: 'pending'
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
+        // Use TournamentRepository instead of direct Supabase calls
+        const data = await TournamentRepository.registerPlayer({
+          tournament_id: tournamentId,
+          player_id: user.id,
+          registration_status: 'pending',
+          payment_status: 'unpaid',
+          status: 'pending'
+        });
 
         // Update local tournaments list
         setTournaments(prev =>
@@ -265,30 +264,18 @@ export const useTournaments = (userId?: string) => {
 
         console.log('Attempting to cancel registration for tournament:', tournamentId, 'user:', user.id);
         
-        const { data, error } = await supabase
-          .from('tournament_registrations')
-          .delete()
-          .eq('tournament_id', tournamentId)
-          .eq('player_id', user.id)
-          .select(); // Add select to see what was deleted
+        // Use TournamentRepository instead of direct Supabase calls
+        const data = await TournamentRepository.cancelRegistration(tournamentId, user.id);
 
-        console.log('Delete result:', { data, error });
-
-        if (error) {
-          console.error('Delete error:', error);
-          throw error;
-        }
+        console.log('Delete result:', data);
 
         if (!data || data.length === 0) {
           console.warn('No registration found to delete - updating UI state anyway');
           toast.success('Đã hủy đăng ký giải đấu');
-          // Still update UI state even if no registration was found
         } else {
           console.log('Successfully deleted registration:', data[0]);
           toast.success('Đã hủy đăng ký giải đấu');
         }
-
-        console.log('Successfully deleted registration:', data[0]);
 
         setTournaments(prev =>
           prev.map(tournament =>
@@ -303,8 +290,6 @@ export const useTournaments = (userId?: string) => {
               : tournament
           )
         );
-
-        toast.success('Đã hủy đăng ký giải đấu');
       } catch (err) {
         console.error('Cancel registration error:', err);
         setError(
@@ -443,15 +428,18 @@ export const useTournaments = (userId?: string) => {
 
   const calculateEloPoints = useCallback(
     (tierCode: string, position: number): number => {
-      const tier = TOURNAMENT_TIERS.find(t => t.code === tierCode);
-      if (!tier) return 0;
+      // Use new RankingService instead of hardcoded logic
+      const tournamentPosition = RankingService.getTournamentPositions().find(pos => {
+        if (pos === 'CHAMPION') return position === 1;
+        if (pos === 'RUNNER_UP') return position === 2;
+        if (pos === 'THIRD_PLACE') return position === 3;
+        if (pos === 'FOURTH_PLACE') return position === 4;
+        if (pos === 'TOP_8') return position <= 8;
+        if (pos === 'TOP_16') return position <= 16;
+        return true; // PARTICIPATION
+      }) || 'PARTICIPATION';
 
-      if (position === 1) return tier.elo_points.first;
-      if (position === 2) return tier.elo_points.second;
-      if (position === 3) return tier.elo_points.third;
-      if (position === 4) return tier.elo_points.fourth;
-      if (position <= 8) return tier.elo_points.top8;
-      return tier.elo_points.participation;
+      return RankingService.calculateTournamentElo(tournamentPosition);
     },
     []
   );
