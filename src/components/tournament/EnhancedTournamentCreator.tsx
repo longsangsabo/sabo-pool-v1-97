@@ -285,12 +285,49 @@ export const EnhancedTournamentCreator: React.FC<EnhancedTournamentCreatorProps>
             </Card>
           )}
 
-          {/* SPA Points Preview */}
+          {/* Enhanced SPA Points Preview */}
           {watchedData.tier && (
-            <TournamentSPAPreview 
-              playerRank="I" 
-              tournamentType="normal" 
-            />
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Badge variant="secondary">{watchedData.tier}</Badge>
+                  Điểm SPA dự kiến
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                {TOURNAMENT_TIERS[watchedData.tier as keyof typeof TOURNAMENT_TIERS] && (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="flex items-center gap-1">
+                        🏆 <span>Vô địch</span>
+                      </span>
+                      <Badge variant="default" className="text-xs">
+                        +{Math.round(100 * TOURNAMENT_TIERS[watchedData.tier as keyof typeof TOURNAMENT_TIERS].level)} SPA
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="flex items-center gap-1">
+                        🥈 <span>Á quân</span>
+                      </span>
+                      <Badge variant="secondary" className="text-xs">
+                        +{Math.round(50 * TOURNAMENT_TIERS[watchedData.tier as keyof typeof TOURNAMENT_TIERS].level)} SPA
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="flex items-center gap-1">
+                        🥉 <span>Hạng 3</span>
+                      </span>
+                      <Badge variant="outline" className="text-xs">
+                        +{Math.round(25 * TOURNAMENT_TIERS[watchedData.tier as keyof typeof TOURNAMENT_TIERS].level)} SPA
+                      </Badge>
+                    </div>
+                    <div className="pt-2 border-t text-xs text-muted-foreground">
+                      * Điểm thực tế có thể thay đổi theo số lượng tham gia
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
           )}
 
           {/* Quick Stats */}

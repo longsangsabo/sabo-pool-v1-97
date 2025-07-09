@@ -6,9 +6,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, MapPin, Trophy } from 'lucide-react';
+import { Calendar, MapPin, Trophy, DollarSign } from 'lucide-react';
 
 import { TournamentFormData, TOURNAMENT_TIERS } from '@/schemas/tournamentSchema';
+import { TournamentTierSelector } from '@/components/TournamentTierSelector';
+import { useTournamentTiers } from '@/hooks/useTournamentTiers';
 
 interface BasicInfoStepProps {
   form: UseFormReturn<TournamentFormData>;
@@ -53,7 +55,7 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ form }) => {
         )}
       </div>
 
-      {/* Tournament Tier */}
+      {/* Tournament Tier - Enhanced with Database Integration */}
       <div className="space-y-2">
         <Label className="text-sm font-medium">
           Hạng giải <span className="text-destructive">*</span>
@@ -68,14 +70,19 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ form }) => {
           <SelectContent>
             {Object.entries(TOURNAMENT_TIERS).map(([key, tier]) => (
               <SelectItem key={key} value={key}>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary">{key}</Badge>
-                  <div>
-                    <p className="font-medium">{tier.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {tier.minFee.toLocaleString('vi-VN')}đ - {tier.maxFee.toLocaleString('vi-VN')}đ
-                    </p>
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">{key}</Badge>
+                    <div>
+                      <p className="font-medium text-sm">{tier.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Level {tier.level} • {tier.minFee.toLocaleString('vi-VN')}đ+
+                      </p>
+                    </div>
                   </div>
+                  <Badge variant="outline" className="text-xs">
+                    {tier.level === 4 ? 'Pro' : tier.level === 3 ? 'Expert' : tier.level === 2 ? 'Advanced' : 'Basic'}
+                  </Badge>
                 </div>
               </SelectItem>
             ))}
@@ -85,10 +92,29 @@ export const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ form }) => {
           <p className="text-sm text-destructive">{errors.tier.message}</p>
         )}
         {selectedTier && (
-          <div className="p-3 bg-muted rounded-lg">
-            <p className="text-sm text-muted-foreground">
-              {TOURNAMENT_TIERS[selectedTier as keyof typeof TOURNAMENT_TIERS].description}
-            </p>
+          <div className="p-4 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg border">
+            <div className="flex items-start gap-3">
+              <Trophy className="h-5 w-5 text-primary mt-0.5" />
+              <div className="space-y-2">
+                <h4 className="font-medium text-sm">
+                  {TOURNAMENT_TIERS[selectedTier as keyof typeof TOURNAMENT_TIERS].name}
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  {TOURNAMENT_TIERS[selectedTier as keyof typeof TOURNAMENT_TIERS].description}
+                </p>
+                <div className="flex items-center gap-4 text-xs">
+                  <div className="flex items-center gap-1">
+                    <DollarSign className="h-3 w-3" />
+                    <span>
+                      Phí: {TOURNAMENT_TIERS[selectedTier as keyof typeof TOURNAMENT_TIERS].minFee.toLocaleString('vi-VN')}đ - {TOURNAMENT_TIERS[selectedTier as keyof typeof TOURNAMENT_TIERS].maxFee.toLocaleString('vi-VN')}đ
+                    </span>
+                  </div>
+                  <Badge variant="secondary" className="text-xs">
+                    Level {TOURNAMENT_TIERS[selectedTier as keyof typeof TOURNAMENT_TIERS].level}
+                  </Badge>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

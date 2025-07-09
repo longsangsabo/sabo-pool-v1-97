@@ -1,183 +1,178 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Trophy, Coins, Users } from 'lucide-react';
-import { TournamentTier, TOURNAMENT_TIERS } from '../types/tournament';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { Trophy, Users, DollarSign, Star } from 'lucide-react';
+import { useTournamentTiers } from '@/hooks/useTournamentTiers';
 
 interface TournamentTierSelectorProps {
-  selectedTier?: string;
-  onTierSelect: (tierCode: string) => void;
-  disabled?: boolean;
+  value?: number;
+  onValueChange: (tierLevel: number) => void;
+  showSPAPreview?: boolean;
 }
 
 export const TournamentTierSelector: React.FC<TournamentTierSelectorProps> = ({
-  selectedTier,
-  onTierSelect,
-  disabled = false,
+  value,
+  onValueChange,
+  showSPAPreview = true
 }) => {
-  const getTierColor = (code: string) => {
-    switch (code) {
-      case 'G':
-        return 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white';
-      case 'H':
-        return 'bg-gradient-to-r from-blue-400 to-blue-600 text-white';
-      case 'I':
-        return 'bg-gradient-to-r from-green-400 to-green-600 text-white';
-      case 'K':
-        return 'bg-gradient-to-r from-purple-400 to-purple-600 text-white';
-      default:
-        return 'bg-gray-500 text-white';
-    }
-  };
+  const { tiers, getTierSPABreakdown, getSuggestedEntryFees, isLoading } = useTournamentTiers();
 
-  const getTierBorderColor = (code: string) => {
-    switch (code) {
-      case 'G':
-        return 'border-yellow-400';
-      case 'H':
-        return 'border-blue-400';
-      case 'I':
-        return 'border-green-400';
-      case 'K':
-        return 'border-purple-400';
-      default:
-        return 'border-gray-400';
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="h-10 bg-muted animate-pulse rounded" />
+        {showSPAPreview && <div className="h-40 bg-muted animate-pulse rounded" />}
+      </div>
+    );
+  }
+
+  const selectedTier = tiers?.find(t => t.tier_level === value);
+  const spaBreakdown = value ? getTierSPABreakdown(value) : null;
+  const suggestedFees = value ? getSuggestedEntryFees(value) : null;
 
   return (
-    <div className='space-y-4'>
-      <div className='text-center'>
-        <h3 className='text-lg font-semibold mb-2'>Chọn hạng giải đấu</h3>
-        <p className='text-sm text-gray-600'>
-          Mỗi hạng có mức điểm ELO và phí đăng ký khác nhau
-        </p>
+    <div className="space-y-4">
+      {/* Tier Selector */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Hạng giải đấu</label>
+        <Select 
+          value={value?.toString()} 
+          onValueChange={(val) => onValueChange(parseInt(val))}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Chọn hạng giải đấu" />
+          </SelectTrigger>
+          <SelectContent>
+            {tiers?.map((tier) => (
+              <SelectItem key={tier.id} value={tier.tier_level.toString()}>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">{tier.tier_name}</Badge>
+                  <span className="text-sm text-muted-foreground">
+                    x{tier.points_multiplier} điểm
+                  </span>
+                  {tier.qualification_required && (
+                    <Star className="h-3 w-3 text-yellow-500" />
+                  )}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        
+        {selectedTier && (
+          <p className="text-xs text-muted-foreground">
+            {selectedTier.description}
+            {selectedTier.qualification_required && (
+              <span className="text-yellow-600 ml-1">(Yêu cầu qualification)</span>
+            )}
+          </p>
+        )}
       </div>
 
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-        {TOURNAMENT_TIERS.map(tier => (
-          <Card
-            key={tier.code}
-            className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
-              selectedTier === tier.code
-                ? `ring-2 ring-blue-500 ${getTierBorderColor(tier.code)}`
-                : 'hover:border-gray-300'
-            } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-            onClick={() => !disabled && onTierSelect(tier.code)}
-          >
-            <CardHeader className='pb-3'>
-              <div className='flex items-center justify-between'>
-                <CardTitle className='text-lg flex items-center gap-2'>
-                  <Trophy className='w-5 h-5' />
-                  {tier.name}
-                </CardTitle>
-                <Badge className={getTierColor(tier.code)}>
-                  Hạng {tier.code}
-                </Badge>
-              </div>
-              <p className='text-sm text-gray-600'>{tier.description}</p>
+      {/* Tier Details & SPA Preview */}
+      {selectedTier && showSPAPreview && (
+        <div className="grid gap-4 md:grid-cols-2">
+          {/* Tier Info */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Trophy className="h-4 w-4" />
+                Thông tin giải đấu
+              </CardTitle>
             </CardHeader>
-
-            <CardContent className='space-y-4'>
-              {/* ELO Points */}
-              <div className='bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-lg'>
-                <div className='flex items-center justify-between mb-3'>
-                  <div className='flex items-center'>
-                    <Coins className='w-4 h-4 mr-2 text-blue-600' />
-                    <span className='font-semibold text-blue-800'>
-                      Điểm ELO
-                    </span>
-                  </div>
-                </div>
-
-                <div className='grid grid-cols-3 gap-2 text-xs'>
-                  <div className='text-center'>
-                    <div className='font-semibold text-blue-700'>🥇</div>
-                    <div className='text-blue-600'>
-                      +{tier.elo_points.first}
-                    </div>
-                  </div>
-                  <div className='text-center'>
-                    <div className='font-semibold text-gray-600'>🥈</div>
-                    <div className='text-gray-600'>
-                      +{tier.elo_points.second}
-                    </div>
-                  </div>
-                  <div className='text-center'>
-                    <div className='font-semibold text-orange-600'>🥉</div>
-                    <div className='text-orange-600'>
-                      +{tier.elo_points.third}
-                    </div>
-                  </div>
-                </div>
-
-                <div className='grid grid-cols-2 gap-2 mt-2 text-xs'>
-                  <div className='text-center'>
-                    <div className='font-semibold text-gray-600'>4th</div>
-                    <div className='text-gray-600'>
-                      +{tier.elo_points.fourth}
-                    </div>
-                  </div>
-                  <div className='text-center'>
-                    <div className='font-semibold text-gray-600'>Top 8</div>
-                    <div className='text-gray-600'>+{tier.elo_points.top8}</div>
-                  </div>
-                </div>
-
-                <div className='text-center mt-2 text-xs text-blue-600 font-medium'>
-                  Tham gia: +{tier.elo_points.participation} điểm
+            <CardContent className="space-y-3 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Cấp độ:</span>
+                <Badge variant="outline">{selectedTier.tier_name}</Badge>
+              </div>
+              
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Hệ số điểm:</span>
+                <span className="font-medium">x{selectedTier.points_multiplier}</span>
+              </div>
+              
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Tối thiểu:</span>
+                <div className="flex items-center gap-1">
+                  <Users className="h-3 w-3" />
+                  <span>{selectedTier.min_participants} người</span>
                 </div>
               </div>
 
-              {/* Entry Fee Range */}
-              <div className='bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-lg'>
-                <div className='flex items-center justify-between'>
-                  <div className='flex items-center'>
-                    <Users className='w-4 h-4 mr-2 text-green-600' />
-                    <span className='font-semibold text-green-800'>
-                      Phí đăng ký
+              {suggestedFees && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Phí đề xuất:</span>
+                  <div className="flex items-center gap-1">
+                    <DollarSign className="h-3 w-3" />
+                    <span className="text-xs">
+                      {suggestedFees.min.toLocaleString('vi-VN')} - {suggestedFees.max.toLocaleString('vi-VN')}đ
                     </span>
-                  </div>
-                </div>
-                <div className='text-center mt-2'>
-                  <div className='text-sm text-green-700'>
-                    {tier.entry_fee_range.min.toLocaleString()} -{' '}
-                    {tier.entry_fee_range.max.toLocaleString()} VNĐ
-                  </div>
-                </div>
-              </div>
-
-              {/* Requirements */}
-              {(tier.min_rank_requirement || tier.max_rank_requirement) && (
-                <div className='bg-gray-50 p-3 rounded-lg'>
-                  <div className='text-sm font-medium text-gray-700 mb-1'>
-                    Yêu cầu hạng:
-                  </div>
-                  <div className='text-xs text-gray-600'>
-                    {tier.min_rank_requirement &&
-                      `Từ: ${tier.min_rank_requirement}`}
-                    {tier.min_rank_requirement &&
-                      tier.max_rank_requirement &&
-                      ' - '}
-                    {tier.max_rank_requirement &&
-                      `Đến: ${tier.max_rank_requirement}`}
                   </div>
                 </div>
               )}
             </CardContent>
           </Card>
-        ))}
-      </div>
 
-      {selectedTier && (
-        <div className='mt-4 p-4 bg-blue-50 rounded-lg'>
-          <div className='flex items-center gap-2'>
-            <Trophy className='w-5 h-5 text-blue-600' />
-            <span className='font-semibold text-blue-800'>
-              Đã chọn:{' '}
-              {TOURNAMENT_TIERS.find(t => t.code === selectedTier)?.name}
-            </span>
-          </div>
+          {/* SPA Points Breakdown */}
+          {spaBreakdown && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Star className="h-4 w-4 text-yellow-500" />
+                  Điểm SPA dự kiến
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {spaBreakdown.breakdown.slice(0, 6).map((item, index) => {
+                  const getPositionIcon = (position: string) => {
+                    if (position === 'champion') return '🏆';
+                    if (position === 'runner_up') return '🥈';
+                    if (position === 'semi_finalist') return '🥉';
+                    return '⭐';
+                  };
+
+                  const getPositionLabel = (position: string) => {
+                    const labels: Record<string, string> = {
+                      champion: 'Vô địch',
+                      runner_up: 'Á quân',
+                      semi_finalist: 'Hạng 3',
+                      quarter_finalist: 'Hạng 4',
+                      top_16: 'Top 8',
+                      top_32: 'Top 16',
+                      participation: 'Tham gia'
+                    };
+                    return labels[position] || position;
+                  };
+
+                  return (
+                    <div key={item.position} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span>{getPositionIcon(item.position)}</span>
+                        <span className="text-xs">{getPositionLabel(item.position)}</span>
+                      </div>
+                      <Badge 
+                        variant={index === 0 ? "default" : index === 1 ? "secondary" : "outline"}
+                        className="text-xs"
+                      >
+                        +{item.points} SPA
+                      </Badge>
+                    </div>
+                  );
+                })}
+                
+                <div className="pt-2 border-t text-xs text-muted-foreground">
+                  * Tham gia: +{spaBreakdown.breakdown.find(b => b.position === 'participation')?.points || 0} SPA
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
     </div>

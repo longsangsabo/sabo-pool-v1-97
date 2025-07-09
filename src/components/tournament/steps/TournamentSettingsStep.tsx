@@ -142,10 +142,21 @@ export const TournamentSettingsStep: React.FC<TournamentSettingsStepProps> = ({ 
           <p className="text-sm text-destructive">{errors.entry_fee.message}</p>
         )}
         {selectedTier && (
-          <div className="text-xs text-muted-foreground">
-            Phí phù hợp với {TOURNAMENT_TIERS[selectedTier as keyof typeof TOURNAMENT_TIERS].name}: {' '}
-            {TOURNAMENT_TIERS[selectedTier as keyof typeof TOURNAMENT_TIERS].minFee.toLocaleString('vi-VN')}đ - {' '}
-            {TOURNAMENT_TIERS[selectedTier as keyof typeof TOURNAMENT_TIERS].maxFee.toLocaleString('vi-VN')}đ
+          <div className="text-xs text-muted-foreground space-y-1">
+            <div>
+              Phí phù hợp với {TOURNAMENT_TIERS[selectedTier as keyof typeof TOURNAMENT_TIERS].name}: {' '}
+              {TOURNAMENT_TIERS[selectedTier as keyof typeof TOURNAMENT_TIERS].minFee.toLocaleString('vi-VN')}đ - {' '}
+              {TOURNAMENT_TIERS[selectedTier as keyof typeof TOURNAMENT_TIERS].maxFee.toLocaleString('vi-VN')}đ
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-xs">
+                Level {TOURNAMENT_TIERS[selectedTier as keyof typeof TOURNAMENT_TIERS].level}
+              </Badge>
+              <span>•</span>
+              <span>
+                Hệ số SPA: x{TOURNAMENT_TIERS[selectedTier as keyof typeof TOURNAMENT_TIERS].level}
+              </span>
+            </div>
           </div>
         )}
       </div>

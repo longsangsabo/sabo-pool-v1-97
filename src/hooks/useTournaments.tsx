@@ -108,6 +108,16 @@ export const useTournaments = (userId?: string) => {
       try {
         if (!user?.id) throw new Error('Must be logged in');
 
+        // Map tier letter to tier level
+        const tierLevelMap: Record<string, number> = {
+          'K+': 1, 'K': 1,
+          'I+': 1, 'I': 1,
+          'H+': 2, 'H': 2,
+          'G+': 2, 'G': 2,
+          'F+': 3, 'F': 3,
+          'E+': 4, 'E': 4,
+        };
+
         const { data: newTournament, error } = await supabase
           .from('tournaments')
           .insert({
@@ -131,6 +141,9 @@ export const useTournaments = (userId?: string) => {
             created_by: user.id,
             status: 'upcoming',
             is_public: true,
+            tier_level: tierLevelMap[(data as any).tier] || 1,
+            requires_qualification: tierLevelMap[(data as any).tier] >= 3,
+            elo_multiplier: tierLevelMap[(data as any).tier] || 1,
           })
           .select()
           .single();

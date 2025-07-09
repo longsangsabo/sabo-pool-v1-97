@@ -1,11 +1,19 @@
 import { z } from 'zod';
 
-// Tournament tier types
+// Tournament tier types - Extended for all ranks
 export const TOURNAMENT_TIERS = {
-  G: { name: 'Giải Hạng G', minFee: 500000, maxFee: 2000000, description: 'Giải đấu cao cấp nhất' },
-  H: { name: 'Giải Hạng H', minFee: 200000, maxFee: 800000, description: 'Giải đấu trung cấp' },
-  I: { name: 'Giải Hạng I', minFee: 100000, maxFee: 500000, description: 'Giải đấu cơ bản' },
-  K: { name: 'Giải Hạng K', minFee: 50000, maxFee: 200000, description: 'Giải đấu cho người mới' },
+  E: { name: 'Giải Hạng E+', minFee: 2000000, maxFee: 10000000, description: 'Giải đấu chuyên nghiệp cao nhất', level: 4 },
+  'E+': { name: 'Giải Hạng E', minFee: 1000000, maxFee: 5000000, description: 'Giải đấu chuyên nghiệp', level: 4 },
+  F: { name: 'Giải Hạng F+', minFee: 800000, maxFee: 3000000, description: 'Giải đấu xuất sắc cao', level: 3 },
+  'F+': { name: 'Giải Hạng F', minFee: 600000, maxFee: 2000000, description: 'Giải đấu xuất sắc', level: 3 },
+  G: { name: 'Giải Hạng G+', minFee: 400000, maxFee: 1500000, description: 'Giải đấu khá cao', level: 2 },
+  'G+': { name: 'Giải Hạng G', minFee: 300000, maxFee: 1000000, description: 'Giải đấu khá', level: 2 },
+  H: { name: 'Giải Hạng H+', minFee: 200000, maxFee: 800000, description: 'Giải đấu trung cấp cao', level: 2 },
+  'H+': { name: 'Giải Hạng H', minFee: 150000, maxFee: 600000, description: 'Giải đấu trung cấp', level: 2 },
+  I: { name: 'Giải Hạng I+', minFee: 100000, maxFee: 400000, description: 'Giải đấu cơ bản cao', level: 1 },
+  'I+': { name: 'Giải Hạng I', minFee: 80000, maxFee: 300000, description: 'Giải đấu cơ bản', level: 1 },
+  K: { name: 'Giải Hạng K+', minFee: 50000, maxFee: 200000, description: 'Giải đấu cho người mới cao', level: 1 },
+  'K+': { name: 'Giải Hạng K', minFee: 30000, maxFee: 150000, description: 'Giải đấu cho người mới', level: 1 },
 } as const;
 
 export type TournamentTierType = keyof typeof TOURNAMENT_TIERS;
@@ -42,7 +50,7 @@ export const tournamentSchema = z.object({
     .min(10, 'Mô tả phải có ít nhất 10 ký tự')
     .max(1000, 'Mô tả không được vượt quá 1000 ký tự'),
   
-  tier: z.enum(['G', 'H', 'I', 'K'], {
+  tier: z.enum(['E', 'E+', 'F', 'F+', 'G', 'G+', 'H', 'H+', 'I', 'I+', 'K', 'K+'], {
     required_error: 'Vui lòng chọn hạng giải',
   }),
   
