@@ -5,7 +5,10 @@ import { MonitoringDashboard } from '@/components/monitoring/MonitoringDashboard
 import { PerformanceMonitor } from '@/components/performance/PerformanceMonitor';
 import { AdvancedAnalyticsDashboard } from '@/components/analytics/AdvancedAnalyticsDashboard';
 import { UserBehaviorAnalytics } from '@/components/analytics/UserBehaviorAnalytics';
-import { Activity, TrendingUp, AlertTriangle, CheckCircle, BarChart3, Users } from 'lucide-react';
+import { PredictiveAnalyticsDashboard } from '@/components/predictive/PredictiveAnalyticsDashboard';
+import { RecommendationEngine } from '@/components/ai/RecommendationEngine';
+import { EngagementScoring } from '@/components/ai/EngagementScoring';
+import { Activity, TrendingUp, AlertTriangle, CheckCircle, BarChart3, Users, Brain, Lightbulb, Target } from 'lucide-react';
 
 export const AdminMonitoringPage: React.FC = () => {
   return (
@@ -77,22 +80,34 @@ export const AdminMonitoringPage: React.FC = () => {
 
       {/* Main Dashboard Tabs */}
       <Tabs defaultValue="monitoring" className="space-y-6">
-        <TabsList className="grid w-full lg:w-auto grid-cols-2 lg:grid-cols-4">
+        <TabsList className="grid w-full lg:w-auto grid-cols-3 lg:grid-cols-7">
           <TabsTrigger value="monitoring" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
-            Real-time Monitoring
+            Monitoring
           </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
-            Advanced Analytics
+            Analytics
           </TabsTrigger>
           <TabsTrigger value="behavior" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
-            User Behavior
+            Behavior
           </TabsTrigger>
           <TabsTrigger value="performance" className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
             Performance
+          </TabsTrigger>
+          <TabsTrigger value="predictive" className="flex items-center gap-2">
+            <Brain className="h-4 w-4" />
+            Predictive AI
+          </TabsTrigger>
+          <TabsTrigger value="recommendations" className="flex items-center gap-2">
+            <Lightbulb className="h-4 w-4" />
+            AI Insights
+          </TabsTrigger>
+          <TabsTrigger value="engagement" className="flex items-center gap-2">
+            <Target className="h-4 w-4" />
+            Engagement
           </TabsTrigger>
         </TabsList>
 
@@ -149,6 +164,21 @@ export const AdminMonitoringPage: React.FC = () => {
               <PerformanceMonitor />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Predictive Analytics Tab */}
+        <TabsContent value="predictive">
+          <PredictiveAnalyticsDashboard />
+        </TabsContent>
+
+        {/* AI Recommendations Tab */}
+        <TabsContent value="recommendations">
+          <RecommendationEngine />
+        </TabsContent>
+
+        {/* Engagement Scoring Tab */}
+        <TabsContent value="engagement">
+          <EngagementScoring />
         </TabsContent>
       </Tabs>
     </div>
