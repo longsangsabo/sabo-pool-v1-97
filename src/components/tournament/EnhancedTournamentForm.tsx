@@ -22,6 +22,7 @@ interface EnhancedTournamentFormProps {
   mode?: 'create' | 'edit';
   tournamentId?: string;
   onSubmit?: (data: TournamentFormData) => void;
+  onSuccess?: (tournament: any) => void;
   onCancel?: () => void;
 }
 
@@ -29,6 +30,7 @@ export const EnhancedTournamentForm: React.FC<EnhancedTournamentFormProps> = ({
   mode = 'create',
   tournamentId,
   onSubmit,
+  onSuccess,
   onCancel,
 }) => {
   const {
@@ -113,6 +115,7 @@ export const EnhancedTournamentForm: React.FC<EnhancedTournamentFormProps> = ({
 
       if (result) {
         onSubmit?.(data);
+        onSuccess?.(result);
         toast.success(mode === 'edit' ? 'Cập nhật giải đấu thành công!' : 'Tạo giải đấu thành công!');
       }
     } catch (error) {

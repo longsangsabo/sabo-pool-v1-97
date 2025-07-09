@@ -1,22 +1,20 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface ErrorBoundaryState {
   hasError: boolean;
   error?: Error;
+  errorInfo?: React.ErrorInfo;
 }
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
-  fallback?: React.ComponentType<{ error?: Error; retry: () => void }>;
+  fallback?: React.ComponentType<{ error: Error; retry: () => void }>;
 }
 
-class ErrorBoundary extends React.Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
+class ErrorBoundaryClass extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
@@ -27,49 +25,68 @@ class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
+    this.setState({
+      error,
+      errorInfo,
+    });
+    
+    // Log error to console in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('ErrorBoundary caught an error:', error, errorInfo);
+    }
   }
 
-  retry = () => {
-    this.setState({ hasError: false, error: undefined });
+  handleRetry = () => {
+    this.setState({ hasError: false, error: undefined, errorInfo: undefined });
   };
 
   render() {
     if (this.state.hasError) {
-      if (this.props.fallback) {
-        const FallbackComponent = this.props.fallback;
-        return (
-          <FallbackComponent error={this.state.error} retry={this.retry} />
-        );
+      const FallbackComponent = this.props.fallback;
+      
+      if (FallbackComponent && this.state.error) {
+        return <FallbackComponent error={this.state.error} retry={this.handleRetry} />;
       }
 
       return (
-        <Card className='max-w-md mx-auto mt-8'>
-          <CardHeader>
-            <CardTitle className='flex items-center gap-2 text-red-600'>
-              <AlertTriangle className='h-5 w-5' />
-              Có lỗi xảy ra
-            </CardTitle>
-          </CardHeader>
-          <CardContent className='space-y-4'>
-            <p className='text-gray-600'>
-              Đã xảy ra lỗi không mong muốn. Vui lòng thử lại hoặc liên hệ hỗ
-              trợ nếu lỗi tiếp tục.
-            </p>
-            {this.state.error && (
-              <details className='text-sm text-gray-500'>
-                <summary>Chi tiết lỗi</summary>
-                <pre className='mt-2 p-2 bg-gray-100 rounded text-xs overflow-auto'>
-                  {this.state.error.message}
-                </pre>
-              </details>
-            )}
-            <Button onClick={this.retry} className='w-full'>
-              <RefreshCw className='h-4 w-4 mr-2' />
-              Thử lại
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader className="text-center">
+              <div className="flex justify-center mb-4">
+                <AlertTriangle className="h-12 w-12 text-destructive" />
+              </div>
+              <CardTitle>Đã xảy ra lỗi</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center space-y-4">
+              <p className="text-muted-foreground">
+                Ứng dụng đã gặp lỗi không mong muốn. Vui lòng thử lại.
+              </p>
+              
+              {process.env.NODE_ENV === 'development' && this.state.error && (
+                <details className="text-left text-xs">
+                  <summary className="cursor-pointer font-medium">Chi tiết lỗi</summary>
+                  <pre className="mt-2 p-2 bg-muted rounded overflow-auto">
+                    {this.state.error.toString()}
+                    {this.state.errorInfo?.componentStack}
+                  </pre>
+                </details>
+              )}
+              
+              <div className="flex gap-2 justify-center">
+                <Button onClick={this.handleRetry} className="gap-2">
+                  <RefreshCw className="h-4 w-4" />
+                  Thử lại
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => window.location.href = '/'}
+                >
+                  Về trang chủ
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       );
     }
 
@@ -77,4 +94,4 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-export default ErrorBoundary;
+export default ErrorBoundaryClass;

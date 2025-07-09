@@ -6,6 +6,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Trophy, Plus, Calendar, MapPin, Users, Eye, Settings, Check, Clock, Radio } from 'lucide-react';
 import { SimplifiedTournamentCreator } from '@/components/tournament/SimplifiedTournamentCreator';
+import { EnhancedTournamentForm } from '@/components/tournament/EnhancedTournamentForm';
+import { TournamentProvider } from '@/contexts/TournamentContext';
 import TournamentBroadcasting from '@/components/tournament/TournamentBroadcasting';
 import { TournamentRegistrationDashboard } from '@/components/tournament/TournamentRegistrationDashboard';
 import TournamentCard from '@/components/tournament/TournamentCard';
@@ -182,17 +184,19 @@ const TournamentsPage: React.FC = () => {
     );
   }
 
-  // Show Tournament Creator
+  // Show Tournament Creator with new enhanced form
   if (showTournamentCreator) {
     return (
-      <div className='min-h-screen bg-gray-50'>
-        <div className='max-w-7xl mx-auto px-4 py-6'>
-          <SimplifiedTournamentCreator 
-            onSuccess={handleTournamentCreated}
-            onCancel={() => setShowTournamentCreator(false)}
-          />
+      <TournamentProvider>
+        <div className='min-h-screen bg-gray-50'>
+          <div className='max-w-7xl mx-auto px-4 py-6'>
+            <EnhancedTournamentForm 
+              onSuccess={handleTournamentCreated}
+              onCancel={() => setShowTournamentCreator(false)}
+            />
+          </div>
         </div>
-      </div>
+      </TournamentProvider>
     );
   }
 

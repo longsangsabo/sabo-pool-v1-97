@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,13 +6,14 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
 import { ThemeProvider } from "next-themes";
 import { Suspense } from "react";
-import ErrorBoundary from "@/components/ErrorBoundary";
+import ErrorBoundary from "@/components/ui/error-boundary";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AvatarProvider } from "@/contexts/AvatarContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import MainLayout from "@/components/MainLayout";
 import DailyNotificationSystem from "@/components/DailyNotificationSystem";
 import RealtimeNotificationSystem from "@/components/RealtimeNotificationSystem";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 // Import components directly instead of lazy loading to avoid loading issues
 import SimpleDashboard from "./pages/SimpleDashboard";
@@ -31,6 +31,7 @@ import TestPage from "./pages/TestPage";
 import EnhancedLoginPage from "./pages/EnhancedLoginPage";
 import EnhancedRegisterPage from "./pages/EnhancedRegisterPage";
 import EnhancedChallengesPageV2 from "./pages/EnhancedChallengesPageV2";
+import CreateTournamentExample from "./pages/CreateTournamentExample";
 
 // Import all other pages
 import AboutPage from "./pages/AboutPage";
@@ -97,13 +98,10 @@ import ClubManagementPage from "./pages/ClubManagementPage";
 import ClubRegistrationPage from "./pages/ClubRegistrationPage";
 import TournamentDetailsPage from "./pages/TournamentDetailsPage";
 
-// Simple loading fallback
+// Enhanced loading fallback with LoadingSpinner
 const LoadingFallback = () => (
-  <div className="min-h-screen flex items-center justify-center bg-green-900">
-    <div className="text-center text-white">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400 mx-auto mb-4"></div>
-      <p>Đang tải trang...</p>
-    </div>
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <LoadingSpinner size="lg" text="Đang tải trang..." />
   </div>
 );
 
@@ -151,6 +149,7 @@ const App = () => {
                         <Route path="tournaments" element={<TournamentsPage />} />
                         <Route path="tournaments/:id" element={<TournamentDetailsPage />} />
                         <Route path="tournament-discovery" element={<TournamentDiscoveryPage />} />
+                        <Route path="tournament-example" element={<CreateTournamentExample />} />
                         
                         <Route path="challenges" element={<EnhancedChallengesPageV2 />} />
                         <Route path="challenges-v2" element={<EnhancedChallengesPageV2 />} />
@@ -242,10 +241,10 @@ const App = () => {
                       <Route path="/booking" element={<SimpleBookingPage />} />
                       
                       <Route path="*" element={
-                        <div className="min-h-screen flex items-center justify-center bg-green-900 text-white">
+                        <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
                           <div className="text-center">
                             <h1 className="text-2xl mb-4">Trang không tìm thấy</h1>
-                            <a href="/" className="text-yellow-400 hover:underline">Về trang chủ</a>
+                            <a href="/" className="text-primary hover:underline">Về trang chủ</a>
                           </div>
                         </div>
                       } />
