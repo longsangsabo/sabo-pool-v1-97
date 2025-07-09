@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import { useNavigate } from 'react-router-dom';
 
 interface Tournament {
   id: string;
@@ -28,6 +29,7 @@ interface Tournament {
 
 const ClubTournamentManagement = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
   const [clubId, setClubId] = useState<string | null>(null);
@@ -103,6 +105,10 @@ const ClubTournamentManagement = () => {
     return typeMap[type as keyof typeof typeMap] || type;
   };
 
+  const handleCreateTournament = () => {
+    navigate('/create-tournament');
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -120,7 +126,7 @@ const ClubTournamentManagement = () => {
             Tạo và quản lý các giải đấu do CLB tổ chức
           </p>
         </div>
-        <Button className="flex items-center gap-2">
+        <Button onClick={handleCreateTournament} className="flex items-center gap-2">
           <Plus className="w-4 h-4" />
           Tạo giải đấu mới
         </Button>
@@ -143,7 +149,7 @@ const ClubTournamentManagement = () => {
                 <p className="text-muted-foreground text-center mb-4">
                   Tạo giải đấu mới để bắt đầu thu hút người chơi tham gia
                 </p>
-                <Button>
+                <Button onClick={handleCreateTournament}>
                   <Plus className="w-4 h-4 mr-2" />
                   Tạo giải đấu đầu tiên
                 </Button>
