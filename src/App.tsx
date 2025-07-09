@@ -41,7 +41,7 @@ import ChallengesPage from "./pages/ChallengesPage";
 import ChatPage from "./pages/ChatPage";
 import ClubDetailPage from "./pages/ClubDetailPage";
 import ClubsPage from "./pages/ClubsPage";
-import CreateTournamentPage from "./pages/CreateTournamentPage";
+
 import Dashboard from "./pages/Dashboard";
 import DashboardPage from "./pages/DashboardPage";
 import PublicProfilePage from "./pages/PublicProfilePage";
@@ -151,7 +151,7 @@ const App = () => {
                         <Route path="tournaments" element={<TournamentsPage />} />
                         <Route path="tournaments/:id" element={<TournamentDetailsPage />} />
                         <Route path="tournament-discovery" element={<TournamentDiscoveryPage />} />
-                        <Route path="create-tournament" element={<CreateTournamentPage />} />
+                        
                         <Route path="challenges" element={<EnhancedChallengesPageV2 />} />
                         <Route path="challenges-v2" element={<EnhancedChallengesPageV2 />} />
                         <Route path="enhanced-challenges" element={<EnhancedChallengesPage />} />

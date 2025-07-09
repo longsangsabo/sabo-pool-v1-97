@@ -106,7 +106,7 @@ const ClubTournamentManagement = () => {
   };
 
   const handleCreateTournament = () => {
-    navigate('/create-tournament');
+    navigate('/tournaments');
   };
 
   if (loading) {
