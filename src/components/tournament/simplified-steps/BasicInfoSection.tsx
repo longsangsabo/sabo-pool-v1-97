@@ -3,10 +3,12 @@ import { UseFormReturn } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar, MapPin, Trophy } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar, MapPin, Trophy, Building2 } from 'lucide-react';
 import { TournamentTierSelector } from '@/components/TournamentTierSelector';
-import { AutoFillInput } from '@/components/common/AutoFillInput';
 import { RankSelector } from '@/components/tournament/RankSelector';
+import { useProfileContext } from '@/contexts/ProfileContext';
+import { toast } from 'sonner';
 
 interface BasicInfoSectionProps {
   form: UseFormReturn<any>;
@@ -15,6 +17,18 @@ interface BasicInfoSectionProps {
 export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
   const { register, setValue, watch, formState: { errors } } = form;
   const selectedTierLevel = watch('tier_level');
+  const { clubProfile } = useProfileContext();
+
+  // Function to auto-fill club address
+  const fillClubAddress = () => {
+    if (clubProfile && clubProfile.address) {
+      const fullAddress = `${clubProfile.club_name}, ${clubProfile.address}`;
+      setValue('venue_address', fullAddress, { shouldValidate: true, shouldDirty: true });
+      toast.success('Đã điền địa chỉ CLB thành công');
+    } else {
+      toast.error('Không tìm thấy địa chỉ CLB trong hồ sơ của bạn');
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -95,16 +109,33 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({ form }) => {
           <MapPin className="h-4 w-4" />
           Địa điểm tổ chức <span className="text-destructive">*</span>
         </Label>
-        <AutoFillInput
-          id="venue_address"
-          fieldType="club"
-          fieldName="address"
-          placeholder="VD: CLB Bida Sài Gòn, 123 Nguyễn Huệ, Q1, TP.HCM"
-          {...register('venue_address')}
-          className={errors.venue_address ? 'border-destructive' : ''}
-        />
+        <div className="flex gap-2">
+          <Input
+            id="venue_address"
+            placeholder="VD: CLB Bida Sài Gòn, 123 Nguyễn Huệ, Q1, TP.HCM"
+            {...register('venue_address')}
+            className={`flex-1 ${errors.venue_address ? 'border-destructive' : ''}`}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={fillClubAddress}
+            disabled={!clubProfile?.address}
+            className="whitespace-nowrap"
+            title="Dùng địa chỉ CLB"
+          >
+            <Building2 className="h-4 w-4 mr-1" />
+            Địa chỉ CLB
+          </Button>
+        </div>
         {errors.venue_address && (
           <p className="text-sm text-destructive">{String(errors.venue_address.message)}</p>
+        )}
+        {clubProfile?.address && (
+          <p className="text-xs text-muted-foreground">
+            CLB của bạn: {clubProfile.club_name}, {clubProfile.address}
+          </p>
         )}
       </div>
 
