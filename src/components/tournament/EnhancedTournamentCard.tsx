@@ -193,23 +193,56 @@ export const EnhancedTournamentCard: React.FC<EnhancedTournamentCardProps> = ({
           <Progress value={participationPercentage} className="h-2" />
         </div>
 
-        {/* Quick Rewards Preview */}
+        {/* Prize Distribution */}
         <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg p-3">
-          <h4 className="text-sm font-medium text-primary mb-2">Phần thưởng dự kiến (Rank {playerRank})</h4>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="flex items-center gap-1">
-              <Trophy className="w-3 h-3 text-yellow-500" />
-              <span>Vô địch:</span>
-              <Badge variant="secondary" className="text-xs px-1 py-0">
-                +{championRewards.eloPoints} ELO
-              </Badge>
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-sm font-medium text-primary">Phần thưởng tiền mặt</h4>
+            <Badge variant="outline" className="text-xs">
+              {formatPrize(tournament.prize_pool)}
+            </Badge>
+          </div>
+          <div className="space-y-1 text-xs">
+            <div className="flex justify-between">
+              <span className="flex items-center gap-1">
+                <Trophy className="w-3 h-3 text-yellow-500" />
+                Nhất
+              </span>
+              <span className="font-medium">{formatPrize(tournament.prize_pool * 0.5)}</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Star className="w-3 h-3 text-green-500" />
-              <span>Top 8:</span>
-              <Badge variant="secondary" className="text-xs px-1 py-0">
-                +{top8Rewards.eloPoints} ELO
-              </Badge>
+            <div className="flex justify-between">
+              <span className="flex items-center gap-1">
+                <Trophy className="w-3 h-3 text-gray-400" />
+                Nhì
+              </span>
+              <span className="font-medium">{formatPrize(tournament.prize_pool * 0.3)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="flex items-center gap-1">
+                <Trophy className="w-3 h-3 text-amber-600" />
+                Ba
+              </span>
+              <span className="font-medium">{formatPrize(tournament.prize_pool * 0.2)}</span>
+            </div>
+          </div>
+          
+          {/* ELO Points Preview */}
+          <div className="mt-3 pt-2 border-t border-primary/20">
+            <h5 className="text-xs font-medium text-primary mb-1">Điểm ELO dự kiến (Rank {playerRank})</h5>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="flex items-center gap-1">
+                <Star className="w-3 h-3 text-yellow-500" />
+                <span>Vô địch:</span>
+                <Badge variant="secondary" className="text-xs px-1 py-0">
+                  +{championRewards.eloPoints}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-1">
+                <Star className="w-3 h-3 text-green-500" />
+                <span>Top 8:</span>
+                <Badge variant="secondary" className="text-xs px-1 py-0">
+                  +{top8Rewards.eloPoints}
+                </Badge>
+              </div>
             </div>
           </div>
         </div>
