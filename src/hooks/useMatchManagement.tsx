@@ -110,6 +110,8 @@ export const useMatchManagement = (tournamentId: string) => {
       winnerId?: string;
       status?: string;
     }) => {
+      console.log('Updating score for match:', matchId, { player1Score, player2Score, winnerId });
+      
       const { data: match, error: matchError } = await supabase
         .from('tournament_matches')
         .update({
@@ -124,10 +126,16 @@ export const useMatchManagement = (tournamentId: string) => {
         .select()
         .single();
 
-      if (matchError) throw matchError;
+      if (matchError) {
+        console.error('Match update error:', matchError);
+        throw matchError;
+      }
 
       // Create match result record
       if (winnerId && match) {
+        const currentUser = await supabase.auth.getUser();
+        console.log('Creating match result for winner:', winnerId);
+        
         const { error: resultError } = await supabase
           .from('match_results')
           .upsert({
@@ -139,23 +147,63 @@ export const useMatchManagement = (tournamentId: string) => {
             player2_score: player2Score,
             result_status: 'verified',
             verification_method: 'manual',
-            entered_by: (await supabase.auth.getUser()).data.user?.id,
+            entered_by: currentUser.data.user?.id,
             verified_at: new Date().toISOString(),
-            verified_by: (await supabase.auth.getUser()).data.user?.id
+            verified_by: currentUser.data.user?.id
           });
 
-        if (resultError) throw resultError;
+        if (resultError) {
+          console.error('Match result error:', resultError);
+          throw resultError;
+        }
       }
 
+      console.log('Score updated successfully');
       return match;
+    },
+    onSuccess: (data) => {
+      console.log('Score update success:', data);
+      queryClient.invalidateQueries({ queryKey: ['tournament-matches', tournamentId] });
+      toast.success('Tỉ số đã được cập nhật thành công!');
+    },
+    onError: (error: any) => {
+      console.error('Update score error:', error);
+      const errorMessage = error?.message || 'Có lỗi không xác định khi cập nhật tỉ số';
+      toast.error(`Lỗi: ${errorMessage}`);
+    },
+    retry: 1,
+    retryDelay: 1000
+  });
+
+  // Restore match (undo cancel)
+  const restoreMatchMutation = useMutation({
+    mutationFn: async (matchId: string) => {
+      console.log('Restoring match:', matchId);
+      
+      const { data, error } = await supabase
+        .from('tournament_matches')
+        .update({
+          status: 'scheduled',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', matchId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Restore match error:', error);
+        throw error;
+      }
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tournament-matches', tournamentId] });
-      toast.success('Tỉ số đã được cập nhật!');
+      toast.success('Trận đấu đã được khôi phục!');
     },
-    onError: (error) => {
-      console.error('Update score error:', error);
-      toast.error('Có lỗi khi cập nhật tỉ số');
+    onError: (error: any) => {
+      console.error('Restore match error:', error);
+      const errorMessage = error?.message || 'Có lỗi khi khôi phục trận đấu';
+      toast.error(`Lỗi: ${errorMessage}`);
     }
   });
 
@@ -220,11 +268,13 @@ export const useMatchManagement = (tournamentId: string) => {
     updateScore: updateScoreMutation.mutateAsync,
     startMatch: startMatchMutation.mutateAsync,
     cancelMatch: cancelMatchMutation.mutateAsync,
+    restoreMatch: restoreMatchMutation.mutateAsync,
     refetchMatches,
 
     // Loading states
     isUpdatingScore: updateScoreMutation.isPending,
     isStartingMatch: startMatchMutation.isPending,
-    isCancellingMatch: cancelMatchMutation.isPending
+    isCancellingMatch: cancelMatchMutation.isPending,
+    isRestoringMatch: restoreMatchMutation.isPending
   };
 };

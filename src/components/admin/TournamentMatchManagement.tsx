@@ -27,10 +27,12 @@ export const TournamentMatchManagement: React.FC<TournamentMatchManagementProps>
     updateScore,
     startMatch,
     cancelMatch,
+    restoreMatch,
     refetchMatches,
     isUpdatingScore,
     isStartingMatch,
-    isCancellingMatch
+    isCancellingMatch,
+    isRestoringMatch
   } = useMatchManagement(tournament.id);
 
   const [selectedRound, setSelectedRound] = useState<number | 'all'>('all');
@@ -169,9 +171,13 @@ export const TournamentMatchManagement: React.FC<TournamentMatchManagementProps>
                 onCancelMatch={async (matchId) => {
                   await cancelMatch(matchId);
                 }}
+                onRestoreMatch={async (matchId) => {
+                  await restoreMatch(matchId);
+                }}
                 isUpdating={isUpdatingScore}
                 isStarting={isStartingMatch}
                 isCancelling={isCancellingMatch}
+                isRestoring={isRestoringMatch}
               />
             ))}
           </div>
