@@ -192,7 +192,7 @@ VÍ DỤ TRÁCH NHIỆM:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-nano',
+        model: 'gpt-4.1-2025-04-14',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userMessage }
@@ -242,7 +242,7 @@ serve(async (req) => {
     await supabase
       .from('openai_usage_logs')
       .insert({
-        model_id: 'gpt-4.1-nano',
+        model_id: 'gpt-4.1-2025-04-14',
         task_type: 'user_assistance',
         prompt_tokens: Math.ceil(message.length / 4), // Rough estimate
         completion_tokens: 0, // User message doesn't have completion
@@ -283,7 +283,7 @@ serve(async (req) => {
     await supabase
       .from('openai_usage_logs')
       .insert({
-        model_id: 'gpt-4.1-nano',
+        model_id: 'gpt-4.1-2025-04-14',
         task_type: 'user_assistance',
         prompt_tokens: Math.ceil(userMessage.length / 4), // Rough estimate
         completion_tokens: Math.ceil(aiResponse.length / 4), // Rough estimate  
@@ -305,7 +305,7 @@ serve(async (req) => {
         type: 'assistant',
         metadata: { 
           intent: intentAnalysis.intent,
-          model: 'gpt-4.1-nano',
+          model: 'gpt-4.1-2025-04-14',
           confidence: intentAnalysis.confidence,
           response_time_ms: responseTime
         }
@@ -335,7 +335,7 @@ serve(async (req) => {
     await supabase
       .from('openai_usage_logs')
       .insert({
-        model_id: 'gpt-4.1-nano',
+        model_id: 'gpt-4.1-2025-04-14',
         task_type: 'user_assistance',
         prompt_tokens: 0,
         completion_tokens: 0,
