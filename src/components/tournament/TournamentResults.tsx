@@ -73,21 +73,33 @@ export const TournamentResults: React.FC<TournamentResultsProps> = ({
         .eq('tournament_id', tournamentId)
         .order('seed_position');
 
-      // Get final match to find champion and runner-up
-      const { data: finalMatch } = await supabase
+      // Get final matches to determine positions
+      const { data: finalMatches } = await supabase
         .from('tournament_matches')
         .select(`
           winner_id,
           player1_id,
           player2_id,
-          round_number
+          round_number,
+          is_third_place_match
         `)
         .eq('tournament_id', tournamentId)
         .eq('status', 'completed')
         .not('winner_id', 'is', null)
-        .order('round_number', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .in('round_number', [
+          ...(await supabase
+            .from('tournament_matches')
+            .select('round_number')
+            .eq('tournament_id', tournamentId)
+            .order('round_number', { ascending: false })
+            .limit(1)
+            .then(res => res.data ? [res.data[0].round_number] : [])
+          )
+        ]);
+
+      // Separate final and third place matches
+      const finalMatch = finalMatches?.find(m => !m.is_third_place_match);
+      const thirdPlaceMatch = finalMatches?.find(m => m.is_third_place_match);
 
       // Get all participants with their match results
       const { data: participants } = await supabase
@@ -133,14 +145,28 @@ export const TournamentResults: React.FC<TournamentResultsProps> = ({
         const currentElo = ranking?.elo_points || 1000;
         const currentRank = ranking?.current_rank_id || 'K';
         
-        // Calculate position based on final results or seeding
-        let position = index + 1; // Use index as fallback
+        // Calculate position based on tournament results
+        let position = 99; // Default to last place
+        
         if (finalMatch) {
           if (playerId === finalMatch.winner_id) {
             position = 1; // Champion
           } else if (playerId === finalMatch.player1_id || playerId === finalMatch.player2_id) {
-            position = 2; // Runner-up (one of the finalists who didn't win)
+            position = 2; // Runner-up (finalist who didn't win)
           }
+        }
+        
+        if (thirdPlaceMatch) {
+          if (playerId === thirdPlaceMatch.winner_id) {
+            position = 3; // Third place
+          } else if (playerId === thirdPlaceMatch.player1_id || playerId === thirdPlaceMatch.player2_id) {
+            position = 4; // Fourth place
+          }
+        }
+        
+        // For other participants, use participation position (5+)
+        if (position === 99) {
+          position = Math.min(index + 5, participants.length); // 5th place and below
         }
 
         // Calculate expected rewards based on position and rank
