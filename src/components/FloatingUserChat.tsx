@@ -65,7 +65,7 @@ export const FloatingUserChat = () => {
           .from('user_chat_sessions')
           .insert({
             user_id: user.id,
-            title: 'Chat với AI ViePool'
+            title: 'Chat với AI SABO Pool Arena'
           })
           .select()
           .single();
@@ -186,7 +186,7 @@ export const FloatingUserChat = () => {
           <div className="flex items-center justify-between p-3 border-b border-border bg-muted/50 rounded-t-lg">
             <div className="flex items-center gap-2">
               <MessageCircle className="h-4 w-4 text-primary" />
-              <span className="font-medium text-sm">AI ViePool</span>
+              <span className="font-medium text-sm">AI SABO Pool Arena</span>
             </div>
             <div className="flex items-center gap-1">
               <Button
