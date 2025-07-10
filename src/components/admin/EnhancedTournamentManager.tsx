@@ -17,29 +17,7 @@ import { useTournaments } from '@/hooks/useTournaments';
 import BracketGenerator from '@/components/tournament/BracketGenerator';
 import { TournamentPlayerManagement } from './TournamentPlayerManagement';
 import { TournamentMatchManagement } from './TournamentMatchManagement';
-
-interface Tournament {
-  id: string;
-  name: string;
-  description: string;
-  status: 'upcoming' | 'registration_open' | 'registration_closed' | 'ongoing' | 'completed';
-  tournament_start: string;
-  tournament_end: string;
-  registration_start: string;
-  registration_end: string;
-  current_participants: number;
-  max_participants: number;
-  entry_fee: number;
-  prize_pool: number;
-  tournament_type: string;
-  game_format: string;
-  venue_name?: string;
-  venue_address?: string;
-  rules?: string;
-  created_by: string;
-  created_at: string;
-  updated_at: string;
-}
+import { Tournament } from '@/types/common';
 
 const EnhancedTournamentManager = () => {
   const { tournaments, loading, createTournament } = useTournaments();
@@ -413,13 +391,7 @@ const EnhancedTournamentManager = () => {
                          variant='outline' 
                          size='sm' 
                          className='flex-1'
-                         onClick={() => setSelectedTournament({
-                           ...tournament,
-                           description: tournament.description || '',
-                           created_by: tournament.created_by || '',
-                           created_at: tournament.created_at || '',
-                           updated_at: tournament.updated_at || ''
-                         })}
+                        onClick={() => setSelectedTournament(tournament)}
                        >
                          <Eye className='w-4 h-4 mr-2' />
                          Quản lý
