@@ -186,15 +186,18 @@ export const EnhancedTournamentBracket: React.FC<EnhancedTournamentBracketProps>
 
       // Fetch participants first
       const { data: participantsData, error: participantsError } = await supabase
-        .from('tournament_participants')
-        .select('*')
+        .from('tournament_registrations')
+        .select(`
+          *,
+          profiles!tournament_registrations_player_id_fkey(*)
+        `)
         .eq('tournament_id', tournamentId)
         .order('seed_number', { ascending: true });
 
       if (participantsError) throw participantsError;
 
       // Get unique user IDs from participants
-      const participantUserIds = participantsData?.map(p => p.user_id).filter(Boolean) || [];
+      const participantUserIds = participantsData?.map(p => p.player_id).filter(Boolean) || [];
       
       // Fetch profiles for participants
       const { data: participantProfiles } = await supabase
@@ -209,12 +212,12 @@ export const EnhancedTournamentBracket: React.FC<EnhancedTournamentBracketProps>
       });
 
       const transformedParticipants = participantsData?.map(p => ({
-        id: p.user_id,
-        username: participantProfilesMap.get(p.user_id)?.display_name || 'Unknown',
-        avatar_url: participantProfilesMap.get(p.user_id)?.avatar_url,
-        rank: participantProfilesMap.get(p.user_id)?.verified_rank || 'K',
-        seed: p.seed_number,
-        spa_points: participantProfilesMap.get(p.user_id)?.elo || 0
+        id: p.player_id,
+        username: participantProfilesMap.get(p.player_id)?.display_name || 'Unknown',
+        avatar_url: participantProfilesMap.get(p.player_id)?.avatar_url,
+        rank: participantProfilesMap.get(p.player_id)?.verified_rank || 'K',
+        seed: p.bracket_position || 0,
+        spa_points: participantProfilesMap.get(p.player_id)?.elo || 0
       })) || [];
 
       setParticipants(transformedParticipants);

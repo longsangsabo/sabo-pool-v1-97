@@ -78,12 +78,12 @@ export const useLeaderboard = () => {
     setError('');
 
     try {
-      // Build query for leaderboard data from our database tables
+      // Build query for leaderboard data using player_rankings
       let query = supabase
-        .from('leaderboards')
+        .from('player_rankings')
         .select(`
           *,
-          profiles!inner(
+          profiles!player_rankings_player_id_fkey(
             user_id,
             full_name,
             display_name,
@@ -92,21 +92,12 @@ export const useLeaderboard = () => {
             district,
             verified_rank,
             bio
-          ),
-          player_stats!inner(
-            matches_played,
-            matches_won,
-            matches_lost,
-            win_rate,
-            current_streak,
-            longest_streak,
-            last_match_date
           )
         `);
 
       // Apply filters
       if (currentFilters.city) {
-        query = query.eq('city', currentFilters.city);
+        query = query.eq('profiles.city', currentFilters.city);
       }
       
       if (currentFilters.searchTerm) {
@@ -114,8 +105,8 @@ export const useLeaderboard = () => {
       }
 
       // Apply sorting
-      const sortColumn = currentFilters.sortBy === 'elo' ? 'ranking_points' : 
-                        currentFilters.sortBy === 'wins' ? 'total_wins' :
+      const sortColumn = currentFilters.sortBy === 'elo' ? 'elo_points' : 
+                        currentFilters.sortBy === 'wins' ? 'wins' :
                         currentFilters.sortBy === 'win_rate' ? 'win_rate' : 'total_matches';
       
       query = query.order(sortColumn, { ascending: currentFilters.sortOrder === 'asc' });
@@ -134,21 +125,21 @@ export const useLeaderboard = () => {
         id: item.id,
         username: item.profiles?.display_name || item.profiles?.full_name || 'Unknown',
         full_name: item.profiles?.full_name || '',
-        current_rank: item.rank_category || 'Unranked',
-        ranking_points: item.ranking_points || 0,
+        current_rank: item.profiles?.verified_rank || 'Unranked',
+        ranking_points: item.elo_points || 0,
         total_matches: item.total_matches || 0,
         avatar_url: item.profiles?.avatar_url || '',
-        elo: item.ranking_points || 1000, // Use ranking_points as elo equivalent
-        wins: item.total_wins || 0,
-        losses: (item.total_matches || 0) - (item.total_wins || 0),
+        elo: item.elo_points || 1000,
+        wins: item.wins || 0,
+        losses: (item.total_matches || 0) - (item.wins || 0),
         matches_played: item.total_matches || 0,
-        win_rate: item.win_rate || 0,
+        win_rate: item.total_matches > 0 ? (item.wins / item.total_matches) * 100 : 0,
         rank: from + index + 1,
-        last_played: item.player_stats?.last_match_date || new Date().toISOString(),
-        streak: item.player_stats?.current_streak || 0,
+        last_played: item.updated_at || new Date().toISOString(),
+        streak: item.win_streak || 0,
         country: 'Vietnam',
-        city: item.city || '',
-        location: `${item.city || ''}, ${item.district || ''}`.trim().replace(/^,|,$/, ''),
+        city: item.profiles?.city || '',
+        location: `${item.profiles?.city || ''}, ${item.profiles?.district || ''}`.trim().replace(/^,|,$/, ''),
         bio: item.profiles?.bio || '',
         user_id: item.player_id,
       }));
@@ -176,23 +167,21 @@ export const useLeaderboard = () => {
         .from('profiles')
         .select('*', { count: 'exact', head: true });
 
-      // Get stats from current month leaderboard
-      const { data: leaderboardData } = await supabase
-        .from('leaderboards')
-        .select('ranking_points')
-        .eq('month', currentMonth)
-        .eq('year', currentYear);
+      // Get stats from player_rankings
+      const { data: rankingsData } = await supabase
+        .from('player_rankings')
+        .select('elo_points');
 
-      const rankingPoints = leaderboardData?.map(item => item.ranking_points || 0) || [];
+      const eloPoints = rankingsData?.map(item => item.elo_points || 0) || [];
       
       const calculatedStats: LeaderboardStats = {
         totalPlayers: totalPlayers || 0,
-        averageElo: rankingPoints.length > 0 
-          ? rankingPoints.reduce((sum, points) => sum + points, 0) / rankingPoints.length 
+        averageElo: eloPoints.length > 0 
+          ? eloPoints.reduce((sum, points) => sum + points, 0) / eloPoints.length 
           : 1500,
-        highestElo: rankingPoints.length > 0 ? Math.max(...rankingPoints) : 2500,
-        lowestElo: rankingPoints.length > 0 ? Math.min(...rankingPoints) : 800,
-        activePlayers: leaderboardData?.length || 0,
+        highestElo: eloPoints.length > 0 ? Math.max(...eloPoints) : 2500,
+        lowestElo: eloPoints.length > 0 ? Math.min(...eloPoints) : 800,
+        activePlayers: rankingsData?.length || 0,
       };
       
       setStats(calculatedStats);

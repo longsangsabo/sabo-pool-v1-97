@@ -114,14 +114,10 @@ export const usePlayerRanking = (playerId?: string) => {
     if (!currentPlayerId) return [];
 
     const { data, error } = await supabase
-      .from('ranking_history')
-      .select(`
-        *,
-        old_rank:ranks!old_rank_id(*),
-        new_rank:ranks!new_rank_id(*)
-      `)
+      .from('elo_history')
+      .select('*')
       .eq('player_id', currentPlayerId)
-      .order('promotion_date', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching ranking history:', error);
@@ -148,7 +144,19 @@ export const usePlayerRanking = (playerId?: string) => {
       setRanks(ranksData);
       setPlayerRanking(rankingData);
       setSpaPointsLog(pointsLogData as SPAPointsEntry[]);
-      setRankingHistory(historyData);
+      // Transform elo_history to ranking history format
+      const transformedHistory = historyData.map((item: any) => ({
+        id: item.id,
+        player_id: item.player_id,
+        old_rank_id: item.rank_before || '',
+        new_rank_id: item.rank_after || '',
+        promotion_date: item.created_at,
+        total_points_earned: item.elo_change,
+        season: 1,
+        old_rank: null,
+        new_rank: null
+      }));
+      setRankingHistory(transformedHistory);
     } catch (err) {
       console.error('Error loading ranking data:', err);
       setError('Failed to load ranking data');

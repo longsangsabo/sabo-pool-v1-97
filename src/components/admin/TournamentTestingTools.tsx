@@ -1061,8 +1061,9 @@ const DataCleanupTools = ({ addLog: globalAddLog }: { addLog?: (message: string,
       addLog('✅ Test tournaments removed');
       
       const { error: profilesError } = await supabase
-        .from('test_profiles')
+        .from('profiles')
         .delete()
+        .eq('is_demo_user', true)
         .neq('id', '00000000-0000-0000-0000-000000000000');
       
       if (profilesError) {

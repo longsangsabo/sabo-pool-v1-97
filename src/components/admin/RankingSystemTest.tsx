@@ -274,9 +274,9 @@ export function RankingSystemTest() {
 
       // Check if history was created
       const { data: history } = await supabase
-        .from('ranking_history')
+        .from('elo_history')
         .select('*')
-        .gte('promotion_date', new Date().toISOString().split('T')[0])
+        .gte('created_at', new Date().toISOString().split('T')[0])
         .limit(5);
 
       const duration = Date.now() - startTime;

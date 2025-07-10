@@ -91,13 +91,12 @@ export async function getPlayerSeasonStats(playerId: string): Promise<{
 
     if (rankingError) throw rankingError;
 
-    // Get promotions this season
+    // Get ELO history this season
     const { count: promotions, error: historyError } = await supabase
-      .from('ranking_history')
+      .from('elo_history')
       .select('*', { count: 'exact' })
       .eq('player_id', playerId)
-      .gte('promotion_date', ranking?.season_start || new Date().toISOString())
-      .neq('old_rank_id', 'new_rank_id');
+      .gte('created_at', ranking?.season_start || new Date().toISOString());
 
     if (historyError) throw historyError;
 

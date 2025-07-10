@@ -22,14 +22,14 @@ export const useDatabaseOptimization = () => {
     return useQuery({
       queryKey: getCacheKey('leaderboard-optimized', stableFilters),
       queryFn: async () => {
-        // Use fallback since optimize_leaderboard_query might not exist
+        // Use player_rankings since leaderboards was removed
         const { data, error } = await supabase
-          .from('leaderboards')
+          .from('player_rankings')
           .select(`
             *,
-            profiles(display_name, full_name, avatar_url)
+            profiles!player_rankings_player_id_fkey(display_name, full_name, avatar_url)
           `)
-          .order('ranking_points', { ascending: false })
+          .order('elo_points', { ascending: false })
           .limit(stableFilters.pageSize || 20);
 
         if (error) throw error;
@@ -47,9 +47,9 @@ export const useDatabaseOptimization = () => {
     return useQuery({
       queryKey: ['leaderboard-stats'], // Simplified key
       queryFn: async () => {
-        // Use fallback query since materialized view might not exist
+        // Use player_rankings since leaderboards was removed
         const { data, error } = await supabase
-          .from('leaderboards')
+          .from('player_rankings')
           .select('id')
           .limit(1);
 
