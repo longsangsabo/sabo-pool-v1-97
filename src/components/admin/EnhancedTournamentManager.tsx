@@ -179,12 +179,26 @@ const EnhancedTournamentManager = () => {
     setShowBracketModal(true);
   };
 
-  const handleBracketGenerated = () => {
-    // Không đóng modal ngay sau khi tạo bracket thành công
-    // để người dùng có thể xem bracket visualization
-    // setShowBracketModal(false);
-    // setBracketTournamentId(null);
-    toast.success('Bảng đấu đã được tạo thành công! Bạn có thể xem sơ đồ bên dưới.');
+  const handleDeleteTournament = async (tournamentId: string, tournamentName: string) => {
+    if (!confirm(`Bạn có chắc chắn muốn xóa giải đấu "${tournamentName}"?\n\nHành động này không thể hoàn tác!`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('tournaments')
+        .delete()
+        .eq('id', tournamentId);
+
+      if (error) throw error;
+      toast.success(`Đã xóa giải đấu "${tournamentName}" thành công!`);
+      
+      // Refresh data after deletion
+      window.location.reload();
+    } catch (error) {
+      console.error('Error deleting tournament:', error);
+      toast.error('Có lỗi khi xóa giải đấu');
+    }
   };
 
   const filteredTournaments = tournaments?.filter(tournament => {
@@ -405,6 +419,14 @@ const EnhancedTournamentManager = () => {
                       <Button variant='outline' size='sm' className='flex-1'>
                         <Edit className='w-4 h-4 mr-2' />
                         Sửa
+                      </Button>
+                      <Button 
+                        variant='destructive' 
+                        size='sm' 
+                        onClick={() => handleDeleteTournament(tournament.id, tournament.name)}
+                        className='flex-shrink-0'
+                      >
+                        <Trash2 className='w-4 h-4' />
                       </Button>
                     </div>
 
@@ -721,7 +743,9 @@ const EnhancedTournamentManager = () => {
           {bracketTournamentId && (
             <BracketGenerator 
               tournamentId={bracketTournamentId} 
-              onBracketGenerated={handleBracketGenerated}
+              onBracketGenerated={() => {
+                toast.success('Bảng đấu đã được tạo thành công!');
+              }}
             />
           )}
         </DialogContent>
