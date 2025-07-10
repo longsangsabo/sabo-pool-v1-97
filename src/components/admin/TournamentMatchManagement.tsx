@@ -97,23 +97,31 @@ export const TournamentMatchManagement: React.FC<TournamentMatchManagementProps>
   // Check if tournament can be completed
   const canCompleteTournament = () => {
     if (matches.length === 0) return false;
+    if (tournament.status === 'completed') return false;
     
     // Find final round (highest round number)
     const maxRound = Math.max(...rounds);
     const finalRoundMatches = matchesByRound[maxRound] || [];
     
-    // Tournament can be completed if final match is completed
-    const finalMatch = finalRoundMatches.find(m => m.notes?.includes('Chung kết'));
+    // Find final match and third place match
+    const finalMatch = finalRoundMatches.find(m => m.notes?.includes('Chung kết') || m.match_number === 1);
+    const thirdPlaceMatch = finalRoundMatches.find(m => m.notes?.includes('Tranh hạng 3') || m.is_third_place_match);
     
     if (finalMatch) {
-      return finalMatch.status === 'completed' && 
-             finalMatch.winner_id &&
-             tournament.status !== 'completed';
+      // Final match must be completed
+      const finalCompleted = finalMatch.status === 'completed' && finalMatch.winner_id;
+      
+      if (thirdPlaceMatch) {
+        // If there's a third place match, it must also be completed
+        const thirdPlaceCompleted = thirdPlaceMatch.status === 'completed' && thirdPlaceMatch.winner_id;
+        return finalCompleted && thirdPlaceCompleted;
+      } else {
+        // No third place match, only final match needs to be completed
+        return finalCompleted;
+      }
     } else if (finalRoundMatches.length === 1) {
       // Legacy - single match in final round
-      return finalRoundMatches[0]?.status === 'completed' &&
-             finalRoundMatches[0]?.winner_id &&
-             tournament.status !== 'completed';
+      return finalRoundMatches[0]?.status === 'completed' && finalRoundMatches[0]?.winner_id;
     }
     
     return false;

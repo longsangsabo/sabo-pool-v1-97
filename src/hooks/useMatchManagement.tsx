@@ -19,6 +19,7 @@ export interface TournamentMatch {
   completed_at?: string;
   referee_id?: string;
   notes?: string;
+  is_third_place_match?: boolean;
   player1?: {
     user_id: string;
     full_name: string;
@@ -89,6 +90,7 @@ export const useMatchManagement = (tournamentId: string) => {
         completed_at: match.actual_end_time,
         referee_id: match.referee_id,
         notes: match.notes,
+        is_third_place_match: match.is_third_place_match || false,
         player1: match.player1,
         player2: match.player2
       })) as TournamentMatch[];
