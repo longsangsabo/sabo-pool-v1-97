@@ -86,6 +86,158 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          session_id: string
+          type: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          session_id: string
+          type: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          session_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_chat_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "admin_chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_chat_sessions: {
+        Row: {
+          admin_id: string
+          created_at: string
+          id: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_id: string
+          created_at?: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_id?: string
+          created_at?: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      admin_knowledge_base: {
+        Row: {
+          category: string
+          content: string
+          content_type: string
+          created_at: string
+          embedding: string | null
+          id: string
+          is_active: boolean | null
+          metadata: Json | null
+          priority: number | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          content: string
+          content_type: string
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          priority?: number | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          content_type?: string
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          priority?: number | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      admin_workflows: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          intent_pattern: string | null
+          is_active: boolean | null
+          priority: number | null
+          required_data: Json | null
+          response_template: string | null
+          sql_queries: Json | null
+          trigger_keywords: string[]
+          updated_at: string
+          usage_count: number | null
+          workflow_name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          intent_pattern?: string | null
+          is_active?: boolean | null
+          priority?: number | null
+          required_data?: Json | null
+          response_template?: string | null
+          sql_queries?: Json | null
+          trigger_keywords: string[]
+          updated_at?: string
+          usage_count?: number | null
+          workflow_name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          intent_pattern?: string | null
+          is_active?: boolean | null
+          priority?: number | null
+          required_data?: Json | null
+          response_template?: string | null
+          sql_queries?: Json | null
+          trigger_keywords?: string[]
+          updated_at?: string
+          usage_count?: number | null
+          workflow_name?: string
+        }
+        Relationships: []
+      }
       analytics_events: {
         Row: {
           created_at: string
@@ -5873,6 +6025,10 @@ export type Database = {
         }
         Returns: number
       }
+      binary_quantize: {
+        Args: { "": string } | { "": unknown }
+        Returns: unknown
+      }
       calculate_achievement_points: {
         Args: { placement: string }
         Returns: number
@@ -6192,9 +6348,61 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: boolean
       }
+      halfvec_avg: {
+        Args: { "": number[] }
+        Returns: unknown
+      }
+      halfvec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      halfvec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      halfvec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
+      hnsw_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnsw_sparsevec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      hnswhandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
       is_current_user_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      ivfflat_bit_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflat_halfvec_support: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      ivfflathandler: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      l2_norm: {
+        Args: { "": unknown } | { "": unknown }
+        Returns: number
+      }
+      l2_normalize: {
+        Args: { "": string } | { "": unknown } | { "": unknown }
+        Returns: string
       }
       mark_notifications_read: {
         Args: { notification_ids: string[] }
@@ -6296,6 +6504,18 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      sparsevec_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      sparsevec_send: {
+        Args: { "": unknown }
+        Returns: string
+      }
+      sparsevec_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
+      }
       system_health_check: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -6343,6 +6563,30 @@ export type Database = {
           p_membership_type: string
         }
         Returns: boolean
+      }
+      vector_avg: {
+        Args: { "": number[] }
+        Returns: string
+      }
+      vector_dims: {
+        Args: { "": string } | { "": unknown }
+        Returns: number
+      }
+      vector_norm: {
+        Args: { "": string }
+        Returns: number
+      }
+      vector_out: {
+        Args: { "": string }
+        Returns: unknown
+      }
+      vector_send: {
+        Args: { "": string }
+        Returns: string
+      }
+      vector_typmod_in: {
+        Args: { "": unknown[] }
+        Returns: number
       }
       verify_match_result: {
         Args: {
