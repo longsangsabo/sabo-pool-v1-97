@@ -14,6 +14,7 @@ import {
   Bot,
   Code,
   X,
+  Gamepad2,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -35,6 +36,7 @@ const AdminSidebar = ({ isMobile = false, onClose }: AdminSidebarProps = {}) => 
     { icon: Building2, key: 'admin.clubs', path: '/admin/clubs' },
     { icon: CreditCard, key: 'admin.transactions', path: '/admin/transactions' },
     { icon: BarChart3, key: 'admin.analytics', path: '/admin/analytics' },
+    { icon: Gamepad2, key: 'admin.game_config', path: '/admin/game-config' },
     { icon: Bot, key: 'admin.ai_assistant', path: '/admin/ai-assistant' },
     { icon: TestTube, key: 'admin.test_ranking', path: '/admin/test-ranking' },
     { icon: Code, key: 'admin.development', path: '/admin/development' },

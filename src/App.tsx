@@ -90,6 +90,7 @@ import AdminTournaments from "./pages/admin/AdminTournaments";
 import AdminTransactions from "./pages/admin/AdminTransactions";
 import AdminClubs from "./pages/admin/AdminClubs";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import AdminGameConfig from "./pages/admin/AdminGameConfig";
 import AdminAutomation from "./pages/admin/AdminAutomation";
 import AdminDevelopment from "./pages/admin/AdminDevelopment";
 import AdminSettings from "./pages/admin/AdminSettings";
@@ -216,13 +217,14 @@ const App = () => {
                       </Route>
                       
                        {/* Admin routes - nested with AdminLayout wrapper */}
-                      <Route path="/admin" element={<AdminLayout />}>
+                       <Route path="/admin" element={<AdminLayout />}>
                         <Route index element={<AdminDashboard />} />
                         <Route path="users" element={<AdminUsers />} />
                         <Route path="tournaments" element={<AdminTournaments />} />
                         <Route path="transactions" element={<AdminTransactions />} />
                         <Route path="clubs" element={<AdminClubs />} />
                         <Route path="analytics" element={<AdminAnalytics />} />
+                        <Route path="game-config" element={<AdminGameConfig />} />
                         <Route path="ai-assistant" element={<AdminAIAssistant />} />
                         <Route path="automation" element={<AdminAutomation />} />
                         <Route path="development" element={<AdminDevelopment />} />

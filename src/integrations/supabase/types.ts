@@ -853,6 +853,48 @@ export type Database = {
           },
         ]
       }
+      elo_calculation_rules: {
+        Row: {
+          base_value: number
+          conditions: Json
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          multiplier: number | null
+          priority: number | null
+          rule_name: string
+          rule_type: string
+          updated_at: string | null
+          value_formula: string
+        }
+        Insert: {
+          base_value: number
+          conditions: Json
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          multiplier?: number | null
+          priority?: number | null
+          rule_name: string
+          rule_type: string
+          updated_at?: string | null
+          value_formula: string
+        }
+        Update: {
+          base_value?: number
+          conditions?: Json
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          multiplier?: number | null
+          priority?: number | null
+          rule_name?: string
+          rule_type?: string
+          updated_at?: string | null
+          value_formula?: string
+        }
+        Relationships: []
+      }
       elo_history: {
         Row: {
           created_at: string | null
@@ -1151,6 +1193,81 @@ export type Database = {
           player_id?: string
           updated_at?: string | null
           wins?: number | null
+        }
+        Relationships: []
+      }
+      game_config_logs: {
+        Row: {
+          action_type: string
+          change_reason: string | null
+          changed_by: string | null
+          config_id: string
+          config_table: string
+          created_at: string | null
+          id: string
+          new_values: Json | null
+          old_values: Json | null
+        }
+        Insert: {
+          action_type: string
+          change_reason?: string | null
+          changed_by?: string | null
+          config_id: string
+          config_table: string
+          created_at?: string | null
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+        }
+        Update: {
+          action_type?: string
+          change_reason?: string | null
+          changed_by?: string | null
+          config_id?: string
+          config_table?: string
+          created_at?: string | null
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+        }
+        Relationships: []
+      }
+      game_configurations: {
+        Row: {
+          category: string
+          config_key: string
+          config_value: Json
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          category: string
+          config_key: string
+          config_value: Json
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string
+          config_key?: string
+          config_value?: Json
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+          updated_by?: string | null
         }
         Relationships: []
       }
@@ -3680,6 +3797,54 @@ export type Database = {
           },
         ]
       }
+      rank_definitions: {
+        Row: {
+          created_at: string | null
+          elo_requirement: number
+          id: string
+          is_active: boolean | null
+          match_requirement: number | null
+          promotion_requirements: Json | null
+          rank_code: string
+          rank_color: string | null
+          rank_description: string | null
+          rank_name: string
+          rank_order: number
+          spa_requirement: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          elo_requirement: number
+          id?: string
+          is_active?: boolean | null
+          match_requirement?: number | null
+          promotion_requirements?: Json | null
+          rank_code: string
+          rank_color?: string | null
+          rank_description?: string | null
+          rank_name: string
+          rank_order: number
+          spa_requirement?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          elo_requirement?: number
+          id?: string
+          is_active?: boolean | null
+          match_requirement?: number | null
+          promotion_requirements?: Json | null
+          rank_code?: string
+          rank_color?: string | null
+          rank_description?: string | null
+          rank_name?: string
+          rank_order?: number
+          spa_requirement?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       rank_reports: {
         Row: {
           actual_skill_assessment: string | null
@@ -4469,6 +4634,45 @@ export type Database = {
           },
         ]
       }
+      spa_reward_milestones: {
+        Row: {
+          bonus_conditions: Json | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          is_repeatable: boolean | null
+          milestone_name: string
+          milestone_type: string
+          requirement_value: number
+          spa_reward: number
+          updated_at: string | null
+        }
+        Insert: {
+          bonus_conditions?: Json | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_repeatable?: boolean | null
+          milestone_name: string
+          milestone_type: string
+          requirement_value: number
+          spa_reward: number
+          updated_at?: string | null
+        }
+        Update: {
+          bonus_conditions?: Json | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_repeatable?: boolean | null
+          milestone_name?: string
+          milestone_type?: string
+          requirement_value?: number
+          spa_reward?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       system_logs: {
         Row: {
           created_at: string | null
@@ -5155,6 +5359,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tournament_reward_structures: {
+        Row: {
+          additional_rewards: Json | null
+          created_at: string | null
+          elo_reward: number
+          id: string
+          is_active: boolean | null
+          position_name: string
+          rank_category: string
+          spa_reward: number
+          tournament_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          additional_rewards?: Json | null
+          created_at?: string | null
+          elo_reward: number
+          id?: string
+          is_active?: boolean | null
+          position_name: string
+          rank_category: string
+          spa_reward: number
+          tournament_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          additional_rewards?: Json | null
+          created_at?: string | null
+          elo_reward?: number
+          id?: string
+          is_active?: boolean | null
+          position_name?: string
+          rank_category?: string
+          spa_reward?: number
+          tournament_type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       tournament_seeding: {
         Row: {
