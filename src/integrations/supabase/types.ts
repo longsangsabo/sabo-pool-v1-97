@@ -5007,6 +5007,7 @@ export type Database = {
           actual_start_time: string | null
           bracket_id: string | null
           bracket_position: number | null
+          completed_at: string | null
           created_at: string | null
           id: string
           live_stream_url: string | null
@@ -5025,6 +5026,7 @@ export type Database = {
           scheduled_time: string | null
           score_player1: number | null
           score_player2: number | null
+          started_at: string | null
           status: string | null
           tournament_id: string | null
           updated_at: string | null
@@ -5035,6 +5037,7 @@ export type Database = {
           actual_start_time?: string | null
           bracket_id?: string | null
           bracket_position?: number | null
+          completed_at?: string | null
           created_at?: string | null
           id?: string
           live_stream_url?: string | null
@@ -5053,6 +5056,7 @@ export type Database = {
           scheduled_time?: string | null
           score_player1?: number | null
           score_player2?: number | null
+          started_at?: string | null
           status?: string | null
           tournament_id?: string | null
           updated_at?: string | null
@@ -5063,6 +5067,7 @@ export type Database = {
           actual_start_time?: string | null
           bracket_id?: string | null
           bracket_position?: number | null
+          completed_at?: string | null
           created_at?: string | null
           id?: string
           live_stream_url?: string | null
@@ -5081,6 +5086,7 @@ export type Database = {
           scheduled_time?: string | null
           score_player1?: number | null
           score_player2?: number | null
+          started_at?: string | null
           status?: string | null
           tournament_id?: string | null
           updated_at?: string | null
