@@ -39,6 +39,7 @@ export const TournamentMatchManagement: React.FC<TournamentMatchManagementProps>
 
   const [selectedRound, setSelectedRound] = useState<number | 'all'>('all');
   const [isGeneratingRounds, setIsGeneratingRounds] = useState(false);
+  const [isCompletingTournament, setIsCompletingTournament] = useState(false);
 
   // Generate all tournament rounds
   const handleGenerateAllRounds = async () => {
@@ -65,6 +66,49 @@ export const TournamentMatchManagement: React.FC<TournamentMatchManagementProps>
     } finally {
       setIsGeneratingRounds(false);
     }
+  };
+
+  // Complete tournament
+  const handleCompleteTournament = async () => {
+    try {
+      setIsCompletingTournament(true);
+      
+      const { error } = await supabase
+        .from('tournaments')
+        .update({
+          status: 'completed',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', tournament.id);
+
+      if (error) throw error;
+
+      toast.success('🏆 Giải đấu đã được hoàn thành!');
+      // Reload page to update tournament status
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Error completing tournament:', error);
+      toast.error(`Lỗi hoàn thành giải đấu: ${error?.message || 'Không xác định'}`);
+    } finally {
+      setIsCompletingTournament(false);
+    }
+  };
+
+  // Check if tournament can be completed
+  const canCompleteTournament = () => {
+    if (matches.length === 0) return false;
+    
+    // Find final round (highest round number)
+    const maxRound = Math.max(...rounds);
+    const finalRoundMatches = matchesByRound[maxRound] || [];
+    
+    // Tournament can be completed if:
+    // 1. There's only 1 match in final round (single winner)
+    // 2. That match is completed
+    return finalRoundMatches.length === 1 && 
+           finalRoundMatches[0]?.status === 'completed' &&
+           finalRoundMatches[0]?.winner_id &&
+           tournament.status !== 'completed';
   };
 
   if (loading) {
@@ -180,6 +224,23 @@ export const TournamentMatchManagement: React.FC<TournamentMatchManagementProps>
               <Zap className="h-4 w-4" />
               {isGeneratingRounds ? 'Đang tạo...' : 'Tạo tất cả vòng'}
             </Button>
+
+            {/* Complete Tournament Button */}
+            {canCompleteTournament() && (
+              <>
+                <div className="w-px h-6 bg-border mx-2" />
+                <Button
+                  onClick={handleCompleteTournament}
+                  disabled={isCompletingTournament}
+                  variant="destructive"
+                  size="sm"
+                  className="flex items-center gap-1 bg-green-600 hover:bg-green-700"
+                >
+                  <Trophy className="h-4 w-4" />
+                  {isCompletingTournament ? 'Đang hoàn thành...' : 'Hoàn thành giải đấu'}
+                </Button>
+              </>
+            )}
 
             {/* Round Filter Buttons */}
             {rounds.length > 1 && (
