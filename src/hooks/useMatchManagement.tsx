@@ -147,7 +147,7 @@ export const useMatchManagement = (tournamentId: string) => {
             player2_score: player2Score,
             result_status: 'verified',
             verification_method: 'manual',
-            entered_by: currentUser.data.user?.id,
+            created_by: currentUser.data.user?.id,
             verified_at: new Date().toISOString(),
             verified_by: currentUser.data.user?.id
           });
