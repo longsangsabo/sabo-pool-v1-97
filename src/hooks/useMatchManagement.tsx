@@ -96,12 +96,6 @@ export const useMatchManagement = (tournamentId: string) => {
     enabled: !!tournamentId,
   });
 
-  // Debug log matches data  
-  console.log('useMatchManagement - Raw matches data:', {
-    tournamentId,
-    matchesCount: matches?.length || 0,
-    matchesData: matches
-  });
 
   // Simplified update match score - no match_results creation
   const updateScoreMutation = useMutation({

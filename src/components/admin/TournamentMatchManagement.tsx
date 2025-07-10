@@ -102,21 +102,10 @@ export const TournamentMatchManagement: React.FC<TournamentMatchManagementProps>
     const maxRound = Math.max(...rounds);
     const finalRoundMatches = matchesByRound[maxRound] || [];
     
-    // Tournament can be completed if:
-    // 1. Both Final and 3rd Place matches are completed (if both exist)
-    // 2. Or only Final match is completed (if no 3rd place match)
+    // Tournament can be completed if final match is completed
     const finalMatch = finalRoundMatches.find(m => m.notes?.includes('Chung kết'));
-    const thirdPlaceMatch = finalRoundMatches.find(m => m.notes?.includes('Tranh hạng 3-4'));
     
-    if (finalMatch && thirdPlaceMatch) {
-      // Both matches exist - both must be completed
-      return finalMatch.status === 'completed' && 
-             finalMatch.winner_id &&
-             thirdPlaceMatch.status === 'completed' &&
-             thirdPlaceMatch.winner_id &&
-             tournament.status !== 'completed';
-    } else if (finalMatch) {
-      // Only final match exists
+    if (finalMatch) {
       return finalMatch.status === 'completed' && 
              finalMatch.winner_id &&
              tournament.status !== 'completed';
@@ -352,94 +341,31 @@ export const TournamentMatchManagement: React.FC<TournamentMatchManagementProps>
               </Badge>
             </div>
             
-            {/* Special handling for Finals round */}
-            {selectedRound === Math.max(...rounds) && (
-              <div className="space-y-6">
-                {/* Third Place Match */}
-                {filteredMatches.filter(m => m.notes?.includes('Tranh hạng 3-4')).map(match => (
-                  <div key={match.id} className="space-y-2">
-                    <h4 className="font-medium text-amber-600 flex items-center gap-2">
-                      🥉 Tranh hạng 3-4
-                    </h4>
-                    <MatchScoreEntry
-                      match={match}
-                      onUpdateScore={async (matchId, player1Score, player2Score, winnerId) => {
-                        await updateScore({ matchId, player1Score, player2Score, winnerId });
-                      }}
-                      onStartMatch={async (matchId) => {
-                        await startMatch(matchId);
-                      }}
-                      onCancelMatch={async (matchId) => {
-                        await cancelMatch(matchId);
-                      }}
-                      onRestoreMatch={async (matchId) => {
-                        await restoreMatch(matchId);
-                      }}
-                      isUpdating={isUpdatingScore}
-                      isStarting={isStartingMatch}
-                      isCancelling={isCancellingMatch}
-                      isRestoring={isRestoringMatch}
-                    />
-                  </div>
-                ))}
-                
-                {/* Final Match */}
-                {filteredMatches.filter(m => m.notes?.includes('Chung kết')).map(match => (
-                  <div key={match.id} className="space-y-2">
-                    <h4 className="font-medium text-yellow-600 flex items-center gap-2">
-                      🏆 Chung kết
-                    </h4>
-                    <MatchScoreEntry
-                      match={match}
-                      onUpdateScore={async (matchId, player1Score, player2Score, winnerId) => {
-                        await updateScore({ matchId, player1Score, player2Score, winnerId });
-                      }}
-                      onStartMatch={async (matchId) => {
-                        await startMatch(matchId);
-                      }}
-                      onCancelMatch={async (matchId) => {
-                        await cancelMatch(matchId);
-                      }}
-                      onRestoreMatch={async (matchId) => {
-                        await restoreMatch(matchId);
-                      }}
-                      isUpdating={isUpdatingScore}
-                      isStarting={isStartingMatch}
-                      isCancelling={isCancellingMatch}
-                      isRestoring={isRestoringMatch}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-            
-            {/* Regular matches for other rounds */}
-            {selectedRound !== Math.max(...rounds) && (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {filteredMatches.map(match => (
-                  <MatchScoreEntry
-                    key={match.id}
-                    match={match}
-                    onUpdateScore={async (matchId, player1Score, player2Score, winnerId) => {
-                      await updateScore({ matchId, player1Score, player2Score, winnerId });
-                    }}
-                    onStartMatch={async (matchId) => {
-                      await startMatch(matchId);
-                    }}
-                    onCancelMatch={async (matchId) => {
-                      await cancelMatch(matchId);
-                    }}
-                    onRestoreMatch={async (matchId) => {
-                      await restoreMatch(matchId);
-                    }}
-                    isUpdating={isUpdatingScore}
-                    isStarting={isStartingMatch}
-                    isCancelling={isCancellingMatch}
-                    isRestoring={isRestoringMatch}
-                  />
-                ))}
-              </div>
-            )}
+            {/* Regular matches display */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {filteredMatches.map(match => (
+                <MatchScoreEntry
+                  key={match.id}
+                  match={match}
+                  onUpdateScore={async (matchId, player1Score, player2Score, winnerId) => {
+                    await updateScore({ matchId, player1Score, player2Score, winnerId });
+                  }}
+                  onStartMatch={async (matchId) => {
+                    await startMatch(matchId);
+                  }}
+                  onCancelMatch={async (matchId) => {
+                    await cancelMatch(matchId);
+                  }}
+                  onRestoreMatch={async (matchId) => {
+                    await restoreMatch(matchId);
+                  }}
+                  isUpdating={isUpdatingScore}
+                  isStarting={isStartingMatch}
+                  isCancelling={isCancellingMatch}
+                  isRestoring={isRestoringMatch}
+                />
+              ))}
+            </div>
           </div>
         ) : (
           // Show all matches grouped by round
@@ -459,92 +385,31 @@ export const TournamentMatchManagement: React.FC<TournamentMatchManagementProps>
                     </Badge>
                   </div>
                   
-                  {/* Special handling for Finals round */}
-                  {round === Math.max(...rounds) ? (
-                    <div className="space-y-6">
-                      {/* Third Place Match */}
-                      {roundMatches.filter(m => m.notes?.includes('Tranh hạng 3-4')).map(match => (
-                        <div key={match.id} className="space-y-2">
-                          <h4 className="font-medium text-amber-600 flex items-center gap-2">
-                            🥉 Tranh hạng 3-4
-                          </h4>
-                          <MatchScoreEntry
-                            match={match}
-                            onUpdateScore={async (matchId, player1Score, player2Score, winnerId) => {
-                              await updateScore({ matchId, player1Score, player2Score, winnerId });
-                            }}
-                            onStartMatch={async (matchId) => {
-                              await startMatch(matchId);
-                            }}
-                            onCancelMatch={async (matchId) => {
-                              await cancelMatch(matchId);
-                            }}
-                            onRestoreMatch={async (matchId) => {
-                              await restoreMatch(matchId);
-                            }}
-                            isUpdating={isUpdatingScore}
-                            isStarting={isStartingMatch}
-                            isCancelling={isCancellingMatch}
-                            isRestoring={isRestoringMatch}
-                          />
-                        </div>
-                      ))}
-                      
-                      {/* Final Match */}
-                      {roundMatches.filter(m => m.notes?.includes('Chung kết')).map(match => (
-                        <div key={match.id} className="space-y-2">
-                          <h4 className="font-medium text-yellow-600 flex items-center gap-2">
-                            🏆 Chung kết
-                          </h4>
-                          <MatchScoreEntry
-                            match={match}
-                            onUpdateScore={async (matchId, player1Score, player2Score, winnerId) => {
-                              await updateScore({ matchId, player1Score, player2Score, winnerId });
-                            }}
-                            onStartMatch={async (matchId) => {
-                              await startMatch(matchId);
-                            }}
-                            onCancelMatch={async (matchId) => {
-                              await cancelMatch(matchId);
-                            }}
-                            onRestoreMatch={async (matchId) => {
-                              await restoreMatch(matchId);
-                            }}
-                            isUpdating={isUpdatingScore}
-                            isStarting={isStartingMatch}
-                            isCancelling={isCancellingMatch}
-                            isRestoring={isRestoringMatch}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    // Regular grid for other rounds
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                      {roundMatches.map(match => (
-                        <MatchScoreEntry
-                          key={match.id}
-                          match={match}
-                          onUpdateScore={async (matchId, player1Score, player2Score, winnerId) => {
-                            await updateScore({ matchId, player1Score, player2Score, winnerId });
-                          }}
-                          onStartMatch={async (matchId) => {
-                            await startMatch(matchId);
-                          }}
-                          onCancelMatch={async (matchId) => {
-                            await cancelMatch(matchId);
-                          }}
-                          onRestoreMatch={async (matchId) => {
-                            await restoreMatch(matchId);
-                          }}
-                          isUpdating={isUpdatingScore}
-                          isStarting={isStartingMatch}
-                          isCancelling={isCancellingMatch}
-                          isRestoring={isRestoringMatch}
-                        />
-                      ))}
-                    </div>
-                  )}
+                  {/* Regular grid display for all rounds */}
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {roundMatches.map(match => (
+                      <MatchScoreEntry
+                        key={match.id}
+                        match={match}
+                        onUpdateScore={async (matchId, player1Score, player2Score, winnerId) => {
+                          await updateScore({ matchId, player1Score, player2Score, winnerId });
+                        }}
+                        onStartMatch={async (matchId) => {
+                          await startMatch(matchId);
+                        }}
+                        onCancelMatch={async (matchId) => {
+                          await cancelMatch(matchId);
+                        }}
+                        onRestoreMatch={async (matchId) => {
+                          await restoreMatch(matchId);
+                        }}
+                        isUpdating={isUpdatingScore}
+                        isStarting={isStartingMatch}
+                        isCancelling={isCancellingMatch}
+                        isRestoring={isRestoringMatch}
+                      />
+                    ))}
+                  </div>
                 </div>
               );
             })}
