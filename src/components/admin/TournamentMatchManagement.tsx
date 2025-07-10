@@ -163,9 +163,53 @@ export const TournamentMatchManagement: React.FC<TournamentMatchManagementProps>
     finalRoundMatches: rounds.length > 0 ? matchesByRound[Math.max(...rounds)] : []
   });
 
+  // Auto create third place match when semi-finals complete
+  const handleCreateThirdPlaceMatch = async () => {
+    try {
+      const { data, error } = await supabase.rpc('create_third_place_match', {
+        p_tournament_id: tournament.id
+      });
+
+      if (error) throw error;
+
+      if (data && typeof data === 'object' && 'error' in data) {
+        toast.error(String(data.error));
+        return;
+      }
+
+      toast.success('Đã tạo trận tranh hạng 3!');
+      await refetchMatches();
+    } catch (error: any) {
+      console.error('Error creating third place match:', error);
+      toast.error(`Lỗi tạo trận tranh hạng 3: ${error?.message || 'Không xác định'}`);
+    }
+  };
+
+  // Check if semi-finals are complete and 3rd place match can be created
+  const canCreateThirdPlaceMatch = () => {
+    if (matches.length === 0) return false;
+    
+    const maxRound = Math.max(...rounds);
+    const semiRoundMatches = matchesByRound[maxRound - 1] || [];
+    const finalRoundMatches = matchesByRound[maxRound] || [];
+    
+    // Check if all semi-finals are completed
+    const semiFinalsComplete = semiRoundMatches.length >= 2 && 
+                               semiRoundMatches.every(m => m.status === 'completed' && m.winner_id);
+    
+    // Check if 3rd place match doesn't already exist
+    const thirdPlaceExists = finalRoundMatches.some(m => (m as any).is_third_place_match);
+    
+    return semiFinalsComplete && !thirdPlaceExists;
+  };
+
   // Get round display name
-  const getRoundDisplayName = (roundNumber: number, notes?: string) => {
-    if (notes && (notes.includes('Tranh hạng 3-4') || notes.includes('Chung kết'))) {
+  const getRoundDisplayName = (roundNumber: number, notes?: string, isThirdPlace?: boolean) => {
+    if (isThirdPlace) {
+      return 'Tranh hạng 3';
+    }
+    
+    if (notes && (notes.includes('Tranh hạng 3') || notes.includes('Chung kết'))) {
       return notes;
     }
     
@@ -174,22 +218,22 @@ export const TournamentMatchManagement: React.FC<TournamentMatchManagementProps>
     if (maxRound >= 4) {
       switch (roundNumber) {
         case 1: return 'Round of 16';
-        case maxRound - 2: return 'Quarter-finals';
-        case maxRound - 1: return 'Semi-finals';
-        case maxRound: return 'Finals';
+        case maxRound - 2: return 'Tứ kết';
+        case maxRound - 1: return 'Bán kết';
+        case maxRound: return 'Chung kết';
         default: return `Vòng ${roundNumber}`;
       }
     } else if (maxRound === 3) {
       switch (roundNumber) {
-        case 1: return 'Quarter-finals';
-        case 2: return 'Semi-finals';
-        case 3: return 'Finals';
+        case 1: return 'Tứ kết';
+        case 2: return 'Bán kết';
+        case 3: return 'Chung kết';
         default: return `Vòng ${roundNumber}`;
       }
     } else if (maxRound === 2) {
       switch (roundNumber) {
-        case 1: return 'Semi-finals';
-        case 2: return 'Finals';
+        case 1: return 'Bán kết';
+        case 2: return 'Chung kết';
         default: return `Vòng ${roundNumber}`;
       }
     }
@@ -277,6 +321,19 @@ export const TournamentMatchManagement: React.FC<TournamentMatchManagementProps>
               <Zap className="h-4 w-4" />
               {isGeneratingRounds ? 'Đang tạo...' : 'Tạo tất cả vòng'}
             </Button>
+
+            {/* Create Third Place Match Button */}
+            {canCreateThirdPlaceMatch() && (
+              <Button
+                onClick={handleCreateThirdPlaceMatch}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1"
+              >
+                <Trophy className="h-4 w-4" />
+                Tạo trận tranh hạng 3
+              </Button>
+            )}
 
             {/* Complete Tournament Button */}
             {canCompleteTournament() && (

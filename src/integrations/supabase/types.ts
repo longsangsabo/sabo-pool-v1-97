@@ -4388,6 +4388,7 @@ export type Database = {
           bracket_position: number | null
           created_at: string | null
           id: string
+          is_third_place_match: boolean | null
           live_stream_url: string | null
           loser_id: string | null
           match_notes: string | null
@@ -4416,6 +4417,7 @@ export type Database = {
           bracket_position?: number | null
           created_at?: string | null
           id?: string
+          is_third_place_match?: boolean | null
           live_stream_url?: string | null
           loser_id?: string | null
           match_notes?: string | null
@@ -4444,6 +4446,7 @@ export type Database = {
           bracket_position?: number | null
           created_at?: string | null
           id?: string
+          is_third_place_match?: boolean | null
           live_stream_url?: string | null
           loser_id?: string | null
           match_notes?: string | null
@@ -5919,6 +5922,10 @@ export type Database = {
       }
       create_test_demo_user: {
         Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      create_third_place_match: {
+        Args: { p_tournament_id: string }
         Returns: Json
       }
       credit_spa_points: {
