@@ -140,7 +140,7 @@
     "jest": "^30.0.3",
     "lint-staged": "^16.1.2",
     "lovable-tagger": "^1.1.7",
-    "msw": "^2.10.2",
+    "msw": "^2.10.3",
     "postcss": "^8.4.47",
     "prettier": "^3.6.2",
     "rollup-plugin-visualizer": "^6.0.3",
