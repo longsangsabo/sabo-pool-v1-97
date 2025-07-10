@@ -163,6 +163,17 @@ export const TournamentMatchManagement: React.FC<TournamentMatchManagementProps>
     ? matches 
     : matchesByRound[selectedRound] || [];
 
+  // Debug logging
+  console.log('Debug - Tournament matches:', {
+    totalMatches: matches.length,
+    rounds,
+    selectedRound,
+    matchesByRound,
+    filteredMatches,
+    maxRound: Math.max(...rounds),
+    finalRoundMatches: rounds.length > 0 ? matchesByRound[Math.max(...rounds)] : []
+  });
+
   // Get round display name
   const getRoundDisplayName = (roundNumber: number, notes?: string) => {
     if (notes && (notes.includes('Tranh hạng 3-4') || notes.includes('Chung kết'))) {
