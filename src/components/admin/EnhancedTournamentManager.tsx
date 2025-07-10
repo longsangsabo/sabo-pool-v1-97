@@ -17,6 +17,9 @@ import { useTournaments } from '@/hooks/useTournaments';
 import BracketGenerator from '@/components/tournament/BracketGenerator';
 import { TournamentPlayerManagement } from './TournamentPlayerManagement';
 import { TournamentMatchManagement } from './TournamentMatchManagement';
+import MatchRescheduling from './MatchRescheduling';
+import MatchIncidentReporting from './MatchIncidentReporting';
+import BracketManagement from './BracketManagement';
 import { Tournament } from '@/types/common';
 
 const EnhancedTournamentManager = () => {
@@ -26,6 +29,7 @@ const EnhancedTournamentManager = () => {
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showBracketModal, setShowBracketModal] = useState(false);
+  const [matches, setMatches] = useState<any[]>([]);
   const [bracketTournamentId, setBracketTournamentId] = useState<string | null>(null);
   const [realTimeStats, setRealTimeStats] = useState({
     total: 0,
@@ -604,27 +608,13 @@ const EnhancedTournamentManager = () => {
             </DialogHeader>
             
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="overview" className="flex items-center gap-2">
-                  <Trophy className="h-4 w-4" />
-                  Tổng quan
-                </TabsTrigger>
-                <TabsTrigger value="participants" className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Người chơi
-                </TabsTrigger>
-                <TabsTrigger value="matches" className="flex items-center gap-2">
-                  <Target className="h-4 w-4" />
-                  Trận đấu
-                </TabsTrigger>
-                <TabsTrigger value="schedule" className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Lịch trình
-                </TabsTrigger>
-                <TabsTrigger value="settings" className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  Cài đặt
-                </TabsTrigger>
+              <TabsList className="grid w-full grid-cols-6">
+                <TabsTrigger value="overview">Tổng quan</TabsTrigger>
+                <TabsTrigger value="players">Người chơi</TabsTrigger>
+                <TabsTrigger value="matches">Trận đấu</TabsTrigger>
+                <TabsTrigger value="bracket">Bracket</TabsTrigger>
+                <TabsTrigger value="scheduling">Lịch thi đấu</TabsTrigger>
+                <TabsTrigger value="incidents">Sự cố</TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className="mt-6">
@@ -644,48 +634,44 @@ const EnhancedTournamentManager = () => {
                         <label className="text-sm font-medium">Mô tả</label>
                         <p className="text-gray-600">{selectedTournament.description}</p>
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-sm font-medium">Bắt đầu</label>
-                          <p>{formatDate(selectedTournament.tournament_start)}</p>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium">Kết thúc</label>
-                          <p>{formatDate(selectedTournament.tournament_end)}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Thống kê</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex justify-between">
-                        <span>Người tham gia:</span>
-                        <span>{selectedTournament.current_participants}/{selectedTournament.max_participants}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Phí tham gia:</span>
-                        <span>{formatPrize(selectedTournament.entry_fee)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Giải thưởng:</span>
-                        <span>{formatPrize(selectedTournament.prize_pool)}</span>
-                      </div>
                     </CardContent>
                   </Card>
                 </div>
               </TabsContent>
 
-              <TabsContent value="participants" className="mt-6">
+              <TabsContent value="players" className="mt-6">
                 <TournamentPlayerManagement tournament={selectedTournament} />
               </TabsContent>
 
               <TabsContent value="matches" className="mt-6">
-                <TournamentMatchManagement tournament={selectedTournament} />
+                <TournamentMatchManagement 
+                  tournamentId={selectedTournament.id}
+                  onMatchUpdate={() => {}}
+                />
               </TabsContent>
+
+              <TabsContent value="bracket" className="mt-6">
+                <BracketManagement 
+                  tournamentId={selectedTournament.id}
+                  onBracketUpdate={() => {}}
+                />
+              </TabsContent>
+
+              <TabsContent value="scheduling" className="mt-6">
+                <MatchRescheduling 
+                  tournamentId={selectedTournament.id}
+                  matches={matches}
+                  onMatchUpdate={() => {}}
+                />
+              </TabsContent>
+
+              <TabsContent value="incidents" className="mt-6">
+                <MatchIncidentReporting 
+                  tournamentId={selectedTournament.id}
+                  matches={matches}
+                />
+              </TabsContent>
+            </Tabs>
 
               <TabsContent value="schedule" className="mt-6">
                 <Card>
