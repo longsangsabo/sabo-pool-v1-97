@@ -1,14 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { Trophy, Medal, Award, TrendingUp, Users, Calendar } from 'lucide-react';
+import { Trophy, Medal, Award, TrendingUp, Users, Calendar, Gift, DollarSign, Info } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { TournamentRewardsButton } from './TournamentRewardsButton';
+import { RankingService } from '@/services/rankingService';
 
 interface TournamentResultsProps {
   tournamentId: string;
   tournamentName: string;
+}
+
+interface ClubReward {
+  type: 'cash' | 'physical';
+  description: string;
+  value?: number;
+}
+
+interface TournamentReward {
+  position: number;
+  cashPrize: number;
+  physicalPrizes: string[];
 }
 
 interface ParticipantResult {
@@ -33,6 +48,8 @@ export const TournamentResults: React.FC<TournamentResultsProps> = ({
   const [results, setResults] = useState<ParticipantResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [champion, setChampion] = useState<ParticipantResult | null>(null);
+  const [clubRewards, setClubRewards] = useState<TournamentReward[]>([]);
+  const [tournament, setTournament] = useState<any>(null);
 
   useEffect(() => {
     fetchTournamentResults();
@@ -40,6 +57,22 @@ export const TournamentResults: React.FC<TournamentResultsProps> = ({
 
   const fetchTournamentResults = async () => {
     try {
+      // Get tournament info
+      const { data: tournamentData } = await supabase
+        .from('tournaments')
+        .select('*')
+        .eq('id', tournamentId)
+        .single();
+      
+      setTournament(tournamentData);
+
+      // Get tournament seeding/final positions from bracket
+      const { data: seeding } = await supabase
+        .from('tournament_seeding')
+        .select('*')
+        .eq('tournament_id', tournamentId)
+        .order('seed_position');
+
       // Get final match to find champion and runner-up
       const { data: finalMatch } = await supabase
         .from('tournament_matches')
@@ -54,7 +87,7 @@ export const TournamentResults: React.FC<TournamentResultsProps> = ({
         .not('winner_id', 'is', null)
         .order('round_number', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       // Get all participants with their match results
       const { data: participants } = await supabase
@@ -78,6 +111,11 @@ export const TournamentResults: React.FC<TournamentResultsProps> = ({
         .select('*')
         .eq('tournament_id', tournamentId);
 
+      // Get player rankings for current ELO/SPA
+      const { data: playerRankings } = await supabase
+        .from('player_rankings')
+        .select('*');
+
       // Get SPA points log
       const { data: spaPoints } = await supabase
         .from('spa_points_log')
@@ -86,12 +124,17 @@ export const TournamentResults: React.FC<TournamentResultsProps> = ({
         .eq('source_type', 'tournament');
 
       // Process results
-      const processedResults: ParticipantResult[] = participants.map((participant) => {
+      const processedResults: ParticipantResult[] = participants.map((participant, index) => {
         const playerId = participant.player_id;
         const profile = participant.profiles as any;
         
-        // Calculate position based on final match
-        let position = 99; // Default participation
+        // Get current player rankings
+        const ranking = playerRankings?.find(r => r.player_id === playerId);
+        const currentElo = ranking?.elo_points || 1000;
+        const currentRank = ranking?.current_rank_id || 'K';
+        
+        // Calculate position based on final results or seeding
+        let position = index + 1; // Use index as fallback
         if (finalMatch) {
           if (playerId === finalMatch.winner_id) {
             position = 1; // Champion
@@ -100,36 +143,53 @@ export const TournamentResults: React.FC<TournamentResultsProps> = ({
           }
         }
 
-        // Get ELO changes from match results
+        // Calculate expected rewards based on position and rank
+        const tournamentPosition = position === 1 ? 'CHAMPION' : 
+                                  position === 2 ? 'RUNNER_UP' :
+                                  position === 3 ? 'THIRD_PLACE' :
+                                  position === 4 ? 'FOURTH_PLACE' :
+                                  position <= 8 ? 'TOP_8' :
+                                  position <= 16 ? 'TOP_16' : 'PARTICIPATION';
+        
+        const validRank = ['K', 'K+', 'I', 'I+', 'H', 'H+', 'G', 'G+', 'F', 'F+', 'E', 'E+'].includes(currentRank) ? currentRank as any : 'K';
+        const expectedRewards = RankingService.calculateTournamentRewards(tournamentPosition as any, validRank);
+
+        // Get actual ELO changes from match results
         const playerMatches = matchResults?.filter(m => 
           m.player1_id === playerId || m.player2_id === playerId
         ) || [];
 
-        let eloChange = 0;
-        let eloBefore = 1000;
-        let eloAfter = 1000;
+        let actualEloChange = 0;
+        let eloBefore = currentElo;
+        let eloAfter = currentElo;
         let wins = 0;
         let losses = 0;
 
-        playerMatches.forEach(match => {
-          if (match.player1_id === playerId) {
-            eloChange += match.player1_elo_change;
-            eloBefore = match.player1_elo_before;
-            eloAfter = match.player1_elo_after;
-            if (match.winner_id === playerId) wins++;
-            else losses++;
-          } else {
-            eloChange += match.player2_elo_change;
-            eloBefore = match.player2_elo_before;
-            eloAfter = match.player2_elo_after;
-            if (match.winner_id === playerId) wins++;
-            else losses++;
-          }
-        });
+        if (playerMatches.length > 0) {
+          playerMatches.forEach(match => {
+            if (match.player1_id === playerId) {
+              actualEloChange += match.player1_elo_change || 0;
+              eloBefore = match.player1_elo_before || currentElo;
+              eloAfter = match.player1_elo_after || currentElo;
+              if (match.winner_id === playerId) wins++;
+              else if (match.winner_id) losses++;
+            } else {
+              actualEloChange += match.player2_elo_change || 0;
+              eloBefore = match.player2_elo_before || currentElo;
+              eloAfter = match.player2_elo_after || currentElo;
+              if (match.winner_id === playerId) wins++;
+              else if (match.winner_id) losses++;
+            }
+          });
+        } else {
+          // Use expected ELO change if no match results
+          actualEloChange = expectedRewards.eloPoints;
+          eloAfter = eloBefore + actualEloChange;
+        }
 
-        // Get SPA points
+        // Get actual SPA points from log or use expected
         const spaLog = spaPoints?.find(sp => sp.player_id === playerId);
-        const spaPointsEarned = spaLog?.points_earned || 0;
+        const spaPointsEarned = spaLog?.points_earned || expectedRewards.spaPoints;
 
         return {
           player_id: playerId,
@@ -139,7 +199,7 @@ export const TournamentResults: React.FC<TournamentResultsProps> = ({
           position,
           elo_before: eloBefore,
           elo_after: eloAfter,
-          elo_change: eloChange,
+          elo_change: actualEloChange,
           spa_points_earned: spaPointsEarned,
           matches_played: playerMatches.length,
           wins,
@@ -158,6 +218,13 @@ export const TournamentResults: React.FC<TournamentResultsProps> = ({
 
       setResults(sortedResults);
       setChampion(sortedResults.find(r => r.position === 1) || null);
+
+      // Load club rewards (mock data for now - in real app, get from tournament settings)
+      setClubRewards([
+        { position: 1, cashPrize: 2000000, physicalPrizes: ['Cúp vô địch', 'Kỉ niệm chương vàng'] },
+        { position: 2, cashPrize: 1000000, physicalPrizes: ['Cúp á quân', 'Kỉ niệm chương bạc'] },
+        { position: 3, cashPrize: 500000, physicalPrizes: ['Cúp hạng 3', 'Kỉ niệm chương đồng'] },
+      ]);
       
     } catch (error) {
       console.error('Error fetching tournament results:', error);
@@ -362,6 +429,68 @@ export const TournamentResults: React.FC<TournamentResultsProps> = ({
                 </div>
               </div>
             ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Club Rewards */}
+      {clubRewards.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Gift className="w-5 h-5" />
+              Giải thưởng từ Club
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {clubRewards.map((reward) => (
+                <div key={reward.position} className="flex items-center justify-between p-4 rounded-lg border">
+                  <div className="flex items-center gap-3">
+                    {getPositionIcon(reward.position)}
+                    <div>
+                      <div className="font-medium">{getPositionText(reward.position)}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {reward.physicalPrizes.join(', ')}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="flex items-center gap-1 font-bold text-green-600">
+                      <DollarSign className="w-4 h-4" />
+                      {reward.cashPrize.toLocaleString('vi-VN')} đ
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* SPA/ELO Rules Button */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Info className="w-5 h-5" />
+            Thông tin điểm thưởng
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground mb-2">
+                Xem chi tiết quy định tính điểm ELO và SPA cho các vị trí trong giải đấu
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Điểm SPA phụ thuộc vào rank hiện tại • ELO tính theo vị trí cuối cùng
+              </p>
+            </div>
+            <TournamentRewardsButton 
+              playerRank={champion?.player_id ? 'G' : 'K'}
+              size="default"
+              variant="default"
+            />
           </div>
         </CardContent>
       </Card>
