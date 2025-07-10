@@ -6016,6 +6016,10 @@ export type Database = {
         Args: { placement: string }
         Returns: number
       }
+      calculate_and_update_match_elo: {
+        Args: { p_match_result_id: string }
+        Returns: Json
+      }
       calculate_average_opponent_strength: {
         Args: { p_player_id: string }
         Returns: number
