@@ -22,32 +22,40 @@ interface UserMessage {
 
 // Simple FAQ knowledge base for users
 const faqKnowledge = `
-# ViePool FAQ & Information
+# ViePool FAQ & Thông tin chi tiết
+
+## Hệ thống ELO ViePool
+- ELO bắt đầu từ 1000 điểm cho người chơi mới
+- Thắng sẽ tăng ELO, thua sẽ giảm ELO
+- Mức thay đổi ELO phụ thuộc vào:
+  * Chênh lệch ELO giữa 2 người chơi
+  * K-factor: 40 (dưới 30 trận), 32 (bình thường), 24 (ELO 2100+), 16 (ELO 2400+)
+  * Kết quả trận đấu và tỷ số
+- VÔ ĐỊCH GIẢI ĐẤU: Thường tăng 20-50 ELO tùy thuộc vào đối thủ và giải đấu
+- Trận ranking được tính ELO theo công thức Elo chuẩn quốc tế
 
 ## Đăng ký giải đấu
-- Để đăng ký giải đấu, vào trang Tournaments và chọn giải muốn tham gia
-- Cần có tài khoản đã xác minh và đủ điều kiện ELO
+- Vào trang Tournaments và chọn giải muốn tham gia
+- Cần có tài khoản đã xác minh và đủ điều kiện ELO tối thiểu
 - Phí đăng ký sẽ được hiển thị trước khi xác nhận
+- Có thể đăng ký individual hoặc team tùy loại giải
 
-## Hệ thống ELO
-- ELO bắt đầu từ 1000 điểm
-- Thắng sẽ tăng ELO, thua sẽ giảm ELO
-- K-factor phụ thuộc vào số trận đã chơi và mức ELO hiện tại
+## Membership & Gói dịch vụ
+- **Basic** (Miễn phí): Tham gia giải đấu cơ bản, xem ranking
+- **Premium** (Có phí): Thêm nhiều tính năng pro, ưu tiên đăng ký giải
+- **VIP** (Cao cấp): Toàn quyền truy cập, hỗ trợ 24/7, giải độc quyền
 
-## Membership
-- Basic: Miễn phí, chức năng cơ bản
-- Premium: Có phí, thêm nhiều tính năng
-- VIP: Cao cấp nhất, ưu tiên cao
-
-## Hỗ trợ
-- Liên hệ admin qua trang Contact
+## Hỗ trợ & Liên hệ
+- Liên hệ admin qua trang Contact trong app
 - Email hỗ trợ: support@viepool.com
 - Chat với AI (đang sử dụng) để câu hỏi nhanh
+- Hotline: 1900-VIEPOOL
 
-## Rules & Policies
+## Quy tắc & Chính sách
 - Tôn trọng đối thủ và fair play
 - Không gian lận hoặc vi phạm luật chơi
-- Báo cáo kết quả trận đấu chính xác
+- Báo cáo kết quả trận đấu chính xác và trung thực
+- Vi phạm có thể bị trừ ELO hoặc cấm tài khoản
 `;
 
 async function analyzeUserIntent(message: string): Promise<{
@@ -79,21 +87,27 @@ async function analyzeUserIntent(message: string): Promise<{
 
 async function generateAIResponse(userMessage: string, intent: string): Promise<string> {
   try {
-    const systemPrompt = `Bạn là AI assistant thân thiện của ViePool - nền tảng billiards trực tuyến Việt Nam.
+    const systemPrompt = `Bạn là AI assistant chính thức của ViePool - nền tảng billiards hàng đầu Việt Nam.
 
 NHIỆM VỤ:
-- Trả lời câu hỏi người dùng về ViePool một cách ngắn gọn và hữu ích
-- Sử dụng thông tin FAQ để trả lời chính xác
-- Giọng điệu thân thiện, lịch sự, sử dụng tiếng Việt
-- Không trả lời các câu hỏi không liên quan đến ViePool
+- Trả lời câu hỏi về ViePool một cách CHÍNH XÁC và CHI TIẾT
+- Sử dụng đúng thông tin từ knowledge base
+- Giọng điệu chuyên nghiệp, thân thiện, sử dụng tiếng Việt
+- TUYỆT ĐỐI KHÔNG trả lời "ViePool không có" khi thực tế có thông tin
 
-THÔNG TIN CƠ BẢN:
+KNOWLEDGE BASE ViePool:
 ${faqKnowledge}
 
-HƯỚNG DẪN:
-- Trả lời ngắn gọn (1-3 câu)
-- Nếu không biết, hướng dẫn liên hệ support
+HƯỚNG DẪN TRẢ LỜI:
+- Với câu hỏi về ELO: Giải thích chi tiết hệ thống tính ELO
+- Với câu hỏi về vô địch: Nói rõ mức ELO tăng 20-50 điểm tùy đối thủ
+- Với câu hỏi về giải đấu: Hướng dẫn cụ thể cách đăng ký
 - Intent hiện tại: ${intent}
+- LUÔN đưa ra thông tin có ích và hướng dẫn cụ thể
+
+VÍ DỤ TRÁCH NHIỆM:
+- "Vô địch giải đấu thường tăng 20-50 ELO tùy mức độ đối thủ và quy mô giải"
+- "Hệ thống ELO ViePool tính theo công thức Elo quốc tế với K-factor từ 16-40"
 `;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -103,21 +117,25 @@ HƯỚNG DẪN:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-nano', // Use the cheapest model for users
+        model: 'gpt-4.1-nano',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userMessage }
         ],
-        max_tokens: 300, // Keep responses short
-        temperature: 0.7,
+        max_tokens: 400, // Tăng lên để trả lời chi tiết hơn
+        temperature: 0.3, // Giảm để ổn định hơn
       }),
     });
+
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${response.status}`);
+    }
 
     const data = await response.json();
     return data.choices[0].message.content;
   } catch (error) {
     console.error('OpenAI API error:', error);
-    return 'Xin lỗi, tôi gặp sự cố kỹ thuật. Vui lòng thử lại sau hoặc liên hệ support để được hỗ trợ.';
+    return 'Xin lỗi, tôi gặp sự cố kỹ thuật. Vui lòng thử lại sau hoặc liên hệ support@viepool.com để được hỗ trợ.';
   }
 }
 
