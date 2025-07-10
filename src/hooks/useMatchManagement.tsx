@@ -33,14 +33,14 @@ export interface TournamentMatch {
 
 export interface MatchResult {
   id: string;
-  match_id: string;
+  tournament_id: string;
   player1_id: string;
   player2_id: string;
   winner_id?: string;
   player1_score: number;
   player2_score: number;
   result_status: 'pending' | 'confirmed' | 'verified' | 'disputed';
-  entered_by?: string;
+  created_by?: string;
   created_at: string;
 }
 
@@ -131,10 +131,25 @@ export const useMatchManagement = (tournamentId: string) => {
         throw matchError;
       }
 
-      // Create match result record
-      if (winnerId && match) {
+      // Create match result record only if both players exist
+      if (winnerId && match && match.player1_id && match.player2_id) {
         const currentUser = await supabase.auth.getUser();
         console.log('Creating match result for winner:', winnerId);
+        
+        // Verify players exist in profiles table before creating match result
+        const { data: playersExist, error: playerCheckError } = await supabase
+          .from('profiles')
+          .select('user_id')
+          .in('user_id', [match.player1_id, match.player2_id]);
+        
+        if (playerCheckError) {
+          console.error('Player verification error:', playerCheckError);
+          throw new Error('Không thể xác minh thông tin người chơi');
+        }
+        
+        if (!playersExist || playersExist.length !== 2) {
+          throw new Error('Một hoặc cả hai người chơi không tồn tại trong hệ thống');
+        }
         
         const { error: resultError } = await supabase
           .from('match_results')
@@ -161,6 +176,12 @@ export const useMatchManagement = (tournamentId: string) => {
         console.log('Winner will be auto-advanced via database trigger');
         
         // Show advancement message after a brief delay
+        setTimeout(() => {
+          toast.success(`🏆 Người thắng đã tiến vào vòng tiếp theo!`);
+        }, 1500);
+      } else if (winnerId && match && (!match.player1_id || !match.player2_id)) {
+        console.log('Match has BYE player, advancing winner directly');
+        // For BYE matches, just advance the winner without creating match result
         setTimeout(() => {
           toast.success(`🏆 Người thắng đã tiến vào vòng tiếp theo!`);
         }, 1500);
