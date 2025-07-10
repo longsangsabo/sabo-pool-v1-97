@@ -156,6 +156,14 @@ export const useMatchManagement = (tournamentId: string) => {
           console.error('Match result error:', resultError);
           throw resultError;
         }
+
+        // Auto-advance winner to next round via trigger (automatically handled by database)
+        console.log('Winner will be auto-advanced via database trigger');
+        
+        // Show advancement message after a brief delay
+        setTimeout(() => {
+          toast.success(`🏆 Người thắng đã tiến vào vòng tiếp theo!`);
+        }, 1500);
       }
 
       console.log('Score updated successfully');

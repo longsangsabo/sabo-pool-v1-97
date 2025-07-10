@@ -5966,6 +5966,10 @@ export type Database = {
         }
         Returns: Json
       }
+      generate_all_tournament_rounds: {
+        Args: { p_tournament_id: string }
+        Returns: Json
+      }
       generate_complete_tournament_bracket: {
         Args: { p_tournament_id: string; p_seeding_method?: string }
         Returns: Json

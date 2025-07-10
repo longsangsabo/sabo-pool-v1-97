@@ -3,10 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Users, Calendar, Settings } from 'lucide-react';
+import { Trophy, Users, Calendar, Settings, Zap, ArrowRight } from 'lucide-react';
 import { useMatchManagement } from '@/hooks/useMatchManagement';
 import { MatchScoreEntry } from './MatchScoreEntry';
 import { LoadingState } from '@/components/ui/loading-state';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface TournamentMatchManagementProps {
   tournament: {
@@ -36,6 +38,34 @@ export const TournamentMatchManagement: React.FC<TournamentMatchManagementProps>
   } = useMatchManagement(tournament.id);
 
   const [selectedRound, setSelectedRound] = useState<number | 'all'>('all');
+  const [isGeneratingRounds, setIsGeneratingRounds] = useState(false);
+
+  // Generate all tournament rounds
+  const handleGenerateAllRounds = async () => {
+    try {
+      setIsGeneratingRounds(true);
+      
+      const { data, error } = await supabase.rpc('generate_all_tournament_rounds', {
+        p_tournament_id: tournament.id
+      });
+
+      if (error) throw error;
+
+      if (data && typeof data === 'object' && 'error' in data) {
+        toast.error(String(data.error));
+        return;
+      }
+
+      const result = data as any;
+      toast.success(`Đã tạo ${result.rounds_created || 0} vòng đấu tiếp theo!`);
+      await refetchMatches();
+    } catch (error: any) {
+      console.error('Error generating rounds:', error);
+      toast.error(`Lỗi tạo vòng đấu: ${error?.message || 'Không xác định'}`);
+    } finally {
+      setIsGeneratingRounds(false);
+    }
+  };
 
   if (loading) {
     return <LoadingState text="Đang tải thông tin trận đấu..." variant="card" />;
@@ -124,35 +154,59 @@ export const TournamentMatchManagement: React.FC<TournamentMatchManagementProps>
         </CardContent>
       </Card>
 
-      {/* Round Filter */}
-      {rounds.length > 1 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Chọn vòng đấu</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                onClick={() => setSelectedRound('all')}
-                variant={selectedRound === 'all' ? 'default' : 'outline'}
-                size="sm"
-              >
-                Tất cả
-              </Button>
-              {rounds.map(round => (
+      {/* Tournament Controls */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-lg">Điều khiển giải đấu</CardTitle>
+            {rounds.length > 0 && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <ArrowRight className="h-3 w-3" />
+                Vòng {Math.max(...rounds)}/{rounds.length > 1 ? Math.max(...rounds) + 3 : 4}
+              </Badge>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            {/* Generate All Rounds Button */}
+            <Button
+              onClick={handleGenerateAllRounds}
+              disabled={isGeneratingRounds || rounds.length === 0}
+              variant="default"
+              size="sm"
+              className="flex items-center gap-1"
+            >
+              <Zap className="h-4 w-4" />
+              {isGeneratingRounds ? 'Đang tạo...' : 'Tạo tất cả vòng'}
+            </Button>
+
+            {/* Round Filter Buttons */}
+            {rounds.length > 1 && (
+              <>
+                <div className="w-px h-6 bg-border mx-2" />
                 <Button
-                  key={round}
-                  onClick={() => setSelectedRound(round)}
-                  variant={selectedRound === round ? 'default' : 'outline'}
+                  onClick={() => setSelectedRound('all')}
+                  variant={selectedRound === 'all' ? 'default' : 'outline'}
                   size="sm"
                 >
-                  Vòng {round}
+                  Tất cả
                 </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+                {rounds.map(round => (
+                  <Button
+                    key={round}
+                    onClick={() => setSelectedRound(round)}
+                    variant={selectedRound === round ? 'default' : 'outline'}
+                    size="sm"
+                  >
+                    Vòng {round}
+                  </Button>
+                ))}
+              </>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Matches Grid */}
       <div className="space-y-4">
