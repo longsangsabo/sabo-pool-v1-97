@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLanguage } from '@/contexts/LanguageContext';
+import ErrorBoundary from '@/components/ui/error-boundary';
+import { LoadingState } from '@/components/ui/loading-state';
 import UserTestingManager from './UserTestingManager';
 import TournamentTestManager from './TournamentTestManager';
 import MasterDataPopulator from './MasterDataPopulator';
@@ -64,27 +66,39 @@ const DevelopmentTools = () => {
         </TabsList>
         
         <TabsContent value="users" className="space-y-4">
-          <UserTestingManager />
+          <ErrorBoundary>
+            <UserTestingManager />
+          </ErrorBoundary>
         </TabsContent>
         
         <TabsContent value="tournaments" className="space-y-4">
-          <TournamentTestManager />
+          <ErrorBoundary>
+            <TournamentTestManager />
+          </ErrorBoundary>
         </TabsContent>
         
         <TabsContent value="data" className="space-y-4">
-          <MasterDataPopulator />
+          <ErrorBoundary>
+            <MasterDataPopulator />
+          </ErrorBoundary>
         </TabsContent>
         
         <TabsContent value="system" className="space-y-4">
-          <SystemManagementHub />
+          <ErrorBoundary>
+            <SystemManagementHub />
+          </ErrorBoundary>
         </TabsContent>
         
         <TabsContent value="translation" className="space-y-4">
-          <AutoTranslationWorkflow />
+          <ErrorBoundary>
+            <AutoTranslationWorkflow />
+          </ErrorBoundary>
         </TabsContent>
         
         <TabsContent value="reset" className="space-y-4">
-          <DatabaseResetTools />
+          <ErrorBoundary>
+            <DatabaseResetTools />
+          </ErrorBoundary>
         </TabsContent>
       </Tabs>
     </div>

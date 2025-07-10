@@ -1,8 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, UserPlus } from 'lucide-react';
+import { LoadingState } from '@/components/ui/loading-state';
 import { DemoUserManager } from './DemoUserManager';
 import QuickRealUserCreator from './QuickRealUserCreator';
 
@@ -39,11 +40,15 @@ const UserTestingManager: React.FC<UserTestingManagerProps> = ({ addLog }) => {
           </TabsList>
           
           <TabsContent value="demo" className="mt-4">
-            <DemoUserManager addLog={addLog} />
+            <Suspense fallback={<LoadingState variant="card" text="Loading demo user manager..." />}>
+              <DemoUserManager addLog={addLog} />
+            </Suspense>
           </TabsContent>
           
           <TabsContent value="create" className="mt-4">
-            <QuickRealUserCreator />
+            <Suspense fallback={<LoadingState variant="card" text="Loading user creator..." />}>
+              <QuickRealUserCreator />
+            </Suspense>
           </TabsContent>
         </Tabs>
       </CardContent>

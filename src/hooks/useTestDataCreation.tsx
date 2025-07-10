@@ -18,7 +18,7 @@ export const useTestDataCreation = (): UseTestDataCreationReturn => {
   const [logs, setLogs] = useState<Array<{ message: string; type: 'info' | 'error' | 'success'; timestamp: Date }>>([]);
 
   const addLog = (message: string, type: 'info' | 'error' | 'success' = 'info') => {
-    setLogs(prev => [...prev, { message, type, timestamp: new Date() }]);
+    setLogs(prev => [...prev.slice(-19), { message, type, timestamp: new Date() }]); // Keep last 20 logs
     console.log(`${type.toUpperCase()}: ${message}`);
   };
 
