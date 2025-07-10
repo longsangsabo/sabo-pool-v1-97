@@ -83,6 +83,11 @@ export const tournamentSchema = z.object({
   prize_pool: z
     .number()
     .min(0, 'Giải thưởng không được âm'),
+  
+  has_third_place_match: z
+    .boolean()
+    .optional()
+    .default(true),
 
   // Registration settings (Step 3)
   registration_start: z

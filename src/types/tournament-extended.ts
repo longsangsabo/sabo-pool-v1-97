@@ -52,6 +52,7 @@ export interface EnhancedTournament {
   created_by?: string;
   created_at: string;
   updated_at: string;
+  has_third_place_match?: boolean;
   
   // Extended fields
   rewards: TournamentRewards;
@@ -120,6 +121,7 @@ export interface TournamentFormData {
   game_format: GameFormat;
   entry_fee: number;
   prize_pool: number;
+  has_third_place_match?: boolean;
   
   // Registration settings
   registration_start: string;

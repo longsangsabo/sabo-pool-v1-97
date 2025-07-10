@@ -58,6 +58,7 @@ const getDefaultTournamentData = (): TournamentFormData => {
     game_format: GameFormat.NINE_BALL,
     entry_fee: 100000,
     prize_pool: 0,
+    has_third_place_match: true,
     registration_start: now.toISOString().slice(0, 16),
     registration_end: tomorrow.toISOString().slice(0, 16),
     tournament_start: nextWeek.toISOString().slice(0, 16),

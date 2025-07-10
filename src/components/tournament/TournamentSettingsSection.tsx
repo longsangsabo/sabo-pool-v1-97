@@ -3,8 +3,9 @@ import { UseFormReturn } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Info, Users, Trophy, Gamepad2, DollarSign } from 'lucide-react';
+import { Info, Users, Trophy, Gamepad2, DollarSign, Medal } from 'lucide-react';
 import { TournamentFormData } from '@/types/tournament-extended';
 import { TournamentType, GameFormat } from '@/types/tournament-enums';
 import { PARTICIPANT_SLOTS, TOURNAMENT_FORMATS, GAME_FORMATS } from '@/schemas/tournamentSchema';
@@ -174,6 +175,36 @@ export const TournamentSettingsSection: React.FC<TournamentSettingsSectionProps>
           <p className="text-sm text-destructive">{String(errors.game_format.message)}</p>
         )}
       </div>
+
+      {/* Third Place Match Setting - Only for Single Elimination */}
+      {watchedData.tournament_type === 'single_elimination' && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Medal className="h-4 w-4" />
+            <Label className="text-sm font-medium">Cài đặt nâng cao</Label>
+          </div>
+          
+          <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="space-y-1">
+              <div className="font-medium text-sm">Trận tranh hạng 3</div>
+              <div className="text-xs text-muted-foreground">
+                Tạo trận đấu cho 2 người thua bán kết để tranh hạng 3
+              </div>
+            </div>
+            <Switch
+              checked={watchedData.has_third_place_match ?? true}
+              onCheckedChange={(checked) => setValue('has_third_place_match', checked, { shouldValidate: true })}
+            />
+          </div>
+          
+          {watchedData.has_third_place_match && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground ml-6">
+              <Info className="h-4 w-4" />
+              <span>Trận tranh hạng 3 sẽ được tự động tạo khi hoàn thành bán kết</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Financial Settings */}
       <div className="space-y-4">
