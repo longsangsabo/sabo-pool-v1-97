@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Plus, Calendar, Trophy, Users, Settings, Eye, Play, 
   Pause, SquareCheckBig, BarChart3, Edit, Trash2, 
-  Clock, MapPin, DollarSign, Medal, Activity, PlayCircle 
+  Clock, MapPin, DollarSign, Medal, Activity, PlayCircle, Target 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +15,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useTournaments } from '@/hooks/useTournaments';
 import BracketGenerator from '@/components/tournament/BracketGenerator';
+import { TournamentPlayerManagement } from './TournamentPlayerManagement';
+import { TournamentMatchManagement } from './TournamentMatchManagement';
 
 interface Tournament {
   id: string;
@@ -407,47 +409,21 @@ const EnhancedTournamentManager = () => {
                   {/* Action Buttons */}
                   <div className='space-y-2'>
                     <div className='flex gap-2'>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button variant='outline' size='sm' className='flex-1'>
-                            <Eye className='w-4 h-4 mr-2' />
-                            Xem
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                          <DialogHeader>
-                            <DialogTitle>{tournament.name}</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <label className="text-sm font-medium">Trạng thái</label>
-                                <Badge className={getStatusColor(tournament.status)}>
-                                  {getStatusText(tournament.status)}
-                                </Badge>
-                              </div>
-                              <div>
-                                <label className="text-sm font-medium">Người tham gia</label>
-                                <p>{tournament.current_participants}/{tournament.max_participants}</p>
-                              </div>
-                            </div>
-                            <div>
-                              <label className="text-sm font-medium">Mô tả</label>
-                              <p className="text-gray-600">{tournament.description}</p>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <label className="text-sm font-medium">Bắt đầu</label>
-                                <p>{formatDate(tournament.tournament_start)}</p>
-                              </div>
-                              <div>
-                                <label className="text-sm font-medium">Kết thúc</label>
-                                <p>{formatDate(tournament.tournament_end)}</p>
-                              </div>
-                            </div>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
+                       <Button 
+                         variant='outline' 
+                         size='sm' 
+                         className='flex-1'
+                         onClick={() => setSelectedTournament({
+                           ...tournament,
+                           description: tournament.description || '',
+                           created_by: tournament.created_by || '',
+                           created_at: tournament.created_at || '',
+                           updated_at: tournament.updated_at || ''
+                         })}
+                       >
+                         <Eye className='w-4 h-4 mr-2' />
+                         Quản lý
+                       </Button>
                       <Button variant='outline' size='sm' className='flex-1'>
                         <Edit className='w-4 h-4 mr-2' />
                         Sửa
@@ -646,6 +622,133 @@ const EnhancedTournamentManager = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Tournament Detail Management */}
+      {selectedTournament && (
+        <Dialog open={!!selectedTournament} onOpenChange={() => setSelectedTournament(null)}>
+          <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Quản lý giải đấu: {selectedTournament.name}</DialogTitle>
+            </DialogHeader>
+            
+            <Tabs defaultValue="overview" className="w-full">
+              <TabsList className="grid w-full grid-cols-5">
+                <TabsTrigger value="overview" className="flex items-center gap-2">
+                  <Trophy className="h-4 w-4" />
+                  Tổng quan
+                </TabsTrigger>
+                <TabsTrigger value="participants" className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Người chơi
+                </TabsTrigger>
+                <TabsTrigger value="matches" className="flex items-center gap-2">
+                  <Target className="h-4 w-4" />
+                  Trận đấu
+                </TabsTrigger>
+                <TabsTrigger value="schedule" className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Lịch trình
+                </TabsTrigger>
+                <TabsTrigger value="settings" className="flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  Cài đặt
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="overview" className="mt-6">
+                <div className="grid gap-6 md:grid-cols-2">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Thông tin giải đấu</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <label className="text-sm font-medium">Trạng thái</label>
+                        <Badge className={getStatusColor(selectedTournament.status)}>
+                          {getStatusText(selectedTournament.status)}
+                        </Badge>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Mô tả</label>
+                        <p className="text-gray-600">{selectedTournament.description}</p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-sm font-medium">Bắt đầu</label>
+                          <p>{formatDate(selectedTournament.tournament_start)}</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">Kết thúc</label>
+                          <p>{formatDate(selectedTournament.tournament_end)}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Thống kê</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex justify-between">
+                        <span>Người tham gia:</span>
+                        <span>{selectedTournament.current_participants}/{selectedTournament.max_participants}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Phí tham gia:</span>
+                        <span>{formatPrize(selectedTournament.entry_fee)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Giải thưởng:</span>
+                        <span>{formatPrize(selectedTournament.prize_pool)}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="participants" className="mt-6">
+                <TournamentPlayerManagement tournament={selectedTournament} />
+              </TabsContent>
+
+              <TabsContent value="matches" className="mt-6">
+                <TournamentMatchManagement tournament={selectedTournament} />
+              </TabsContent>
+
+              <TabsContent value="schedule" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Lịch trình giải đấu</CardTitle>
+                    <CardDescription>
+                      Quản lý lịch thi đấu và kết quả các trận đấu
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>Tính năng lịch trình đang được phát triển</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="settings" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Cài đặt giải đấu</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Settings className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>Tính năng cài đặt đang được phát triển</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Bracket Generation Modal */}
       <Dialog open={showBracketModal} onOpenChange={setShowBracketModal}>
