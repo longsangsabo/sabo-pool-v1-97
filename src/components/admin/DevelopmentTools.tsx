@@ -1,20 +1,16 @@
+
 import React from 'react';
-import { Code, AlertTriangle, BarChart3, ExternalLink, Bot } from 'lucide-react';
+import { Code, AlertTriangle, BarChart3, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ModelManagement from './ModelManagement';
 import { useLanguage } from '@/contexts/LanguageContext';
-import QuickRealUserCreator from './QuickRealUserCreator';
-import QuickClubCreator from './QuickClubCreator';
-import TestDataPopulator from './TestDataPopulator';
+import UserTestingManager from './UserTestingManager';
+import TournamentTestManager from './TournamentTestManager';
+import MasterDataPopulator from './MasterDataPopulator';
+import SystemManagementHub from './SystemManagementHub';
 import DatabaseResetTools from './DatabaseResetTools';
-import TournamentTestingTools from './TournamentTestingTools';
-import QuickTournamentCreator from './QuickTournamentCreator';
-import { DemoUserManager } from './DemoUserManager';
-import SystemMonitoring from './SystemMonitoring';
-import CreateAdminAccount from './CreateAdminAccount';
 import AutoTranslationWorkflow from './AutoTranslationWorkflow';
 
 const DevelopmentTools = () => {
@@ -57,55 +53,34 @@ const DevelopmentTools = () => {
         </AlertDescription>
       </Alert>
 
-      <Tabs defaultValue="admin" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 gap-1">
-          <TabsTrigger value="admin" className="text-xs lg:text-sm">Admin</TabsTrigger>
+      <Tabs defaultValue="users" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 gap-1">
           <TabsTrigger value="users" className="text-xs lg:text-sm">Users</TabsTrigger>
-          <TabsTrigger value="demo" className="text-xs lg:text-sm">Demo</TabsTrigger>
-          <TabsTrigger value="clubs" className="text-xs lg:text-sm">Clubs</TabsTrigger>
           <TabsTrigger value="tournaments" className="text-xs lg:text-sm">Tournaments</TabsTrigger>
-          <TabsTrigger value="models" className="text-xs lg:text-sm">AI Models</TabsTrigger>
-          <TabsTrigger value="translation" className="text-xs lg:text-sm">Translation</TabsTrigger>
-          <TabsTrigger value="monitoring" className="text-xs lg:text-sm">Monitor</TabsTrigger>
           <TabsTrigger value="data" className="text-xs lg:text-sm">Data</TabsTrigger>
+          <TabsTrigger value="system" className="text-xs lg:text-sm">System</TabsTrigger>
+          <TabsTrigger value="translation" className="text-xs lg:text-sm">Translation</TabsTrigger>
           <TabsTrigger value="reset" className="text-xs lg:text-sm">Reset</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="admin" className="space-y-4">
-          <CreateAdminAccount />
-        </TabsContent>
-        
         <TabsContent value="users" className="space-y-4">
-          <QuickRealUserCreator />
-        </TabsContent>
-        
-        <TabsContent value="demo" className="space-y-4">
-          <DemoUserManager />
-        </TabsContent>
-        
-        <TabsContent value="clubs" className="space-y-4">
-          <QuickClubCreator />
+          <UserTestingManager />
         </TabsContent>
         
         <TabsContent value="tournaments" className="space-y-4">
-          <QuickTournamentCreator />
-          <TournamentTestingTools />
+          <TournamentTestManager />
         </TabsContent>
         
-        <TabsContent value="models" className="space-y-4">
-          <ModelManagement />
+        <TabsContent value="data" className="space-y-4">
+          <MasterDataPopulator />
+        </TabsContent>
+        
+        <TabsContent value="system" className="space-y-4">
+          <SystemManagementHub />
         </TabsContent>
         
         <TabsContent value="translation" className="space-y-4">
           <AutoTranslationWorkflow />
-        </TabsContent>
-        
-        <TabsContent value="monitoring" className="space-y-4">
-          <SystemMonitoring />
-        </TabsContent>
-        
-        <TabsContent value="data" className="space-y-4">
-          <TestDataPopulator />
         </TabsContent>
         
         <TabsContent value="reset" className="space-y-4">
