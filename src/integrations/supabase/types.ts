@@ -5890,6 +5890,16 @@ export type Database = {
       }
     }
     Views: {
+      automation_status: {
+        Row: {
+          automation_type: string | null
+          failed: number | null
+          last_processed: string | null
+          successful: number | null
+          total_processed: number | null
+        }
+        Relationships: []
+      }
       mv_daily_ai_usage: {
         Row: {
           ai_responses: number | null
