@@ -6188,14 +6188,24 @@ export type Database = {
         Returns: Json
       }
       credit_spa_points: {
-        Args: {
-          p_user_id: string
-          p_amount: number
-          p_category: string
-          p_description: string
-          p_reference_id?: string
-        }
-        Returns: undefined
+        Args:
+          | {
+              p_user_id: string
+              p_amount: number
+              p_category: string
+              p_description: string
+              p_reference_id?: string
+            }
+          | {
+              p_user_id: string
+              p_amount: number
+              p_category?: string
+              p_description?: string
+              p_reference_id?: string
+              p_reference_type?: string
+              p_metadata?: Json
+            }
+        Returns: Json
       }
       daily_checkin: {
         Args: { user_uuid: string }
