@@ -20,6 +20,8 @@ import { TournamentMatchManagement } from './TournamentMatchManagement';
 import MatchRescheduling from './MatchRescheduling';
 import MatchIncidentReporting from './MatchIncidentReporting';
 import BracketManagement from './BracketManagement';
+import TournamentAnalytics from './TournamentAnalytics';
+import TournamentDashboard from './TournamentDashboard';
 import { Tournament } from '@/types/common';
 
 const EnhancedTournamentManager = () => {
@@ -608,8 +610,10 @@ const EnhancedTournamentManager = () => {
             </DialogHeader>
             
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-6">
+              <TabsList className="grid w-full grid-cols-8">
                 <TabsTrigger value="overview">Tổng quan</TabsTrigger>
+                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+                <TabsTrigger value="analytics">Phân tích</TabsTrigger>
                 <TabsTrigger value="players">Người chơi</TabsTrigger>
                 <TabsTrigger value="matches">Trận đấu</TabsTrigger>
                 <TabsTrigger value="rescheduling">Lịch trình</TabsTrigger>
@@ -654,6 +658,14 @@ const EnhancedTournamentManager = () => {
                     </div>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              <TabsContent value="dashboard" className="mt-6">
+                <TournamentDashboard tournamentId={selectedTournament.id} />
+              </TabsContent>
+
+              <TabsContent value="analytics" className="mt-6">
+                <TournamentAnalytics tournamentId={selectedTournament.id} />
               </TabsContent>
 
               <TabsContent value="players" className="mt-6">

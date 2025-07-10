@@ -439,7 +439,7 @@ const TournamentWorkflowManager: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="analytics">
-          <TournamentAnalytics />
+          <TournamentAnalytics tournamentId="placeholder" />
         </TabsContent>
       </Tabs>
     </div>
