@@ -115,7 +115,7 @@ const CustomTournamentCreator = () => {
           custom_config: config,
           rank_distribution: rankDistribution,
           is_test_tournament: true
-        }
+        } as any
       };
 
       const { data: tournament, error: tournamentError } = await supabase

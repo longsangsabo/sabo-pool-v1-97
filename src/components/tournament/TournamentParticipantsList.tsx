@@ -148,18 +148,18 @@ export const TournamentParticipantsList: React.FC<TournamentParticipantsListProp
 
   const handleFinalizeRegistration = async () => {
     try {
-      // Get 16 earliest paid participants
+      // Get maxParticipants earliest paid participants
       const paidParticipants = participants
         .filter(p => p.payment_status === 'paid')
         .sort((a, b) => new Date(a.registration_date).getTime() - new Date(b.registration_date).getTime())
-        .slice(0, 16);
+        .slice(0, maxParticipants);
 
-      if (paidParticipants.length < 16) {
-        toast.error(`Chỉ có ${paidParticipants.length} người đã thanh toán. Cần tối thiểu 16 người.`);
+      if (paidParticipants.length < maxParticipants) {
+        toast.error(`Chỉ có ${paidParticipants.length} người đã thanh toán. Cần tối thiểu ${maxParticipants} người.`);
         return;
       }
 
-      // Update selected 16 to confirmed, remove others
+      // Update selected participants to confirmed, remove others
       const { error: removeError } = await supabase
         .from('tournament_registrations')
         .delete()
@@ -168,7 +168,7 @@ export const TournamentParticipantsList: React.FC<TournamentParticipantsListProp
 
       if (removeError) throw removeError;
 
-      // Confirm the selected 16
+      // Confirm the selected participants
       const { error: confirmError } = await supabase
         .from('tournament_registrations')
         .update({ 
@@ -184,13 +184,13 @@ export const TournamentParticipantsList: React.FC<TournamentParticipantsListProp
         .from('tournaments')
         .update({ 
           status: 'registration_closed',
-          current_participants: 16
+          current_participants: maxParticipants
         })
         .eq('id', tournamentId);
 
       if (tournamentError) throw tournamentError;
 
-      toast.success('Đã chốt sổ thành công! 16 người thanh toán sớm nhất được chọn.');
+      toast.success(`Đã chốt sổ thành công! ${maxParticipants} người thanh toán sớm nhất được chọn.`);
       fetchParticipants();
     } catch (error) {
       console.error('Error finalizing registration:', error);
@@ -257,14 +257,14 @@ export const TournamentParticipantsList: React.FC<TournamentParticipantsListProp
             </CardTitle>
             
             {/* Admin finalize button */}
-            {canConfirmPayments && participants.filter(p => p.payment_status === 'paid').length >= 16 && (
+            {canConfirmPayments && participants.filter(p => p.payment_status === 'paid').length >= maxParticipants && (
               <Button
                 variant="default"
                 onClick={handleFinalizeRegistration}
                 className="bg-primary hover:bg-primary/90"
               >
                 <Trophy className="h-4 w-4 mr-2" />
-                Chốt sổ 16 người
+                Chốt sổ {maxParticipants} người
               </Button>
             )}
           </div>
