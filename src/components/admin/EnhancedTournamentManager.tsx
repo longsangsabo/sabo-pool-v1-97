@@ -612,31 +612,48 @@ const EnhancedTournamentManager = () => {
                 <TabsTrigger value="overview">Tổng quan</TabsTrigger>
                 <TabsTrigger value="players">Người chơi</TabsTrigger>
                 <TabsTrigger value="matches">Trận đấu</TabsTrigger>
-                <TabsTrigger value="bracket">Bracket</TabsTrigger>
-                <TabsTrigger value="scheduling">Lịch thi đấu</TabsTrigger>
+                <TabsTrigger value="rescheduling">Lịch trình</TabsTrigger>
                 <TabsTrigger value="incidents">Sự cố</TabsTrigger>
+                <TabsTrigger value="settings">Cài đặt</TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className="mt-6">
-                <div className="grid gap-6 md:grid-cols-2">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Thông tin giải đấu</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <label className="text-sm font-medium">Trạng thái</label>
-                        <Badge className={getStatusColor(selectedTournament.status)}>
-                          {getStatusText(selectedTournament.status)}
-                        </Badge>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Thông tin tổng quan</CardTitle>
+                    <CardDescription>
+                      Chi tiết về giải đấu và thống kê hiện tại
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-600">
+                          {selectedTournament.current_participants}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Thí sinh</div>
                       </div>
-                      <div>
-                        <label className="text-sm font-medium">Mô tả</label>
-                        <p className="text-gray-600">{selectedTournament.description}</p>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-green-600">
+                          {selectedTournament.max_participants}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Tối đa</div>
                       </div>
-                    </CardContent>
-                  </Card>
-                </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-purple-600">
+                          {selectedTournament.entry_fee.toLocaleString()}đ
+                        </div>
+                        <div className="text-sm text-muted-foreground">Phí tham gia</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-orange-600">
+                          {selectedTournament.prize_pool.toLocaleString()}đ
+                        </div>
+                        <div className="text-sm text-muted-foreground">Giải thưởng</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </TabsContent>
 
               <TabsContent value="players" className="mt-6">
@@ -644,24 +661,17 @@ const EnhancedTournamentManager = () => {
               </TabsContent>
 
               <TabsContent value="matches" className="mt-6">
-                <TournamentMatchManagement 
-                  tournamentId={selectedTournament.id}
-                  onMatchUpdate={() => {}}
-                />
+                <TournamentMatchManagement tournament={selectedTournament} />
               </TabsContent>
 
-              <TabsContent value="bracket" className="mt-6">
-                <BracketManagement 
-                  tournamentId={selectedTournament.id}
-                  onBracketUpdate={() => {}}
-                />
-              </TabsContent>
-
-              <TabsContent value="scheduling" className="mt-6">
+              <TabsContent value="rescheduling" className="mt-6">
                 <MatchRescheduling 
-                  tournamentId={selectedTournament.id}
+                  tournamentId={selectedTournament.id} 
                   matches={matches}
-                  onMatchUpdate={() => {}}
+                  onMatchUpdate={() => {
+                    // Refresh matches data when a match is updated
+                    console.log('Match updated, refreshing data...');
+                  }}
                 />
               </TabsContent>
 
@@ -670,24 +680,6 @@ const EnhancedTournamentManager = () => {
                   tournamentId={selectedTournament.id}
                   matches={matches}
                 />
-              </TabsContent>
-            </Tabs>
-
-              <TabsContent value="schedule" className="mt-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Lịch trình giải đấu</CardTitle>
-                    <CardDescription>
-                      Quản lý lịch thi đấu và kết quả các trận đấu
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>Tính năng lịch trình đang được phát triển</p>
-                    </div>
-                  </CardContent>
-                </Card>
               </TabsContent>
 
               <TabsContent value="settings" className="mt-6">
