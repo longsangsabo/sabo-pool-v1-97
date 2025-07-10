@@ -241,6 +241,54 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_usage_statistics: {
+        Row: {
+          assistant_type: string
+          created_at: string
+          date: string
+          error_message: string | null
+          id: string
+          intent: string | null
+          message_type: string
+          model_name: string
+          response_time_ms: number | null
+          session_id: string | null
+          success: boolean | null
+          tokens_used: number | null
+          user_id: string | null
+        }
+        Insert: {
+          assistant_type: string
+          created_at?: string
+          date?: string
+          error_message?: string | null
+          id?: string
+          intent?: string | null
+          message_type: string
+          model_name: string
+          response_time_ms?: number | null
+          session_id?: string | null
+          success?: boolean | null
+          tokens_used?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          assistant_type?: string
+          created_at?: string
+          date?: string
+          error_message?: string | null
+          id?: string
+          intent?: string | null
+          message_type?: string
+          model_name?: string
+          response_time_ms?: number | null
+          session_id?: string | null
+          success?: boolean | null
+          tokens_used?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       analytics_events: {
         Row: {
           created_at: string
@@ -6271,6 +6319,23 @@ export type Database = {
         }
         Relationships: []
       }
+      mv_daily_ai_usage: {
+        Row: {
+          ai_responses: number | null
+          assistant_type: string | null
+          avg_response_time: number | null
+          date: string | null
+          failed_requests: number | null
+          model_name: string | null
+          successful_requests: number | null
+          total_requests: number | null
+          total_tokens: number | null
+          unique_sessions: number | null
+          unique_users: number | null
+          user_messages: number | null
+        }
+        Relationships: []
+      }
       mv_leaderboard_stats: {
         Row: {
           active_players: number | null
@@ -6615,6 +6680,30 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      get_ai_usage_overview: {
+        Args: { days_back?: number }
+        Returns: {
+          assistant_type: string
+          model_name: string
+          total_requests: number
+          successful_requests: number
+          failed_requests: number
+          total_tokens: number
+          avg_response_time: number
+          unique_users: number
+          unique_sessions: number
+          success_rate: number
+        }[]
+      }
+      get_ai_usage_patterns: {
+        Args: { days_back?: number }
+        Returns: {
+          hour_of_day: number
+          assistant_type: string
+          request_count: number
+          avg_response_time: number
+        }[]
+      }
       get_available_demo_users: {
         Args: { needed_count: number }
         Returns: {
@@ -6806,6 +6895,10 @@ export type Database = {
         Returns: Json
       }
       refresh_admin_dashboard_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      refresh_ai_usage_stats: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
