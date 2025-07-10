@@ -238,19 +238,20 @@ serve(async (req) => {
     const intentAnalysis = await analyzeUserIntent(message);
     console.log('Intent analysis:', intentAnalysis);
 
-    // Log user message to AI usage statistics
+    // Log user message to OpenAI usage statistics
     await supabase
-      .from('ai_usage_statistics')
+      .from('openai_usage_logs')
       .insert({
-        user_id: userId,
-        session_id: sessionId,
-        model_name: 'gpt-4.1-nano',
-        assistant_type: 'user',
-        message_type: 'user',
-        intent: intentAnalysis.intent,
-        tokens_used: Math.ceil(message.length / 4), // Rough token estimate
+        model_id: 'gpt-4.1-nano',
+        task_type: 'user_assistance',
+        prompt_tokens: Math.ceil(message.length / 4), // Rough estimate
+        completion_tokens: 0, // User message doesn't have completion
+        total_tokens: Math.ceil(message.length / 4),
+        cost_usd: 0.0001, // Minimal cost for processing user input
+        response_time_ms: 0,
         success: true,
-        created_at: new Date().toISOString()
+        user_id: userId,
+        function_name: 'ai-user-assistant'
       });
 
     // Save user message
@@ -278,20 +279,20 @@ serve(async (req) => {
     const endTime = Date.now();
     const responseTime = endTime - startTime;
 
-    // Log AI response to AI usage statistics
+    // Log AI usage to OpenAI usage statistics
     await supabase
-      .from('ai_usage_statistics')
+      .from('openai_usage_logs')
       .insert({
-        user_id: userId,
-        session_id: sessionId,
-        model_name: 'gpt-4.1-nano',
-        assistant_type: 'user',
-        message_type: 'assistant',
-        intent: intentAnalysis.intent,
-        tokens_used: Math.ceil(aiResponse.length / 4), // Rough token estimate
+        model_id: 'gpt-4.1-nano',
+        task_type: 'user_assistance',
+        prompt_tokens: Math.ceil(userMessage.length / 4), // Rough estimate
+        completion_tokens: Math.ceil(aiResponse.length / 4), // Rough estimate  
+        total_tokens: Math.ceil((userMessage.length + aiResponse.length) / 4),
+        cost_usd: 0.001, // Estimated cost for nano model
         response_time_ms: responseTime,
         success: true,
-        created_at: new Date().toISOString()
+        user_id: userId,
+        function_name: 'ai-user-assistant'
       });
 
 
@@ -330,17 +331,20 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in ai-user-assistant:', error);
     
-    // Log error to AI usage statistics
+    // Log error to OpenAI usage statistics
     await supabase
-      .from('ai_usage_statistics')
+      .from('openai_usage_logs')
       .insert({
-        session_id: 'unknown',
-        model_name: 'gpt-4.1-nano',
-        assistant_type: 'user',
-        message_type: 'assistant',
+        model_id: 'gpt-4.1-nano',
+        task_type: 'user_assistance',
+        prompt_tokens: 0,
+        completion_tokens: 0,
+        total_tokens: 0,
+        cost_usd: 0,
+        response_time_ms: 0,
         success: false,
         error_message: error.message,
-        created_at: new Date().toISOString()
+        function_name: 'ai-user-assistant'
       });
 
     return new Response(
