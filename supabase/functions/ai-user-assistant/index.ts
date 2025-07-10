@@ -232,9 +232,26 @@ serve(async (req) => {
 
     console.log('Processing user message:', { sessionId, userId, messageLength: message.length });
 
+    const startTime = Date.now();
+
     // Analyze intent
     const intentAnalysis = await analyzeUserIntent(message);
     console.log('Intent analysis:', intentAnalysis);
+
+    // Log user message to AI usage statistics
+    await supabase
+      .from('ai_usage_statistics')
+      .insert({
+        user_id: userId,
+        session_id: sessionId,
+        model_name: 'gpt-4.1-nano',
+        assistant_type: 'user',
+        message_type: 'user',
+        intent: intentAnalysis.intent,
+        tokens_used: Math.ceil(message.length / 4), // Rough token estimate
+        success: true,
+        created_at: new Date().toISOString()
+      });
 
     // Save user message
     const { error: userMsgError } = await supabase
@@ -258,6 +275,25 @@ serve(async (req) => {
     const aiResponse = await generateAIResponse(message, intentAnalysis.intent);
     console.log('AI response generated:', { length: aiResponse.length });
 
+    const endTime = Date.now();
+    const responseTime = endTime - startTime;
+
+    // Log AI response to AI usage statistics
+    await supabase
+      .from('ai_usage_statistics')
+      .insert({
+        user_id: userId,
+        session_id: sessionId,
+        model_name: 'gpt-4.1-nano',
+        assistant_type: 'user',
+        message_type: 'assistant',
+        intent: intentAnalysis.intent,
+        tokens_used: Math.ceil(aiResponse.length / 4), // Rough token estimate
+        response_time_ms: responseTime,
+        success: true,
+        created_at: new Date().toISOString()
+      });
+
     // Save AI response
     const { error: aiMsgError } = await supabase
       .from('user_chat_messages')
@@ -268,7 +304,8 @@ serve(async (req) => {
         metadata: { 
           intent: intentAnalysis.intent,
           model: 'gpt-4.1-nano',
-          confidence: intentAnalysis.confidence
+          confidence: intentAnalysis.confidence,
+          response_time_ms: responseTime
         }
       });
 
@@ -291,6 +328,20 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in ai-user-assistant:', error);
+    
+    // Log error to AI usage statistics
+    await supabase
+      .from('ai_usage_statistics')
+      .insert({
+        session_id: 'unknown',
+        model_name: 'gpt-4.1-nano',
+        assistant_type: 'user',
+        message_type: 'assistant',
+        success: false,
+        error_message: error.message,
+        created_at: new Date().toISOString()
+      });
+
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
