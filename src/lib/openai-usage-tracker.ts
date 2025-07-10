@@ -16,6 +16,7 @@ export interface OpenAIUsageLog {
 
 // OpenAI pricing per 1M tokens (as of 2025)
 const OPENAI_PRICING = {
+  'gpt-4.1-nano': { input: 0.05, output: 0.20 }, // Estimated ultra-cheap pricing
   'gpt-4.1-2025-04-14': { input: 2.50, output: 10.00 },
   'gpt-4.1-mini-2025-04-14': { input: 0.15, output: 0.60 },
   'o3-2025-04-16': { input: 15.00, output: 60.00 },

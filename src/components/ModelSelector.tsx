@@ -20,6 +20,18 @@ export interface GPTModel {
 
 export const GPT_MODELS: GPTModel[] = [
   {
+    id: 'gpt-4.1-nano',
+    name: 'GPT-4.1 Nano',
+    description: 'Model siêu rẻ và nhanh cho FAQ và user queries',
+    icon: <Zap className="w-4 h-4 text-cyan-500" />,
+    strengths: ['Siêu rẻ', 'Nhanh', 'Phù hợp FAQ'],
+    costLevel: 'low',
+    speed: 'fast',
+    recommended: ['FAQ', 'User support', 'Simple queries'],
+    contextWindow: '128K tokens',
+    outputTokens: '16K tokens'
+  },
+  {
     id: 'gpt-4.1-2025-04-14',
     name: 'GPT-4.1 (Flagship)',
     description: 'Model mạnh nhất, cân bằng giữa hiệu suất và chi phí',
