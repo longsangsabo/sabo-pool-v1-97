@@ -431,6 +431,88 @@ export const TournamentMatchManagement: React.FC<TournamentMatchManagementProps>
               const roundMatches = matchesByRound[round] || [];
               if (roundMatches.length === 0) return null;
               
+              // For final round, separate regular final from 3rd place match
+              if (round === Math.max(...rounds)) {
+                const finalMatch = roundMatches.filter(m => !(m as any).is_third_place_match);
+                const thirdPlaceMatch = roundMatches.filter(m => (m as any).is_third_place_match);
+                
+                return (
+                  <div key={round} className="space-y-6">
+                    {/* Final Match */}
+                    {finalMatch.length > 0 && (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold">Chung kết</h3>
+                          <Badge variant="outline">
+                            {finalMatch.length} trận
+                          </Badge>
+                        </div>
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                          {finalMatch.map(match => (
+                            <MatchScoreEntry
+                              key={match.id}
+                              match={match}
+                              onUpdateScore={async (matchId, player1Score, player2Score, winnerId) => {
+                                await updateScore({ matchId, player1Score, player2Score, winnerId });
+                              }}
+                              onStartMatch={async (matchId) => {
+                                await startMatch(matchId);
+                              }}
+                              onCancelMatch={async (matchId) => {
+                                await cancelMatch(matchId);
+                              }}
+                              onRestoreMatch={async (matchId) => {
+                                await restoreMatch(matchId);
+                              }}
+                              isUpdating={isUpdatingScore}
+                              isStarting={isStartingMatch}
+                              isCancelling={isCancellingMatch}
+                              isRestoring={isRestoringMatch}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Third Place Match */}
+                    {thirdPlaceMatch.length > 0 && (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold text-orange-600">Tranh hạng 3</h3>
+                          <Badge variant="outline" className="bg-orange-50 text-orange-600">
+                            {thirdPlaceMatch.length} trận
+                          </Badge>
+                        </div>
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                          {thirdPlaceMatch.map(match => (
+                            <MatchScoreEntry
+                              key={match.id}
+                              match={match}
+                              onUpdateScore={async (matchId, player1Score, player2Score, winnerId) => {
+                                await updateScore({ matchId, player1Score, player2Score, winnerId });
+                              }}
+                              onStartMatch={async (matchId) => {
+                                await startMatch(matchId);
+                              }}
+                              onCancelMatch={async (matchId) => {
+                                await cancelMatch(matchId);
+                              }}
+                              onRestoreMatch={async (matchId) => {
+                                await restoreMatch(matchId);
+                              }}
+                              isUpdating={isUpdatingScore}
+                              isStarting={isStartingMatch}
+                              isCancelling={isCancellingMatch}
+                              isRestoring={isRestoringMatch}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+              
               return (
                 <div key={round} className="space-y-4">
                   <div className="flex items-center justify-between">
