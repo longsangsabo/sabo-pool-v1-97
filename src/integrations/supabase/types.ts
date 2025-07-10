@@ -6086,6 +6086,10 @@ export type Database = {
         Args: { p_player_id: string }
         Returns: Json
       }
+      check_and_update_ranks: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       check_rank_promotion: {
         Args: { p_player_id: string }
         Returns: boolean
