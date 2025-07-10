@@ -24,7 +24,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, session_id } = await req.json();
+    const { message, session_id, model = 'gpt-4o-mini' } = await req.json();
     
     console.log('Processing message:', message);
     
@@ -50,10 +50,10 @@ serve(async (req) => {
     );
     
     // Step 5: Generate response with OpenAI
-    const response = await generateResponse(message, optimizedContext);
+    const response = await generateResponse(message, optimizedContext, model);
     
     // Log usage for monitoring
-    await logUsage(message, intent, optimizedContext.tokens_used, response);
+    await logUsage(message, intent, optimizedContext.tokens_used, response, model);
     
     return new Response(JSON.stringify({ 
       reply: response,
@@ -178,28 +178,18 @@ async function searchKnowledgeBase(message: string, intent: any) {
 }
 
 async function getDynamicData(intent: any, relevantContext: any[]) {
-  if (!intent.workflow?.sql_queries) {
-    return await getBasicAdminStats();
-  }
-  
-  const queries = intent.workflow.sql_queries;
-  const results: any = {};
-  
+  // Always use the safe admin stats function instead of dynamic SQL
   try {
-    for (const [key, query] of Object.entries(queries)) {
-      if (typeof query === 'string') {
-        const { data, error } = await supabase.rpc('execute_sql', { query });
-        if (!error && data && data.length > 0) {
-          results[key] = data[0].count || data[0];
-        }
-      }
+    const { data: adminStats, error } = await supabase.rpc('get_admin_stats_safely');
+    if (error) {
+      console.error('Error getting admin stats:', error);
+      return await getBasicAdminStats();
     }
+    return adminStats || await getBasicAdminStats();
   } catch (error) {
-    console.error('Error executing dynamic queries:', error);
+    console.error('Error executing safe admin stats:', error);
     return await getBasicAdminStats();
   }
-  
-  return results;
 }
 
 async function getBasicAdminStats() {
@@ -291,7 +281,7 @@ async function buildOptimizedContext(message: string, intent: any, knowledgeItem
   return { context, tokens_used: tokensUsed };
 }
 
-async function generateResponse(message: string, contextData: any) {
+async function generateResponse(message: string, contextData: any, model: string = 'gpt-4o-mini') {
   const systemPrompt = `Bạn là AI Assistant chuyên nghiệp cho admin của nền tảng bi-a SPA Points.
 
 NHIỆM VỤ:
@@ -318,7 +308,7 @@ Hãy trả lời câu hỏi của admin một cách chính xác và hữu ích.`
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'gpt-4o-mini',
+      model: model,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: message }
@@ -332,10 +322,10 @@ Hãy trả lời câu hỏi của admin một cách chính xác và hữu ích.`
   return data.choices[0].message.content;
 }
 
-async function logUsage(message: string, intent: any, tokensUsed: number, response: string) {
+async function logUsage(message: string, intent: any, tokensUsed: number, response: string, model: string = 'gpt-4o-mini') {
   try {
     await supabase.from('openai_usage_logs').insert({
-      model_id: 'gpt-4o-mini',
+      model_id: model,
       task_type: 'admin_assistance',
       function_name: 'ai-admin-assistant',
       prompt_tokens: tokensUsed,

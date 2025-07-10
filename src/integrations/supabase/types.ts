@@ -6264,6 +6264,10 @@ export type Database = {
         Args: { tournament_uuid: string }
         Returns: Json
       }
+      get_admin_stats_safely: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_available_demo_users: {
         Args: { needed_count: number }
         Returns: {
