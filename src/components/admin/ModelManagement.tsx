@@ -11,7 +11,7 @@ import { ModelSelector, GPT_MODELS } from '@/components/ModelSelector';
 import { useToast } from '@/components/ui/use-toast';
 import ModelTestingDemo from './ModelTestingDemo';
 import AdminModelSettings from './AdminModelSettings';
-import { getModelUsageStats, getOpenAIUsageStats } from '@/lib/openai-usage-tracker';
+import { getModelUsageStats, getOpenAIUsageStats, getAIAssistantStats } from '@/lib/openai-usage-tracker';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ModelConfig {
@@ -94,14 +94,8 @@ const ModelManagement: React.FC = () => {
         setTotalRequests(totalRequestsValue);
 
         // Fetch AI Assistant usage stats
-        const { data: aiUsageData, error: aiUsageError } = await supabase
-          .rpc('get_ai_usage_overview', { days_back: 30 });
-
-        if (aiUsageError) {
-          console.error('Error fetching AI usage stats:', aiUsageError);
-        } else {
-          setAiUsageStats(aiUsageData || []);
-        }
+        const aiAssistantStats = await getAIAssistantStats();
+        setAiUsageStats(aiAssistantStats);
 
       } catch (error) {
         console.error('Failed to fetch usage data:', error);

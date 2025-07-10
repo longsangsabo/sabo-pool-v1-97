@@ -121,3 +121,65 @@ export async function getModelUsageStats() {
     successRate: Math.round((stat.successCount / stat.requests) * 100 * 10) / 10
   }));
 }
+
+export async function getAIAssistantStats() {
+  const { data, error } = await supabase
+    .from('openai_usage_logs')
+    .select('model_id, function_name, total_tokens, cost_usd, success, response_time_ms, user_id')
+    .gte('timestamp', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+    .in('function_name', ['ai-user-assistant', 'ai-admin-assistant']);
+
+  if (error) {
+    console.error('Failed to fetch AI assistant stats:', error);
+    return [];
+  }
+
+  // Group by function_name and aggregate stats
+  const stats = data.reduce((acc, log) => {
+    const key = log.function_name;
+    if (!acc[key]) {
+      acc[key] = {
+        assistant_type: key === 'ai-user-assistant' ? 'user' : 'admin',
+        model_name: log.model_id,
+        total_requests: 0,
+        successful_requests: 0,
+        failed_requests: 0,
+        total_tokens: 0,
+        avg_response_time: 0,
+        unique_users: new Set(),
+        unique_sessions: new Set(),
+        totalResponseTime: 0
+      };
+    }
+    
+    acc[key].total_requests += 1;
+    acc[key].total_tokens += log.total_tokens;
+    acc[key].totalResponseTime += log.response_time_ms;
+    
+    if (log.success) {
+      acc[key].successful_requests += 1;
+    } else {
+      acc[key].failed_requests += 1;
+    }
+    
+    if (log.user_id) {
+      acc[key].unique_users.add(log.user_id);
+    }
+    
+    return acc;
+  }, {} as Record<string, any>);
+
+  // Calculate averages and convert sets to counts
+  return Object.values(stats).map((stat: any) => ({
+    assistant_type: stat.assistant_type,
+    model_name: stat.model_name,
+    total_requests: stat.total_requests,
+    successful_requests: stat.successful_requests,
+    failed_requests: stat.failed_requests,
+    total_tokens: stat.total_tokens,
+    avg_response_time: Math.round(stat.totalResponseTime / stat.total_requests),
+    unique_users: stat.unique_users.size,
+    unique_sessions: stat.unique_sessions.size,
+    success_rate: Math.round((stat.successful_requests / stat.total_requests) * 100 * 10) / 10
+  }));
+}
