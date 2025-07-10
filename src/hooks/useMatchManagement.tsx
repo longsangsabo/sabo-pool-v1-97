@@ -31,6 +31,7 @@ export interface TournamentMatch {
   };
 }
 
+// Simplified interfaces - no match_results needed
 export interface MatchResult {
   id: string;
   tournament_id: string;
@@ -95,7 +96,7 @@ export const useMatchManagement = (tournamentId: string) => {
     enabled: !!tournamentId,
   });
 
-  // Update match score
+  // Simplified update match score - no match_results creation
   const updateScoreMutation = useMutation({
     mutationFn: async ({
       matchId,
@@ -112,6 +113,7 @@ export const useMatchManagement = (tournamentId: string) => {
     }) => {
       console.log('Updating score for match:', matchId, { player1Score, player2Score, winnerId });
       
+      // Simple update - only tournament_matches table
       const { data: match, error: matchError } = await supabase
         .from('tournament_matches')
         .update({
@@ -131,60 +133,11 @@ export const useMatchManagement = (tournamentId: string) => {
         throw matchError;
       }
 
-      // Create match result record only if both players exist
-      if (winnerId && match && match.player1_id && match.player2_id) {
-        const currentUser = await supabase.auth.getUser();
-        console.log('Creating match result for winner:', winnerId);
-        
-        // Verify players exist in profiles table before creating match result
-        const { data: playersExist, error: playerCheckError } = await supabase
-          .from('profiles')
-          .select('user_id')
-          .in('user_id', [match.player1_id, match.player2_id]);
-        
-        if (playerCheckError) {
-          console.error('Player verification error:', playerCheckError);
-          throw new Error('Không thể xác minh thông tin người chơi');
-        }
-        
-        if (!playersExist || playersExist.length !== 2) {
-          throw new Error('Một hoặc cả hai người chơi không tồn tại trong hệ thống');
-        }
-        
-        const { error: resultError } = await supabase
-          .from('match_results')
-          .upsert({
-            tournament_id: match.tournament_id,
-            player1_id: match.player1_id,
-            player2_id: match.player2_id,
-            winner_id: winnerId,
-            player1_score: player1Score,
-            player2_score: player2Score,
-            result_status: 'verified',
-            verification_method: 'manual',
-            created_by: currentUser.data.user?.id,
-            verified_at: new Date().toISOString(),
-            verified_by: currentUser.data.user?.id
-          });
-
-        if (resultError) {
-          console.error('Match result error:', resultError);
-          throw resultError;
-        }
-
-        // Auto-advance winner to next round via trigger (automatically handled by database)
-        console.log('Winner will be auto-advanced via database trigger');
-        
-        // Show advancement message after a brief delay
+      // Simple success message - no complex logic
+      if (winnerId) {
         setTimeout(() => {
-          toast.success(`🏆 Người thắng đã tiến vào vòng tiếp theo!`);
-        }, 1500);
-      } else if (winnerId && match && (!match.player1_id || !match.player2_id)) {
-        console.log('Match has BYE player, advancing winner directly');
-        // For BYE matches, just advance the winner without creating match result
-        setTimeout(() => {
-          toast.success(`🏆 Người thắng đã tiến vào vòng tiếp theo!`);
-        }, 1500);
+          toast.success(`🏆 Người thắng đã được ghi nhận!`);
+        }, 500);
       }
 
       console.log('Score updated successfully');
