@@ -6486,6 +6486,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      process_tournament_completion: {
+        Args: { p_tournament_id: string }
+        Returns: Json
+      }
       process_tournament_results_final: {
         Args: { tournament_id_param: string }
         Returns: undefined
