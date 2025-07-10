@@ -2,9 +2,11 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import TournamentManagementFlow from '@/components/tournament/TournamentManagementFlow';
 import TournamentCard from '@/components/tournament/TournamentCard';
 import TournamentParticipantsList from '@/components/tournament/TournamentParticipantsList';
+import TournamentResults from '@/components/tournament/TournamentResults';
 import { RealtimeBracketViewer } from '@/components/tournament/RealtimeBracketViewer';
 import { useTournaments } from '@/hooks/useTournaments';
 import { useAuth } from '@/hooks/useAuth';
@@ -57,11 +59,29 @@ const TournamentDetailsPage: React.FC = () => {
     // This would need to be checked against club_profiles table in a real scenario
     true; // Simplified for now
 
+  const isCompleted = tournament.status === 'completed';
+  const tabsCount = isCompleted ? (isOrganizer ? 5 : 4) : (isOrganizer ? 4 : 3);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+        {/* Tournament Status Banner for Completed */}
+        {isCompleted && (
+          <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+            <div className="flex items-center justify-center gap-2">
+              <Badge className="bg-green-600 text-white">Đã hoàn thành</Badge>
+              <span className="text-green-800 font-medium">
+                🏆 Giải đấu "{tournament.name}" đã kết thúc
+              </span>
+            </div>
+          </div>
+        )}
+
+        <Tabs defaultValue={isCompleted ? "results" : "overview"} className="space-y-6">
+          <TabsList className={`grid w-full grid-cols-${tabsCount}`}>
+            {isCompleted && (
+              <TabsTrigger value="results">🏆 Kết quả</TabsTrigger>
+            )}
             <TabsTrigger value="overview">Tổng quan</TabsTrigger>
             <TabsTrigger value="participants">Người tham gia</TabsTrigger>
             <TabsTrigger value="bracket">Bảng đấu</TabsTrigger>
@@ -70,10 +90,23 @@ const TournamentDetailsPage: React.FC = () => {
             )}
           </TabsList>
 
+          {/* Results Tab - Only for completed tournaments */}
+          {isCompleted && (
+            <TabsContent value="results" className="space-y-6">
+              <TournamentResults 
+                tournamentId={tournament.id}
+                tournamentName={tournament.name}
+              />
+            </TabsContent>
+          )}
+
           <TabsContent value="overview" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Thông tin giải đấu</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  {isCompleted && <Badge className="bg-green-600 text-white">Đã hoàn thành</Badge>}
+                  Thông tin giải đấu
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <TournamentCard 
