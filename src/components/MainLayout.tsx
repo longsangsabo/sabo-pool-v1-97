@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Navigation from './Navigation';
 import MobileNavigation from './MobileNavigation';
+import { FloatingUserChat } from './FloatingUserChat';
 import { useAuth } from '@/hooks/useAuth';
 
 const MainLayout = () => {
@@ -26,6 +27,7 @@ const MainLayout = () => {
         <Outlet />
       </main>
       {user && <MobileNavigation />}
+      <FloatingUserChat />
     </div>
   );
 };
