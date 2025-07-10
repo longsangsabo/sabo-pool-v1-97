@@ -20,11 +20,79 @@ interface UserMessage {
   userId: string;
 }
 
-// Simple FAQ knowledge base for users
-const faqKnowledge = `
-# ViePool FAQ & Thông tin chi tiết
+// Dynamic knowledge base fetcher
+async function getDynamicKnowledgeBase(intent: string, message: string): Promise<string> {
+  try {
+    const { data: knowledgeItems } = await supabase
+      .from('admin_knowledge_base')
+      .select('*')
+      .eq('is_active', true)
+      .order('priority', { ascending: true });
 
-## Hệ thống ELO ViePool
+    if (!knowledgeItems || knowledgeItems.length === 0) {
+      return getDefaultKnowledgeBase();
+    }
+
+    // Score and filter relevant knowledge items
+    const relevantItems = knowledgeItems
+      .map(item => {
+        let score = 0;
+        const lowerMessage = message.toLowerCase();
+        const lowerContent = item.content.toLowerCase();
+        const lowerTitle = item.title.toLowerCase();
+
+        // Direct title/content match
+        if (lowerTitle.includes(lowerMessage) || lowerMessage.includes(lowerTitle)) {
+          score += 10;
+        }
+
+        // Tag matches
+        if (item.tags) {
+          item.tags.forEach(tag => {
+            if (lowerMessage.includes(tag.toLowerCase())) {
+              score += 5;
+            }
+          });
+        }
+
+        // Intent-based matching
+        if (intent === 'elo_system' && (lowerContent.includes('elo') || lowerContent.includes('điểm'))) {
+          score += 8;
+        }
+        if (intent === 'tournament_info' && (lowerContent.includes('giải đấu') || lowerContent.includes('tournament'))) {
+          score += 8;
+        }
+
+        return { ...item, score };
+      })
+      .filter(item => item.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5); // Top 5 most relevant
+
+    if (relevantItems.length === 0) {
+      return getDefaultKnowledgeBase();
+    }
+
+    // Build dynamic knowledge base
+    let knowledgeBase = `# SABO Pool Arena - Hệ thống Billiards Hàng Đầu Việt Nam\n\n`;
+    
+    relevantItems.forEach(item => {
+      knowledgeBase += `## ${item.title}\n${item.content}\n\n`;
+    });
+
+    return knowledgeBase;
+  } catch (error) {
+    console.error('Error fetching dynamic knowledge base:', error);
+    return getDefaultKnowledgeBase();
+  }
+}
+
+// Fallback knowledge base with correct branding
+function getDefaultKnowledgeBase(): string {
+  return `
+# SABO Pool Arena FAQ & Thông tin chi tiết
+
+## Hệ thống ELO SABO Pool Arena
 - ELO bắt đầu từ 1000 điểm cho người chơi mới
 - Thắng sẽ tăng ELO, thua sẽ giảm ELO
 - Mức thay đổi ELO phụ thuộc vào:
@@ -47,9 +115,9 @@ const faqKnowledge = `
 
 ## Hỗ trợ & Liên hệ
 - Liên hệ admin qua trang Contact trong app
-- Email hỗ trợ: support@viepool.com
+- Email hỗ trợ: support@sabopoolarea.com
 - Chat với AI (đang sử dụng) để câu hỏi nhanh
-- Hotline: 1900-VIEPOOL
+- Hotline: 1900-SABO
 
 ## Quy tắc & Chính sách
 - Tôn trọng đối thủ và fair play
@@ -57,6 +125,7 @@ const faqKnowledge = `
 - Báo cáo kết quả trận đấu chính xác và trung thực
 - Vi phạm có thể bị trừ ELO hoặc cấm tài khoản
 `;
+}
 
 async function analyzeUserIntent(message: string): Promise<{
   intent: string;
@@ -87,16 +156,20 @@ async function analyzeUserIntent(message: string): Promise<{
 
 async function generateAIResponse(userMessage: string, intent: string): Promise<string> {
   try {
-    const systemPrompt = `Bạn là AI assistant chính thức của ViePool - nền tảng billiards hàng đầu Việt Nam.
+    // Get dynamic knowledge base
+    const dynamicKnowledgeBase = await getDynamicKnowledgeBase(intent, userMessage);
+    
+    const systemPrompt = `Bạn là AI assistant chính thức của SABO Pool Arena - nền tảng billiards hàng đầu Việt Nam.
 
 NHIỆM VỤ:
-- Trả lời câu hỏi về ViePool một cách CHÍNH XÁC và CHI TIẾT
-- Sử dụng đúng thông tin từ knowledge base
+- Trả lời câu hỏi về SABO Pool Arena một cách CHÍNH XÁC và CHI TIẾT
+- Sử dụng đúng thông tin từ knowledge base được cập nhật tự động
 - Giọng điệu chuyên nghiệp, thân thiện, sử dụng tiếng Việt
-- TUYỆT ĐỐI KHÔNG trả lời "ViePool không có" khi thực tế có thông tin
+- TUYỆT ĐỐI KHÔNG trả lời "SABO Pool Arena không có" khi thực tế có thông tin
+- Luôn cập nhật thông tin mới nhất từ hệ thống
 
-KNOWLEDGE BASE ViePool:
-${faqKnowledge}
+KNOWLEDGE BASE SABO Pool Arena (Cập nhật tự động):
+${dynamicKnowledgeBase}
 
 HƯỚNG DẪN TRẢ LỜI:
 - Với câu hỏi về ELO: Giải thích chi tiết hệ thống tính ELO
@@ -104,10 +177,12 @@ HƯỚNG DẪN TRẢ LỜI:
 - Với câu hỏi về giải đấu: Hướng dẫn cụ thể cách đăng ký
 - Intent hiện tại: ${intent}
 - LUÔN đưa ra thông tin có ích và hướng dẫn cụ thể
+- Thông tin được cập nhật tự động từ database
 
 VÍ DỤ TRÁCH NHIỆM:
 - "Vô địch giải đấu thường tăng 20-50 ELO tùy mức độ đối thủ và quy mô giải"
-- "Hệ thống ELO ViePool tính theo công thức Elo quốc tế với K-factor từ 16-40"
+- "Hệ thống ELO SABO Pool Arena tính theo công thức Elo quốc tế với K-factor từ 16-40"
+- "Thông tin được cập nhật tự động từ hệ thống SABO Pool Arena"
 `;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -135,7 +210,7 @@ VÍ DỤ TRÁCH NHIỆM:
     return data.choices[0].message.content;
   } catch (error) {
     console.error('OpenAI API error:', error);
-    return 'Xin lỗi, tôi gặp sự cố kỹ thuật. Vui lòng thử lại sau hoặc liên hệ support@viepool.com để được hỗ trợ.';
+    return 'Xin lỗi, tôi gặp sự cố kỹ thuật. Vui lòng thử lại sau hoặc liên hệ support@sabopoolarea.com để được hỗ trợ.';
   }
 }
 
