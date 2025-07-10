@@ -8,6 +8,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { TournamentRewardsButton } from './TournamentRewardsButton';
 import { RankingService } from '@/services/rankingService';
+import { RANK_ELO } from '@/utils/eloConstants';
+import type { RankCode } from '@/utils/eloConstants';
 
 interface TournamentResultsProps {
   tournamentId: string;
@@ -51,6 +53,7 @@ export const TournamentResults: React.FC<TournamentResultsProps> = ({
   const [champion, setChampion] = useState<ParticipantResult | null>(null);
   const [clubRewards, setClubRewards] = useState<TournamentReward[]>([]);
   const [tournament, setTournament] = useState<any>(null);
+  const [highestRank, setHighestRank] = useState<RankCode>('K');
 
   useEffect(() => {
     fetchTournamentResults();
@@ -136,6 +139,19 @@ export const TournamentResults: React.FC<TournamentResultsProps> = ({
         .eq('source_id', tournamentId)
         .eq('source_type', 'tournament');
 
+      // Find the highest rank (lowest ELO requirement) among all participants
+      const calculatedHighestRank = participants.reduce((highest, participant) => {
+        const playerId = participant.player_id;
+        const ranking = playerRankings?.find(r => r.player_id === playerId);
+        const currentElo = ranking?.elo_points || 1000;
+        const playerRank = RankingService.getRankByElo(currentElo);
+        const playerRankElo = RANK_ELO[playerRank as RankCode];
+        const currentHighestElo = RANK_ELO[highest];
+        return playerRankElo > currentHighestElo ? playerRank as RankCode : highest;
+      }, 'K' as RankCode);
+      
+      setHighestRank(calculatedHighestRank);
+
       // Process results
       const processedResults: ParticipantResult[] = participants.map((participant, index) => {
         const playerId = participant.player_id;
@@ -179,7 +195,13 @@ export const TournamentResults: React.FC<TournamentResultsProps> = ({
                                   position <= 16 ? 'TOP_16' : 'PARTICIPATION';
         
         const validRank = ['K', 'K+', 'I', 'I+', 'H', 'H+', 'G', 'G+', 'F', 'F+', 'E', 'E+'].includes(currentRank) ? currentRank as any : 'K';
-        const expectedRewards = RankingService.calculateTournamentRewards(tournamentPosition as any, validRank);
+        // Use highest rank in tournament for SPA calculation instead of individual player rank
+        const expectedRewards = {
+          eloPoints: RankingService.calculateTournamentElo(tournamentPosition as any),
+          spaPoints: RankingService.calculateTournamentSpa(tournamentPosition as any, calculatedHighestRank),
+          position: tournamentPosition,
+          rank: calculatedHighestRank
+        };
 
         // Get actual ELO changes from match results
         const playerMatches = matchResults?.filter(m => 
@@ -515,7 +537,7 @@ export const TournamentResults: React.FC<TournamentResultsProps> = ({
               </p>
             </div>
             <TournamentRewardsButton 
-              playerRank={(champion?.current_rank_id as any) || 'K'}
+              playerRank={highestRank}
               size="default"
               variant="default"
             />
