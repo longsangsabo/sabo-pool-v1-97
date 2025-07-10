@@ -138,7 +138,7 @@ const App = () => {
                       <Route path="/" element={<MainLayout />}>
                         {/* Routes with navigation */}
                         {/* Trang chính */}
-                        <Route index element={<SimpleDashboard />} />
+                        <Route index element={<Index />} />
                         <Route path="dashboard" element={<AuthWrapper><DashboardPage /></AuthWrapper>} />
                         <Route path="dashboard-overview" element={<DashboardOverview />} />
                         <Route path="index" element={<Index />} />
