@@ -1,7 +1,1 @@
 project_id = "knxevbkkkiadgppxbphh"
-
-[functions.ai-admin-assistant]
-verify_jwt = true
-
-[functions.ai-user-assistant]
-verify_jwt = false
