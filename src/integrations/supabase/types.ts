@@ -1346,90 +1346,6 @@ export type Database = {
         }
         Relationships: []
       }
-      leaderboard_snapshots: {
-        Row: {
-          created_at: string | null
-          id: string
-          matches: number | null
-          player_id: string
-          rank_id: string | null
-          spa_points: number | null
-          week_start: string
-          wins: number | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          matches?: number | null
-          player_id: string
-          rank_id?: string | null
-          spa_points?: number | null
-          week_start: string
-          wins?: number | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          matches?: number | null
-          player_id?: string
-          rank_id?: string | null
-          spa_points?: number | null
-          week_start?: string
-          wins?: number | null
-        }
-        Relationships: []
-      }
-      leaderboards: {
-        Row: {
-          city: string | null
-          created_at: string | null
-          district: string | null
-          id: string
-          month: number
-          player_id: string
-          position: number | null
-          rank_category: string | null
-          ranking_points: number | null
-          total_matches: number | null
-          total_wins: number | null
-          updated_at: string | null
-          win_rate: number | null
-          year: number
-        }
-        Insert: {
-          city?: string | null
-          created_at?: string | null
-          district?: string | null
-          id?: string
-          month: number
-          player_id: string
-          position?: number | null
-          rank_category?: string | null
-          ranking_points?: number | null
-          total_matches?: number | null
-          total_wins?: number | null
-          updated_at?: string | null
-          win_rate?: number | null
-          year: number
-        }
-        Update: {
-          city?: string | null
-          created_at?: string | null
-          district?: string | null
-          id?: string
-          month?: number
-          player_id?: string
-          position?: number | null
-          rank_category?: string | null
-          ranking_points?: number | null
-          total_matches?: number | null
-          total_wins?: number | null
-          updated_at?: string | null
-          win_rate?: number | null
-          year?: number
-        }
-        Relationships: []
-      }
       live_streams: {
         Row: {
           club_id: string | null
@@ -2259,261 +2175,6 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
-      }
-      notifications_partitioned: {
-        Row: {
-          action_url: string | null
-          created_at: string | null
-          deleted_at: string | null
-          expires_at: string | null
-          id: string
-          is_read: boolean | null
-          message: string
-          metadata: Json | null
-          priority: string | null
-          sender_id: string | null
-          title: string
-          type: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          action_url?: string | null
-          created_at?: string | null
-          deleted_at?: string | null
-          expires_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          message: string
-          metadata?: Json | null
-          priority?: string | null
-          sender_id?: string | null
-          title: string
-          type: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          action_url?: string | null
-          created_at?: string | null
-          deleted_at?: string | null
-          expires_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          message?: string
-          metadata?: Json | null
-          priority?: string | null
-          sender_id?: string | null
-          title?: string
-          type?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      notifications_y2023m12: {
-        Row: {
-          action_url: string | null
-          created_at: string | null
-          deleted_at: string | null
-          expires_at: string | null
-          id: string
-          is_read: boolean | null
-          message: string
-          metadata: Json | null
-          priority: string | null
-          sender_id: string | null
-          title: string
-          type: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          action_url?: string | null
-          created_at?: string | null
-          deleted_at?: string | null
-          expires_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          message: string
-          metadata?: Json | null
-          priority?: string | null
-          sender_id?: string | null
-          title: string
-          type: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          action_url?: string | null
-          created_at?: string | null
-          deleted_at?: string | null
-          expires_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          message?: string
-          metadata?: Json | null
-          priority?: string | null
-          sender_id?: string | null
-          title?: string
-          type?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      notifications_y2024m01: {
-        Row: {
-          action_url: string | null
-          created_at: string | null
-          deleted_at: string | null
-          expires_at: string | null
-          id: string
-          is_read: boolean | null
-          message: string
-          metadata: Json | null
-          priority: string | null
-          sender_id: string | null
-          title: string
-          type: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          action_url?: string | null
-          created_at?: string | null
-          deleted_at?: string | null
-          expires_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          message: string
-          metadata?: Json | null
-          priority?: string | null
-          sender_id?: string | null
-          title: string
-          type: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          action_url?: string | null
-          created_at?: string | null
-          deleted_at?: string | null
-          expires_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          message?: string
-          metadata?: Json | null
-          priority?: string | null
-          sender_id?: string | null
-          title?: string
-          type?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      notifications_y2024m02: {
-        Row: {
-          action_url: string | null
-          created_at: string | null
-          deleted_at: string | null
-          expires_at: string | null
-          id: string
-          is_read: boolean | null
-          message: string
-          metadata: Json | null
-          priority: string | null
-          sender_id: string | null
-          title: string
-          type: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          action_url?: string | null
-          created_at?: string | null
-          deleted_at?: string | null
-          expires_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          message: string
-          metadata?: Json | null
-          priority?: string | null
-          sender_id?: string | null
-          title: string
-          type: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          action_url?: string | null
-          created_at?: string | null
-          deleted_at?: string | null
-          expires_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          message?: string
-          metadata?: Json | null
-          priority?: string | null
-          sender_id?: string | null
-          title?: string
-          type?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      notifications_y2024m03: {
-        Row: {
-          action_url: string | null
-          created_at: string | null
-          deleted_at: string | null
-          expires_at: string | null
-          id: string
-          is_read: boolean | null
-          message: string
-          metadata: Json | null
-          priority: string | null
-          sender_id: string | null
-          title: string
-          type: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          action_url?: string | null
-          created_at?: string | null
-          deleted_at?: string | null
-          expires_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          message: string
-          metadata?: Json | null
-          priority?: string | null
-          sender_id?: string | null
-          title: string
-          type: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          action_url?: string | null
-          created_at?: string | null
-          deleted_at?: string | null
-          expires_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          message?: string
-          metadata?: Json | null
-          priority?: string | null
-          sender_id?: string | null
-          title?: string
-          type?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
       }
       openai_model_configs: {
         Row: {
@@ -4024,106 +3685,6 @@ export type Database = {
           },
         ]
       }
-      ranking_history: {
-        Row: {
-          id: string
-          new_rank_id: string | null
-          old_rank_id: string | null
-          player_id: string | null
-          promotion_date: string | null
-          season: number | null
-          total_points_earned: number | null
-        }
-        Insert: {
-          id?: string
-          new_rank_id?: string | null
-          old_rank_id?: string | null
-          player_id?: string | null
-          promotion_date?: string | null
-          season?: number | null
-          total_points_earned?: number | null
-        }
-        Update: {
-          id?: string
-          new_rank_id?: string | null
-          old_rank_id?: string | null
-          player_id?: string | null
-          promotion_date?: string | null
-          season?: number | null
-          total_points_earned?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ranking_history_new_rank_id_fkey"
-            columns: ["new_rank_id"]
-            isOneToOne: false
-            referencedRelation: "ranks"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ranking_history_old_rank_id_fkey"
-            columns: ["old_rank_id"]
-            isOneToOne: false
-            referencedRelation: "ranks"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ranking_history_player_id_fkey"
-            columns: ["player_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      ranking_snapshots: {
-        Row: {
-          created_at: string | null
-          current_streak: number
-          elo_rating: number
-          id: string
-          losses: number
-          peak_elo: number | null
-          player_id: string | null
-          rank_position: number | null
-          rank_tier: string
-          snapshot_date: string
-          total_matches: number
-          win_rate: number
-          wins: number
-        }
-        Insert: {
-          created_at?: string | null
-          current_streak?: number
-          elo_rating: number
-          id?: string
-          losses?: number
-          peak_elo?: number | null
-          player_id?: string | null
-          rank_position?: number | null
-          rank_tier: string
-          snapshot_date?: string
-          total_matches?: number
-          win_rate?: number
-          wins?: number
-        }
-        Update: {
-          created_at?: string | null
-          current_streak?: number
-          elo_rating?: number
-          id?: string
-          losses?: number
-          peak_elo?: number | null
-          player_id?: string | null
-          rank_position?: number | null
-          rank_tier?: string
-          snapshot_date?: string
-          total_matches?: number
-          win_rate?: number
-          wins?: number
-        }
-        Relationships: []
-      }
       ranks: {
         Row: {
           code: string
@@ -4234,63 +3795,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      season_rankings: {
-        Row: {
-          created_at: string | null
-          id: string
-          matches_played: number | null
-          matches_won: number | null
-          player_id: string | null
-          points: number | null
-          rank_position: number | null
-          season_id: string | null
-          tournaments_played: number | null
-          tournaments_won: number | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          matches_played?: number | null
-          matches_won?: number | null
-          player_id?: string | null
-          points?: number | null
-          rank_position?: number | null
-          season_id?: string | null
-          tournaments_played?: number | null
-          tournaments_won?: number | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          matches_played?: number | null
-          matches_won?: number | null
-          player_id?: string | null
-          points?: number | null
-          rank_position?: number | null
-          season_id?: string | null
-          tournaments_played?: number | null
-          tournaments_won?: number | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "season_rankings_player_id_fkey"
-            columns: ["player_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "season_rankings_season_id_fkey"
-            columns: ["season_id"]
-            isOneToOne: false
-            referencedRelation: "seasons"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       season_summaries: {
         Row: {
@@ -4826,131 +4330,6 @@ export type Database = {
           },
         ]
       }
-      test_player_rankings: {
-        Row: {
-          created_at: string | null
-          elo: number | null
-          id: string
-          losses: number | null
-          player_id: string
-          spa_points: number | null
-          total_matches: number | null
-          updated_at: string | null
-          wins: number | null
-        }
-        Insert: {
-          created_at?: string | null
-          elo?: number | null
-          id?: string
-          losses?: number | null
-          player_id: string
-          spa_points?: number | null
-          total_matches?: number | null
-          updated_at?: string | null
-          wins?: number | null
-        }
-        Update: {
-          created_at?: string | null
-          elo?: number | null
-          id?: string
-          losses?: number | null
-          player_id?: string
-          spa_points?: number | null
-          total_matches?: number | null
-          updated_at?: string | null
-          wins?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "test_player_rankings_player_id_fkey"
-            columns: ["player_id"]
-            isOneToOne: true
-            referencedRelation: "test_profiles"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      test_profiles: {
-        Row: {
-          activity_status: string | null
-          bio: string | null
-          city: string | null
-          created_at: string | null
-          display_name: string | null
-          district: string | null
-          full_name: string
-          id: string
-          phone: string | null
-          role: string | null
-          skill_level: string | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          activity_status?: string | null
-          bio?: string | null
-          city?: string | null
-          created_at?: string | null
-          display_name?: string | null
-          district?: string | null
-          full_name: string
-          id?: string
-          phone?: string | null
-          role?: string | null
-          skill_level?: string | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          activity_status?: string | null
-          bio?: string | null
-          city?: string | null
-          created_at?: string | null
-          display_name?: string | null
-          district?: string | null
-          full_name?: string
-          id?: string
-          phone?: string | null
-          role?: string | null
-          skill_level?: string | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      test_tournament_registrations: {
-        Row: {
-          created_at: string | null
-          id: string
-          payment_status: string | null
-          player_id: string
-          registration_date: string | null
-          registration_status: string | null
-          tournament_id: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          payment_status?: string | null
-          player_id: string
-          registration_date?: string | null
-          registration_status?: string | null
-          tournament_id: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          payment_status?: string | null
-          player_id?: string
-          registration_date?: string | null
-          registration_status?: string | null
-          tournament_id?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       tournament_brackets: {
         Row: {
           bracket_config: Json | null
@@ -5007,7 +4386,6 @@ export type Database = {
           actual_start_time: string | null
           bracket_id: string | null
           bracket_position: number | null
-          completed_at: string | null
           created_at: string | null
           id: string
           live_stream_url: string | null
@@ -5026,7 +4404,6 @@ export type Database = {
           scheduled_time: string | null
           score_player1: number | null
           score_player2: number | null
-          started_at: string | null
           status: string | null
           tournament_id: string | null
           updated_at: string | null
@@ -5037,7 +4414,6 @@ export type Database = {
           actual_start_time?: string | null
           bracket_id?: string | null
           bracket_position?: number | null
-          completed_at?: string | null
           created_at?: string | null
           id?: string
           live_stream_url?: string | null
@@ -5056,7 +4432,6 @@ export type Database = {
           scheduled_time?: string | null
           score_player1?: number | null
           score_player2?: number | null
-          started_at?: string | null
           status?: string | null
           tournament_id?: string | null
           updated_at?: string | null
@@ -5067,7 +4442,6 @@ export type Database = {
           actual_start_time?: string | null
           bracket_id?: string | null
           bracket_position?: number | null
-          completed_at?: string | null
           created_at?: string | null
           id?: string
           live_stream_url?: string | null
@@ -5086,7 +4460,6 @@ export type Database = {
           scheduled_time?: string | null
           score_player1?: number | null
           score_player2?: number | null
-          started_at?: string | null
           status?: string | null
           tournament_id?: string | null
           updated_at?: string | null
@@ -5127,50 +4500,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      tournament_participants: {
-        Row: {
-          checked_in_at: string | null
-          created_at: string | null
-          id: string
-          player_stats: Json | null
-          registration_status: string | null
-          seed_number: number | null
-          tournament_id: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          checked_in_at?: string | null
-          created_at?: string | null
-          id?: string
-          player_stats?: Json | null
-          registration_status?: string | null
-          seed_number?: number | null
-          tournament_id?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          checked_in_at?: string | null
-          created_at?: string | null
-          id?: string
-          player_stats?: Json | null
-          registration_status?: string | null
-          seed_number?: number | null
-          tournament_id?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tournament_participants_tournament_id_fkey"
-            columns: ["tournament_id"]
-            isOneToOne: false
-            referencedRelation: "tournaments"
-            referencedColumns: ["id"]
           },
         ]
       }
@@ -6307,24 +5636,6 @@ export type Database = {
       }
     }
     Views: {
-      all_profiles: {
-        Row: {
-          activity_status: string | null
-          bio: string | null
-          city: string | null
-          created_at: string | null
-          display_name: string | null
-          district: string | null
-          full_name: string | null
-          phone: string | null
-          profile_type: string | null
-          role: string | null
-          skill_level: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Relationships: []
-      }
       mv_daily_ai_usage: {
         Row: {
           ai_responses: number | null
@@ -6339,17 +5650,6 @@ export type Database = {
           unique_sessions: number | null
           unique_users: number | null
           user_messages: number | null
-        }
-        Relationships: []
-      }
-      mv_leaderboard_stats: {
-        Row: {
-          active_players: number | null
-          avg_elo: number | null
-          last_updated: string | null
-          max_elo: number | null
-          min_elo: number | null
-          total_players: number | null
         }
         Relationships: []
       }
