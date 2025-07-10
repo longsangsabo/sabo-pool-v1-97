@@ -95,6 +95,7 @@ import AdminDevelopment from "./pages/admin/AdminDevelopment";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminTestRanking from "./pages/admin/AdminTestRanking";
 import AdminLayout from "./components/AdminLayout";
+import AdminAIAssistant from "./pages/admin/AdminAIAssistant";
 import ClubManagementPage from "./pages/ClubManagementPage";
 import ClubRegistrationPage from "./pages/ClubRegistrationPage";
 import TournamentDetailsPage from "./pages/TournamentDetailsPage";
@@ -222,6 +223,7 @@ const App = () => {
                         <Route path="transactions" element={<AdminTransactions />} />
                         <Route path="clubs" element={<AdminClubs />} />
                         <Route path="analytics" element={<AdminAnalytics />} />
+                        <Route path="ai-assistant" element={<AdminAIAssistant />} />
                         <Route path="automation" element={<AdminAutomation />} />
                         <Route path="development" element={<AdminDevelopment />} />
                         <Route path="settings" element={<AdminSettings />} />

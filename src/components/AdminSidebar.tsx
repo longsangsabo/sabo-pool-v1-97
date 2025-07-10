@@ -35,7 +35,7 @@ const AdminSidebar = ({ isMobile = false, onClose }: AdminSidebarProps = {}) => 
     { icon: Building2, key: 'admin.clubs', path: '/admin/clubs' },
     { icon: CreditCard, key: 'admin.transactions', path: '/admin/transactions' },
     { icon: BarChart3, key: 'admin.analytics', path: '/admin/analytics' },
-    { icon: Bot, key: 'admin.automation', path: '/admin/automation' },
+    { icon: Bot, key: 'admin.ai_assistant', path: '/admin/ai-assistant' },
     { icon: TestTube, key: 'admin.test_ranking', path: '/admin/test-ranking' },
     { icon: Code, key: 'admin.development', path: '/admin/development' },
     { icon: Settings, key: 'admin.settings', path: '/admin/settings' },
