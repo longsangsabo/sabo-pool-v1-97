@@ -4938,6 +4938,7 @@ export type Database = {
           matches_scheduled: boolean | null
           max_participants: number | null
           max_rank_requirement: string | null
+          metadata: Json | null
           min_rank_requirement: string | null
           min_trust_score: number | null
           name: string
@@ -4984,6 +4985,7 @@ export type Database = {
           matches_scheduled?: boolean | null
           max_participants?: number | null
           max_rank_requirement?: string | null
+          metadata?: Json | null
           min_rank_requirement?: string | null
           min_trust_score?: number | null
           name: string
@@ -5030,6 +5032,7 @@ export type Database = {
           matches_scheduled?: boolean | null
           max_participants?: number | null
           max_rank_requirement?: string | null
+          metadata?: Json | null
           min_rank_requirement?: string | null
           min_trust_score?: number | null
           name?: string
