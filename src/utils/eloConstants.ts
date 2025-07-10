@@ -1,4 +1,5 @@
-// ELO và SPA Points constants cho SABO Pool Arena
+// ELO Constants cho SABO Pool Arena - Hệ thống đơn giản hóa
+// K-factor cố định = 32, tự động thăng hạng theo ELO
 
 export const RANK_ELO = {
   'K': 1000,
@@ -15,22 +16,18 @@ export const RANK_ELO = {
   'E+': 2100,
 } as const;
 
-export const K_FACTORS = {
-  NEW_PLAYER: 40,  // <30 trận
-  REGULAR: 32,     // ELO <2100
-  ADVANCED: 24,    // ELO <2400
-  MASTER: 16       // ELO ≥2400
-} as const;
-
 export const TOURNAMENT_ELO_REWARDS = {
   CHAMPION: 100,
   RUNNER_UP: 50,
   THIRD_PLACE: 25,
-  FOURTH_PLACE: 12.5,
+  FOURTH_PLACE: 12,
   TOP_8: 6,
   TOP_16: 3,
   PARTICIPATION: 1
 } as const;
+
+// K-factor cố định cho tất cả người chơi
+export const FIXED_K_FACTOR = 32;
 
 export const SPA_TOURNAMENT_REWARDS = {
   'E': { 
@@ -89,11 +86,6 @@ export const SPA_CHALLENGE_REWARDS = {
   STREAK_BONUS: 25, // Per consecutive win
   COMEBACK_BONUS: 100, // When winning from behind
   DAILY_LIMIT: 500 // Maximum SPA per day from challenges
-} as const;
-
-export const RANK_PROMOTION_REQUIREMENTS = {
-  MIN_MATCHES: 4,
-  MIN_DAYS_BETWEEN_PROMOTIONS: 7
 } as const;
 
 export type RankCode = keyof typeof RANK_ELO;

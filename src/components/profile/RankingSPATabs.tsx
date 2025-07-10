@@ -30,9 +30,7 @@ export const RankingSPATabs: React.FC<RankingSPATabsProps> = ({
 }) => {
   const isEligiblePromotion = isEligibleForPromotion(
     playerData.elo_points,
-    playerData.rank,
-    playerData.total_matches,
-    playerData.last_promotion_date || null
+    playerData.rank
   );
 
   return (

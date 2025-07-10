@@ -1,9 +1,8 @@
 import { 
   TOURNAMENT_ELO_REWARDS, 
   SPA_TOURNAMENT_REWARDS, 
-  K_FACTORS, 
-  RANK_ELO,
-  RANK_PROMOTION_REQUIREMENTS 
+  FIXED_K_FACTOR, 
+  RANK_ELO
 } from '@/utils/eloConstants';
 import type { RankCode, TournamentPosition } from '@/utils/eloConstants';
 
@@ -24,17 +23,15 @@ export class RankingService {
   }
 
   /**
-   * Calculate match ELO change using standard ELO formula
+   * Calculate match ELO change using simplified ELO formula with fixed K-factor
    */
   static calculateMatchElo(
     playerElo: number, 
     opponentElo: number, 
-    result: number, // 1 for win, 0 for loss, 0.5 for draw
-    matchCount: number
+    result: number // 1 for win, 0 for loss, 0.5 for draw
   ): number {
-    const kFactor = this.determineKFactor(playerElo, matchCount);
     const expectedResult = 1 / (1 + Math.pow(10, (opponentElo - playerElo) / 400));
-    const eloChange = kFactor * (result - expectedResult);
+    const eloChange = FIXED_K_FACTOR * (result - expectedResult);
     
     return Math.round(playerElo + eloChange);
   }
@@ -45,49 +42,20 @@ export class RankingService {
   static calculateEloChange(
     playerElo: number,
     opponentElo: number,
-    result: number,
-    matchCount: number
+    result: number
   ): number {
-    const kFactor = this.determineKFactor(playerElo, matchCount);
     const expectedResult = 1 / (1 + Math.pow(10, (opponentElo - playerElo) / 400));
     
-    return Math.round(kFactor * (result - expectedResult));
+    return Math.round(FIXED_K_FACTOR * (result - expectedResult));
   }
 
   /**
-   * Determine K-factor based on ELO and match count
-   */
-  static determineKFactor(elo: number, matchCount: number): number {
-    if (matchCount < 30) return K_FACTORS.NEW_PLAYER;
-    if (elo >= 2400) return K_FACTORS.MASTER;
-    if (elo >= 2100) return K_FACTORS.ADVANCED;
-    return K_FACTORS.REGULAR;
-  }
-
-  /**
-   * Check if player is eligible for rank promotion
+   * Check if player is eligible for rank promotion - Simplified: only check ELO
    */
   static isEligibleForPromotion(
     currentElo: number,
-    currentRank: RankCode,
-    matchCount: number,
-    lastPromotionDate?: Date
+    currentRank: RankCode
   ): boolean {
-    // Check minimum matches requirement
-    if (matchCount < RANK_PROMOTION_REQUIREMENTS.MIN_MATCHES) {
-      return false;
-    }
-
-    // Check time since last promotion
-    if (lastPromotionDate) {
-      const daysSincePromotion = Math.floor(
-        (Date.now() - lastPromotionDate.getTime()) / (1000 * 60 * 60 * 24)
-      );
-      if (daysSincePromotion < RANK_PROMOTION_REQUIREMENTS.MIN_DAYS_BETWEEN_PROMOTIONS) {
-        return false;
-      }
-    }
-
     // Check if ELO qualifies for next rank
     const nextRank = this.getNextRank(currentRank);
     if (!nextRank) return false; // Already at highest rank

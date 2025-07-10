@@ -1,22 +1,35 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { TOURNAMENT_ELO_REWARDS, FIXED_K_FACTOR } from '@/utils/eloConstants';
 
 export const useEloRules = () => {
   const [rules, setRules] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [systemInfo, setSystemInfo] = useState({
+    kFactor: FIXED_K_FACTOR,
+    tournamentRewards: TOURNAMENT_ELO_REWARDS,
+    lastUpdated: new Date()
+  });
 
   const fetchRules = async () => {
     try {
       setLoading(true);
+      // Only fetch tournament ELO rules (match ELO uses fixed K-factor)
       const { data, error } = await supabase
         .from('elo_calculation_rules')
         .select('*')
-        .order('rule_type')
+        .eq('rule_type', 'tournament_elo')
         .order('priority');
 
       if (error) throw error;
       setRules(data || []);
+      
+      // Update system info
+      setSystemInfo(prev => ({
+        ...prev,
+        lastUpdated: new Date()
+      }));
     } catch (error) {
       console.error('Error fetching ELO rules:', error);
       toast({
@@ -109,12 +122,46 @@ export const useEloRules = () => {
     fetchRules();
   }, []);
 
+  // Validate ELO system consistency
+  const validateSystem = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('player_rankings')
+        .select(`
+          player_id,
+          elo_points,
+          current_rank_id,
+          ranks!inner(code)
+        `)
+        .limit(100);
+
+      if (error) throw error;
+
+      const inconsistencies = data?.filter(player => {
+        const { getRankByElo } = require('@/utils/rankUtils');
+        const expectedRank = getRankByElo(player.elo_points);
+        return expectedRank !== player.ranks.code;
+      });
+
+      return {
+        totalChecked: data?.length || 0,
+        inconsistencies: inconsistencies?.length || 0,
+        details: inconsistencies
+      };
+    } catch (error) {
+      console.error('System validation error:', error);
+      throw error;
+    }
+  };
+
   return {
     rules,
     loading,
+    systemInfo,
     createRule,
     updateRule,
     deleteRule,
+    validateSystem,
     refetch: fetchRules
   };
 };

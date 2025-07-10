@@ -1,4 +1,4 @@
-import { RANK_ELO, K_FACTORS, RANK_PROMOTION_REQUIREMENTS, type RankCode } from './eloConstants';
+import { RANK_ELO, FIXED_K_FACTOR, type RankCode } from './eloConstants';
 
 // Danh sách các hạng theo thứ tự
 export const RANK_ORDER: RankCode[] = ['K', 'K+', 'I', 'I+', 'H', 'H+', 'G', 'G+', 'F', 'F+', 'E', 'E+'];
@@ -43,29 +43,12 @@ export function getRankByElo(elo: number): RankCode {
 }
 
 /**
- * Kiểm tra đủ điều kiện thăng hạng
+ * Kiểm tra đủ điều kiện thăng hạng - Đơn giản hóa: chỉ cần ELO đủ
  */
 export function isEligibleForPromotion(
   currentElo: number, 
-  currentRank: RankCode, 
-  matchCount: number, 
-  lastPromotionDate: Date | null
+  currentRank: RankCode
 ): boolean {
-  // Kiểm tra số trận tối thiểu
-  if (matchCount < RANK_PROMOTION_REQUIREMENTS.MIN_MATCHES) {
-    return false;
-  }
-  
-  // Kiểm tra khoảng cách thời gian giữa 2 lần thăng hạng
-  if (lastPromotionDate) {
-    const daysSinceLastPromotion = Math.floor(
-      (Date.now() - lastPromotionDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    if (daysSinceLastPromotion < RANK_PROMOTION_REQUIREMENTS.MIN_DAYS_BETWEEN_PROMOTIONS) {
-      return false;
-    }
-  }
-  
   // Kiểm tra điểm ELO đủ để thăng hạng
   const nextRank = getNextRank(currentRank);
   if (!nextRank) {
@@ -76,35 +59,29 @@ export function isEligibleForPromotion(
 }
 
 /**
- * Tính ELO mới sau trận đấu
+ * Tính ELO mới sau trận đấu - Đơn giản hóa với K-factor cố định
  */
 export function calculateNewElo(
   playerElo: number, 
   opponentElo: number, 
-  result: number, // 1 = thắng, 0.5 = hòa, 0 = thua
-  matchCount: number
+  result: number // 1 = thắng, 0.5 = hòa, 0 = thua
 ): number {
-  const kFactor = determineKFactor(playerElo, matchCount);
   const expectedResult = 1 / (1 + Math.pow(10, (opponentElo - playerElo) / 400));
-  const eloChange = kFactor * (result - expectedResult);
+  const eloChange = FIXED_K_FACTOR * (result - expectedResult);
   
   return Math.round(playerElo + eloChange);
 }
 
 /**
- * Xác định K-factor dựa trên ELO và số trận
+ * Tính thay đổi ELO (không áp dụng vào ELO hiện tại)
  */
-export function determineKFactor(elo: number, matchCount: number): number {
-  if (matchCount < 30) {
-    return K_FACTORS.NEW_PLAYER;
-  }
-  if (elo >= 2400) {
-    return K_FACTORS.MASTER;
-  }
-  if (elo >= 2100) {
-    return K_FACTORS.ADVANCED;
-  }
-  return K_FACTORS.REGULAR;
+export function calculateEloChange(
+  playerElo: number, 
+  opponentElo: number, 
+  result: number
+): number {
+  const expectedResult = 1 / (1 + Math.pow(10, (opponentElo - playerElo) / 400));
+  return Math.round(FIXED_K_FACTOR * (result - expectedResult));
 }
 
 /**
