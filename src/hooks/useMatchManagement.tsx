@@ -139,7 +139,7 @@ export const useMatchManagement = (tournamentId: string) => {
         const { error: resultError } = await supabase
           .from('match_results')
           .upsert({
-            match_id: matchId,
+            tournament_id: match.tournament_id,
             player1_id: match.player1_id,
             player2_id: match.player2_id,
             winner_id: winnerId,
