@@ -390,6 +390,36 @@ export type Database = {
           },
         ]
       }
+      automation_config: {
+        Row: {
+          config_key: string
+          config_value: Json
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          config_key: string
+          config_value: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          config_key?: string
+          config_value?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       challenges: {
         Row: {
           bet_points: number | null
@@ -1427,6 +1457,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      match_automation_log: {
+        Row: {
+          automation_type: string
+          created_at: string
+          error_message: string | null
+          id: string
+          match_id: string
+          processed_at: string | null
+          result: Json | null
+          status: string
+          tournament_id: string | null
+        }
+        Insert: {
+          automation_type: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          match_id: string
+          processed_at?: string | null
+          result?: Json | null
+          status?: string
+          tournament_id?: string | null
+        }
+        Update: {
+          automation_type?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          match_id?: string
+          processed_at?: string | null
+          result?: Json | null
+          status?: string
+          tournament_id?: string | null
+        }
+        Relationships: []
       }
       match_disputes: {
         Row: {
@@ -4332,6 +4398,51 @@ export type Database = {
         }
         Relationships: []
       }
+      spa_transactions: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          metadata: Json | null
+          processed_at: string | null
+          reference_id: string | null
+          reference_type: string | null
+          status: string
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          processed_at?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          status?: string
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          processed_at?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          status?: string
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       system_logs: {
         Row: {
           created_at: string | null
@@ -4433,6 +4544,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tournament_automation_log: {
+        Row: {
+          automation_type: string
+          created_at: string
+          error_message: string | null
+          id: string
+          processed_at: string | null
+          result: Json | null
+          status: string
+          tournament_id: string
+        }
+        Insert: {
+          automation_type: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          processed_at?: string | null
+          result?: Json | null
+          status?: string
+          tournament_id: string
+        }
+        Update: {
+          automation_type?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          processed_at?: string | null
+          result?: Json | null
+          status?: string
+          tournament_id?: string
+        }
+        Relationships: []
       }
       tournament_brackets: {
         Row: {
