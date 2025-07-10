@@ -294,6 +294,7 @@ serve(async (req) => {
         created_at: new Date().toISOString()
       });
 
+
     // Save AI response
     const { error: aiMsgError } = await supabase
       .from('user_chat_messages')
