@@ -39,6 +39,7 @@ interface ParticipantResult {
   matches_played: number;
   wins: number;
   losses: number;
+  current_rank_id: string;
 }
 
 export const TournamentResults: React.FC<TournamentResultsProps> = ({
@@ -229,7 +230,8 @@ export const TournamentResults: React.FC<TournamentResultsProps> = ({
           spa_points_earned: spaPointsEarned,
           matches_played: playerMatches.length,
           wins,
-          losses
+          losses,
+          current_rank_id: currentRank
         };
       });
 
@@ -513,7 +515,7 @@ export const TournamentResults: React.FC<TournamentResultsProps> = ({
               </p>
             </div>
             <TournamentRewardsButton 
-              playerRank={champion?.player_id ? 'G' : 'K'}
+              playerRank={(champion?.current_rank_id as any) || 'K'}
               size="default"
               variant="default"
             />
