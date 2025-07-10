@@ -80,12 +80,12 @@ export const useMatchManagement = (tournamentId: string) => {
         player1_id: match.player1_id,
         player2_id: match.player2_id,
         winner_id: match.winner_id,
-        player1_score: match.player1_score || 0,
-        player2_score: match.player2_score || 0,
+        player1_score: match.score_player1 || 0,
+        player2_score: match.score_player2 || 0,
         status: match.status,
         scheduled_time: match.scheduled_time,
-        started_at: match.started_at,
-        completed_at: match.completed_at,
+        started_at: match.actual_start_time,
+        completed_at: match.actual_end_time,
         referee_id: match.referee_id,
         notes: match.notes,
         player1: match.player1,
@@ -113,11 +113,11 @@ export const useMatchManagement = (tournamentId: string) => {
       const { data: match, error: matchError } = await supabase
         .from('tournament_matches')
         .update({
-          player1_score: player1Score,
-          player2_score: player2Score,
+          score_player1: player1Score,
+          score_player2: player2Score,
           winner_id: winnerId,
           status: status || (winnerId ? 'completed' : 'in_progress'),
-          completed_at: winnerId ? new Date().toISOString() : null,
+          actual_end_time: winnerId ? new Date().toISOString() : null,
           updated_at: new Date().toISOString()
         })
         .eq('id', matchId)
@@ -166,7 +166,7 @@ export const useMatchManagement = (tournamentId: string) => {
         .from('tournament_matches')
         .update({
           status: 'in_progress',
-          started_at: new Date().toISOString()
+          actual_start_time: new Date().toISOString()
         })
         .eq('id', matchId)
         .select()
