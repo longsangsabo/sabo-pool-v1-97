@@ -138,7 +138,10 @@ export const MatchScoreEntry: React.FC<MatchScoreEntryProps> = ({
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
           <CardTitle className="text-lg">
-            Vòng {match.round_number} - Trận {match.match_number}
+            {match.notes && (match.notes.includes('Tranh hạng 3-4') || match.notes.includes('Chung kết'))
+              ? match.notes
+              : `Vòng ${match.round_number} - Trận ${match.match_number}`
+            }
           </CardTitle>
           <div className="flex items-center gap-2">
             <Badge className={`${getStatusColor(match.status)} text-white`}>

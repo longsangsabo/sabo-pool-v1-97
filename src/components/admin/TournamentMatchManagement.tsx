@@ -103,12 +103,31 @@ export const TournamentMatchManagement: React.FC<TournamentMatchManagementProps>
     const finalRoundMatches = matchesByRound[maxRound] || [];
     
     // Tournament can be completed if:
-    // 1. There's only 1 match in final round (single winner)
-    // 2. That match is completed
-    return finalRoundMatches.length === 1 && 
-           finalRoundMatches[0]?.status === 'completed' &&
-           finalRoundMatches[0]?.winner_id &&
-           tournament.status !== 'completed';
+    // 1. Both Final and 3rd Place matches are completed (if both exist)
+    // 2. Or only Final match is completed (if no 3rd place match)
+    const finalMatch = finalRoundMatches.find(m => m.notes?.includes('Chung kết'));
+    const thirdPlaceMatch = finalRoundMatches.find(m => m.notes?.includes('Tranh hạng 3-4'));
+    
+    if (finalMatch && thirdPlaceMatch) {
+      // Both matches exist - both must be completed
+      return finalMatch.status === 'completed' && 
+             finalMatch.winner_id &&
+             thirdPlaceMatch.status === 'completed' &&
+             thirdPlaceMatch.winner_id &&
+             tournament.status !== 'completed';
+    } else if (finalMatch) {
+      // Only final match exists
+      return finalMatch.status === 'completed' && 
+             finalMatch.winner_id &&
+             tournament.status !== 'completed';
+    } else if (finalRoundMatches.length === 1) {
+      // Legacy - single match in final round
+      return finalRoundMatches[0]?.status === 'completed' &&
+             finalRoundMatches[0]?.winner_id &&
+             tournament.status !== 'completed';
+    }
+    
+    return false;
   };
 
   if (loading) {
@@ -143,6 +162,40 @@ export const TournamentMatchManagement: React.FC<TournamentMatchManagementProps>
   const filteredMatches = selectedRound === 'all' 
     ? matches 
     : matchesByRound[selectedRound] || [];
+
+  // Get round display name
+  const getRoundDisplayName = (roundNumber: number, notes?: string) => {
+    if (notes && (notes.includes('Tranh hạng 3-4') || notes.includes('Chung kết'))) {
+      return notes;
+    }
+    
+    const maxRound = Math.max(...rounds);
+    
+    if (maxRound >= 4) {
+      switch (roundNumber) {
+        case 1: return 'Round of 16';
+        case maxRound - 2: return 'Quarter-finals';
+        case maxRound - 1: return 'Semi-finals';
+        case maxRound: return 'Finals';
+        default: return `Vòng ${roundNumber}`;
+      }
+    } else if (maxRound === 3) {
+      switch (roundNumber) {
+        case 1: return 'Quarter-finals';
+        case 2: return 'Semi-finals';
+        case 3: return 'Finals';
+        default: return `Vòng ${roundNumber}`;
+      }
+    } else if (maxRound === 2) {
+      switch (roundNumber) {
+        case 1: return 'Semi-finals';
+        case 2: return 'Finals';
+        default: return `Vòng ${roundNumber}`;
+      }
+    }
+    
+    return `Vòng ${roundNumber}`;
+  };
 
   const getMatchStats = () => {
     const stats = {
@@ -251,18 +304,23 @@ export const TournamentMatchManagement: React.FC<TournamentMatchManagementProps>
                   variant={selectedRound === 'all' ? 'default' : 'outline'}
                   size="sm"
                 >
-                  Tất cả
+                  Tất cả vòng
                 </Button>
-                {rounds.map(round => (
-                  <Button
-                    key={round}
-                    onClick={() => setSelectedRound(round)}
-                    variant={selectedRound === round ? 'default' : 'outline'}
-                    size="sm"
-                  >
-                    Vòng {round}
-                  </Button>
-                ))}
+                {rounds.map(round => {
+                  const sampleMatch = matchesByRound[round]?.[0];
+                  const displayName = getRoundDisplayName(round, sampleMatch?.notes);
+                  return (
+                    <Button
+                      key={round}
+                      onClick={() => setSelectedRound(round)}
+                      variant={selectedRound === round ? 'default' : 'outline'}
+                      size="sm"
+                      className="whitespace-nowrap"
+                    >
+                      {displayName}
+                    </Button>
+                  );
+                })}
               </>
             )}
           </div>
