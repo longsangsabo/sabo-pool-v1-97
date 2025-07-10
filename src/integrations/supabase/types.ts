@@ -4121,6 +4121,68 @@ export type Database = {
           },
         ]
       }
+      spa_calculation_logs: {
+        Row: {
+          base_points: number
+          calculated_by: string | null
+          calculation_method: string | null
+          calculation_type: string
+          created_at: string | null
+          final_points: number
+          id: string
+          metadata: Json | null
+          multiplier: number | null
+          player_id: string
+          player_rank: string | null
+          position: string | null
+          rule_used_id: string | null
+          tournament_id: string | null
+          tournament_type: string | null
+        }
+        Insert: {
+          base_points: number
+          calculated_by?: string | null
+          calculation_method?: string | null
+          calculation_type: string
+          created_at?: string | null
+          final_points: number
+          id?: string
+          metadata?: Json | null
+          multiplier?: number | null
+          player_id: string
+          player_rank?: string | null
+          position?: string | null
+          rule_used_id?: string | null
+          tournament_id?: string | null
+          tournament_type?: string | null
+        }
+        Update: {
+          base_points?: number
+          calculated_by?: string | null
+          calculation_method?: string | null
+          calculation_type?: string
+          created_at?: string | null
+          final_points?: number
+          id?: string
+          metadata?: Json | null
+          multiplier?: number | null
+          player_id?: string
+          player_rank?: string | null
+          position?: string | null
+          rule_used_id?: string | null
+          tournament_id?: string | null
+          tournament_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spa_calculation_logs_rule_used_id_fkey"
+            columns: ["rule_used_id"]
+            isOneToOne: false
+            referencedRelation: "spa_points_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       spa_milestones: {
         Row: {
           created_at: string | null
@@ -4188,6 +4250,48 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      spa_points_rules: {
+        Row: {
+          base_points: number
+          condition_key: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          multiplier: number | null
+          rank_requirement: string
+          rule_type: string
+          tournament_type: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          base_points?: number
+          condition_key: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          multiplier?: number | null
+          rank_requirement: string
+          rule_type: string
+          tournament_type?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          base_points?: number
+          condition_key?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          multiplier?: number | null
+          rank_requirement?: string
+          rule_type?: string
+          tournament_type?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       spa_reward_milestones: {
         Row: {
@@ -5749,6 +5853,17 @@ export type Database = {
         }
         Returns: number
       }
+      award_tournament_spa_with_audit: {
+        Args: {
+          p_tournament_id: string
+          p_player_id: string
+          p_position: string
+          p_player_rank: string
+          p_tournament_type?: string
+          p_calculated_by?: string
+        }
+        Returns: Json
+      }
       binary_quantize: {
         Args: { "": string } | { "": unknown }
         Returns: unknown
@@ -6104,6 +6219,14 @@ export type Database = {
           user_profile: Json
         }[]
       }
+      get_tournament_spa_points: {
+        Args: {
+          p_position: string
+          p_player_rank: string
+          p_tournament_type?: string
+        }
+        Returns: number
+      }
       get_user_admin_status: {
         Args: { user_uuid: string }
         Returns: boolean
@@ -6335,6 +6458,10 @@ export type Database = {
           p_membership_type: string
         }
         Returns: boolean
+      }
+      validate_tournament_spa_calculations: {
+        Args: { p_tournament_id: string }
+        Returns: Json
       }
       vector_avg: {
         Args: { "": number[] }
