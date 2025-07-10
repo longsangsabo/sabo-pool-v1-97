@@ -230,11 +230,11 @@ export const TournamentResults: React.FC<TournamentResultsProps> = ({
               else if (match.winner_id) losses++;
             }
           });
-        } else {
-          // Use expected ELO change if no match results
-          actualEloChange = expectedRewards.eloPoints;
-          eloAfter = eloBefore + actualEloChange;
         }
+        
+        // For tournament results, always use position-based ELO rewards instead of match results
+        actualEloChange = expectedRewards.eloPoints;
+        eloAfter = eloBefore + actualEloChange;
 
         // Get actual SPA points from log or use expected
         const spaLog = spaPoints?.find(sp => sp.player_id === playerId);
