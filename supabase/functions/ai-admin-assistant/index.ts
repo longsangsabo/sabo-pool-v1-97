@@ -76,53 +76,138 @@ serve(async (req) => {
 async function analyzeIntent(message: string) {
   const lowerMessage = message.toLowerCase();
   
-  // Check for workflow patterns first
+  // Enhanced synonym mapping for better intent recognition
+  const synonymMap = {
+    'thống kê': ['stats', 'số liệu', 'dữ liệu', 'báo cáo', 'report', 'analytics'],
+    'người dùng': ['user', 'thành viên', 'member', 'player', 'người chơi', 'tài khoản'],
+    'giải đấu': ['tournament', 'cuộc thi', 'competition', 'contest', 'thi đấu'],
+    'trận đấu': ['match', 'game', 'set', 'ván chơi', 'trận'],
+    'club': ['câu lạc bộ', 'clb', 'billiard hall', 'quán bi-a'],
+    'ranking': ['bảng xếp hạng', 'xếp hạng', 'leaderboard', 'top'],
+    'elo': ['điểm elo', 'rating', 'skill level'],
+    'hoạt động': ['activity', 'active', 'online', 'engagement'],
+    'doanh thu': ['revenue', 'income', 'thu nhập', 'tiền'],
+    'lỗi': ['error', 'bug', 'problem', 'issue', 'sự cố']
+  };
+  
+  // Check for workflow patterns first with enhanced matching
   const { data: workflows } = await supabase
     .from('admin_workflows')
     .select('*')
-    .eq('is_active', true);
+    .eq('is_active', true)
+    .order('priority', { ascending: true });
+  
+  let bestMatch = null;
+  let highestScore = 0;
   
   for (const workflow of workflows || []) {
-    // Check keywords
-    const hasKeyword = workflow.trigger_keywords.some(keyword => 
-      lowerMessage.includes(keyword.toLowerCase())
-    );
+    let score = 0;
+    const matchedKeywords = [];
+    
+    // Check direct keywords
+    workflow.trigger_keywords.forEach(keyword => {
+      if (lowerMessage.includes(keyword.toLowerCase())) {
+        score += 10;
+        matchedKeywords.push(keyword);
+      }
+      
+      // Check synonyms
+      Object.entries(synonymMap).forEach(([baseWord, synonyms]) => {
+        if (keyword.toLowerCase().includes(baseWord) && 
+            synonyms.some(syn => lowerMessage.includes(syn.toLowerCase()))) {
+          score += 8;
+          matchedKeywords.push(keyword);
+        }
+      });
+    });
     
     // Check regex pattern if exists
-    let matchesPattern = false;
     if (workflow.intent_pattern) {
       try {
         const regex = new RegExp(workflow.intent_pattern, 'i');
-        matchesPattern = regex.test(message);
+        if (regex.test(message)) {
+          score += 15;
+        }
       } catch (e) {
         console.warn('Invalid regex pattern:', workflow.intent_pattern);
       }
     }
     
-    if (hasKeyword || matchesPattern) {
-      return {
+    // Boost score based on workflow priority
+    score += (4 - (workflow.priority || 1));
+    
+    if (score > highestScore) {
+      highestScore = score;
+      bestMatch = {
         category: workflow.workflow_name,
-        confidence: hasKeyword && matchesPattern ? 0.9 : 0.7,
+        confidence: Math.min(0.95, score / 20),
         workflow: workflow,
-        keywords: workflow.trigger_keywords.filter(k => 
-          lowerMessage.includes(k.toLowerCase())
-        )
+        keywords: matchedKeywords,
+        score: score
       };
     }
   }
   
-  // Fallback intent classification
-  if (lowerMessage.includes('thống kê') || lowerMessage.includes('stats')) {
-    return { category: 'statistics', confidence: 0.8, workflow: null, keywords: ['thống kê'] };
-  }
-  if (lowerMessage.includes('người dùng') || lowerMessage.includes('user')) {
-    return { category: 'user_management', confidence: 0.8, workflow: null, keywords: ['người dùng'] };
-  }
-  if (lowerMessage.includes('giải đấu') || lowerMessage.includes('tournament')) {
-    return { category: 'tournament', confidence: 0.8, workflow: null, keywords: ['giải đấu'] };
+  if (bestMatch && bestMatch.confidence >= 0.6) {
+    return bestMatch;
   }
   
-  return { category: 'general', confidence: 0.5, workflow: null, keywords: [] };
+  // Enhanced fallback intent classification with semantic analysis
+  const intentPatterns = [
+    {
+      keywords: ['thống kê', 'stats', 'số liệu', 'dữ liệu', 'báo cáo', 'report', 'analytics'],
+      category: 'statistics',
+      confidence: 0.85
+    },
+    {
+      keywords: ['người dùng', 'user', 'thành viên', 'member', 'player', 'người chơi', 'tài khoản'],
+      category: 'user_management',
+      confidence: 0.85
+    },
+    {
+      keywords: ['giải đấu', 'tournament', 'cuộc thi', 'competition', 'contest', 'thi đấu'],
+      category: 'tournament',
+      confidence: 0.85
+    },
+    {
+      keywords: ['trận đấu', 'match', 'game', 'set', 'ván chơi', 'trận'],
+      category: 'match_analysis',
+      confidence: 0.82
+    },
+    {
+      keywords: ['club', 'câu lạc bộ', 'clb', 'billiard hall', 'quán bi-a'],
+      category: 'club_management',
+      confidence: 0.82
+    },
+    {
+      keywords: ['ranking', 'bảng xếp hạng', 'xếp hạng', 'leaderboard', 'top'],
+      category: 'ranking_analysis',
+      confidence: 0.80
+    },
+    {
+      keywords: ['lỗi', 'error', 'bug', 'problem', 'issue', 'sự cố'],
+      category: 'system_health',
+      confidence: 0.78
+    }
+  ];
+  
+  for (const pattern of intentPatterns) {
+    const matchedKeywords = pattern.keywords.filter(keyword => 
+      lowerMessage.includes(keyword.toLowerCase())
+    );
+    
+    if (matchedKeywords.length > 0) {
+      return {
+        category: pattern.category,
+        confidence: pattern.confidence,
+        workflow: null,
+        keywords: matchedKeywords,
+        score: matchedKeywords.length * 5
+      };
+    }
+  }
+  
+  return { category: 'general', confidence: 0.5, workflow: null, keywords: [], score: 0 };
 }
 
 async function searchKnowledgeBase(message: string, intent: any) {
@@ -178,16 +263,40 @@ async function searchKnowledgeBase(message: string, intent: any) {
 }
 
 async function getDynamicData(intent: any, relevantContext: any[]) {
-  // Always use the safe admin stats function instead of dynamic SQL
+  console.log('Getting dynamic data for intent:', intent.category);
+  
   try {
-    const { data: adminStats, error } = await supabase.rpc('get_admin_stats_safely');
-    if (error) {
-      console.error('Error getting admin stats:', error);
-      return await getBasicAdminStats();
+    // Intent-based smart data fetching with enhanced queries
+    switch (intent.category) {
+      case 'statistics':
+      case 'admin_overview':
+        return await getComprehensiveStats();
+      
+      case 'user_management':
+        return await getUserManagementData();
+      
+      case 'tournament':
+      case 'tournament_analysis':
+        return await getTournamentData();
+      
+      case 'match_analysis':
+        return await getMatchAnalysisData();
+      
+      case 'club_management':
+        return await getClubManagementData();
+      
+      case 'ranking_analysis':
+        return await getRankingData();
+      
+      case 'system_health':
+        return await getSystemHealthData();
+        
+      default:
+        // Fallback to comprehensive stats for general queries
+        return await getComprehensiveStats();
     }
-    return adminStats || await getBasicAdminStats();
   } catch (error) {
-    console.error('Error executing safe admin stats:', error);
+    console.error('Error in getDynamicData:', error);
     return await getBasicAdminStats();
   }
 }
@@ -222,6 +331,371 @@ async function getBasicAdminStats() {
     console.error('Error getting basic stats:', error);
     return { error: 'Unable to fetch basic statistics' };
   }
+}
+
+// Enhanced data fetching functions with retry logic and connection pooling
+async function executeWithRetry(operation: () => Promise<any>, maxRetries = 3): Promise<any> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      console.error(`Attempt ${attempt} failed:`, error);
+      if (attempt === maxRetries) throw error;
+      await new Promise(resolve => setTimeout(resolve, attempt * 1000)); // Exponential backoff
+    }
+  }
+}
+
+async function getComprehensiveStats() {
+  return await executeWithRetry(async () => {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    const [
+      { count: totalUsers },
+      { count: activeUsers },
+      { count: totalMatches },
+      { count: weeklyMatches },
+      { count: totalTournaments },
+      { count: activeTournaments },
+      { count: totalClubs },
+      { data: topPlayers },
+      { data: recentActivity },
+      { data: systemHealth }
+    ] = await Promise.all([
+      supabase.from('profiles').select('*', { count: 'exact', head: true }),
+      supabase.from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .gte('updated_at', sevenDaysAgo.toISOString()),
+      supabase.from('match_results').select('*', { count: 'exact', head: true }),
+      supabase.from('match_results')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', sevenDaysAgo.toISOString()),
+      supabase.from('tournaments').select('*', { count: 'exact', head: true }),
+      supabase.from('tournaments')
+        .select('*', { count: 'exact', head: true })
+        .in('status', ['ongoing', 'registration_open']),
+      supabase.from('club_profiles').select('*', { count: 'exact', head: true }),
+      supabase.from('player_rankings')
+        .select('*, profiles(full_name, display_name)')
+        .order('elo_points', { ascending: false })
+        .limit(5),
+      supabase.from('match_results')
+        .select('created_at, match_format, profiles!match_results_player1_id_fkey(full_name)')
+        .order('created_at', { ascending: false })
+        .limit(10),
+      supabase.from('error_logs')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', sevenDaysAgo.toISOString())
+    ]);
+
+    return {
+      overview: {
+        totalUsers: totalUsers || 0,
+        activeUsers: activeUsers || 0,
+        totalMatches: totalMatches || 0,
+        weeklyMatches: weeklyMatches || 0,
+        totalTournaments: totalTournaments || 0,
+        activeTournaments: activeTournaments || 0,
+        totalClubs: totalClubs || 0,
+        systemErrors: systemHealth || 0
+      },
+      topPlayers: topPlayers || [],
+      recentActivity: recentActivity || [],
+      growth: {
+        userGrowthRate: activeUsers ? ((activeUsers / totalUsers) * 100).toFixed(1) : '0',
+        matchGrowthRate: weeklyMatches ? ((weeklyMatches / 7) * 100).toFixed(1) : '0'
+      }
+    };
+  });
+}
+
+async function getUserManagementData() {
+  return await executeWithRetry(async () => {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    
+    const [
+      { count: totalUsers },
+      { count: newUsers },
+      { count: demoUsers },
+      { data: usersBySkill },
+      { data: usersByCity },
+      { data: recentUsers },
+      { data: mostActiveUsers }
+    ] = await Promise.all([
+      supabase.from('profiles').select('*', { count: 'exact', head: true }),
+      supabase.from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', thirtyDaysAgo.toISOString()),
+      supabase.from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_demo_user', true),
+      supabase.from('profiles')
+        .select('skill_level')
+        .not('skill_level', 'is', null),
+      supabase.from('profiles')
+        .select('city')
+        .not('city', 'is', null),
+      supabase.from('profiles')
+        .select('full_name, created_at, city, skill_level')
+        .order('created_at', { ascending: false })
+        .limit(10),
+      supabase.from('profiles')
+        .select('full_name, updated_at, city')
+        .order('updated_at', { ascending: false })
+        .limit(10)
+    ]);
+
+    // Aggregate skill levels
+    const skillDistribution = usersBySkill.reduce((acc, user) => {
+      acc[user.skill_level] = (acc[user.skill_level] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Aggregate cities
+    const cityDistribution = usersByCity.reduce((acc, user) => {
+      acc[user.city] = (acc[user.city] || 0) + 1;
+      return acc;
+    }, {});
+
+    return {
+      summary: {
+        totalUsers: totalUsers || 0,
+        newUsers: newUsers || 0,
+        demoUsers: demoUsers || 0,
+        growthRate: totalUsers ? ((newUsers / totalUsers) * 100).toFixed(1) : '0'
+      },
+      distributions: {
+        skillLevels: skillDistribution,
+        cities: cityDistribution
+      },
+      recentUsers: recentUsers || [],
+      mostActiveUsers: mostActiveUsers || []
+    };
+  });
+}
+
+async function getTournamentData() {
+  return await executeWithRetry(async () => {
+    const [
+      { count: totalTournaments },
+      { count: ongoingTournaments },
+      { count: completedTournaments },
+      { data: recentTournaments },
+      { data: tournamentStats },
+      { data: popularTournaments }
+    ] = await Promise.all([
+      supabase.from('tournaments').select('*', { count: 'exact', head: true }),
+      supabase.from('tournaments')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'ongoing'),
+      supabase.from('tournaments')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'completed'),
+      supabase.from('tournaments')
+        .select('name, status, tournament_start, current_participants, max_participants')
+        .order('created_at', { ascending: false })
+        .limit(10),
+      supabase.from('tournaments')
+        .select('tournament_type, current_participants, max_participants'),
+      supabase.from('tournaments')
+        .select('name, current_participants, max_participants')
+        .order('current_participants', { ascending: false })
+        .limit(5)
+    ]);
+
+    return {
+      summary: {
+        totalTournaments: totalTournaments || 0,
+        ongoingTournaments: ongoingTournaments || 0,
+        completedTournaments: completedTournaments || 0,
+        completionRate: totalTournaments ? ((completedTournaments / totalTournaments) * 100).toFixed(1) : '0'
+      },
+      recentTournaments: recentTournaments || [],
+      popularTournaments: popularTournaments || [],
+      typeDistribution: tournamentStats?.reduce((acc, t) => {
+        acc[t.tournament_type] = (acc[t.tournament_type] || 0) + 1;
+        return acc;
+      }, {}) || {}
+    };
+  });
+}
+
+async function getMatchAnalysisData() {
+  return await executeWithRetry(async () => {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    
+    const [
+      { count: totalMatches },
+      { count: weeklyMatches },
+      { count: verifiedMatches },
+      { data: recentMatches },
+      { data: matchFormats },
+      { data: topPerformers }
+    ] = await Promise.all([
+      supabase.from('match_results').select('*', { count: 'exact', head: true }),
+      supabase.from('match_results')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', sevenDaysAgo.toISOString()),
+      supabase.from('match_results')
+        .select('*', { count: 'exact', head: true })
+        .eq('result_status', 'verified'),
+      supabase.from('match_results')
+        .select('*, profiles!match_results_player1_id_fkey(full_name)')
+        .order('created_at', { ascending: false })
+        .limit(10),
+      supabase.from('match_results').select('match_format'),
+      supabase.from('player_rankings')
+        .select('*, profiles(full_name)')
+        .order('elo_points', { ascending: false })
+        .limit(8)
+    ]);
+
+    return {
+      summary: {
+        totalMatches: totalMatches || 0,
+        weeklyMatches: weeklyMatches || 0,
+        verifiedMatches: verifiedMatches || 0,
+        verificationRate: totalMatches ? ((verifiedMatches / totalMatches) * 100).toFixed(1) : '0'
+      },
+      recentMatches: recentMatches || [],
+      topPerformers: topPerformers || [],
+      formatDistribution: matchFormats?.reduce((acc, m) => {
+        acc[m.match_format] = (acc[m.match_format] || 0) + 1;
+        return acc;
+      }, {}) || {}
+    };
+  });
+}
+
+async function getClubManagementData() {
+  return await executeWithRetry(async () => {
+    const [
+      { count: totalClubs },
+      { count: verifiedClubs },
+      { count: pendingClubs },
+      { data: recentClubs },
+      { data: clubsByCity }
+    ] = await Promise.all([
+      supabase.from('club_profiles').select('*', { count: 'exact', head: true }),
+      supabase.from('club_profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('verification_status', 'approved'),
+      supabase.from('club_registrations')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending'),
+      supabase.from('club_profiles')
+        .select('club_name, verification_status, created_at')
+        .order('created_at', { ascending: false })
+        .limit(10),
+      supabase.from('club_registrations').select('city')
+    ]);
+
+    return {
+      summary: {
+        totalClubs: totalClubs || 0,
+        verifiedClubs: verifiedClubs || 0,
+        pendingClubs: pendingClubs || 0,
+        verificationRate: totalClubs ? ((verifiedClubs / totalClubs) * 100).toFixed(1) : '0'
+      },
+      recentClubs: recentClubs || [],
+      cityDistribution: clubsByCity?.reduce((acc, club) => {
+        acc[club.city] = (acc[club.city] || 0) + 1;
+        return acc;
+      }, {}) || {}
+    };
+  });
+}
+
+async function getRankingData() {
+  return await executeWithRetry(async () => {
+    const [
+      { data: topEloPlayers },
+      { data: topSpaPlayers },
+      { data: mostActiveRanked },
+      { data: leaderboardData }
+    ] = await Promise.all([
+      supabase.from('player_rankings')
+        .select('*, profiles(full_name, display_name, city)')
+        .order('elo_points', { ascending: false })
+        .limit(10),
+      supabase.from('player_rankings')
+        .select('*, profiles(full_name, display_name, city)')
+        .order('spa_points', { ascending: false })
+        .limit(10),
+      supabase.from('player_rankings')
+        .select('*, profiles(full_name, display_name)')
+        .order('total_matches', { ascending: false })
+        .limit(10),
+      supabase.from('leaderboards')
+        .select('*, profiles(full_name, display_name)')
+        .order('ranking_points', { ascending: false })
+        .limit(15)
+    ]);
+
+    return {
+      topEloPlayers: topEloPlayers || [],
+      topSpaPlayers: topSpaPlayers || [],
+      mostActiveRanked: mostActiveRanked || [],
+      currentLeaderboard: leaderboardData || [],
+      insights: {
+        averageElo: topEloPlayers?.reduce((sum, p) => sum + (p.elo_points || 0), 0) / (topEloPlayers?.length || 1) || 0,
+        averageSpa: topSpaPlayers?.reduce((sum, p) => sum + (p.spa_points || 0), 0) / (topSpaPlayers?.length || 1) || 0
+      }
+    };
+  });
+}
+
+async function getSystemHealthData() {
+  return await executeWithRetry(async () => {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    
+    const [
+      { count: recentErrors },
+      { count: weeklyErrors },
+      { data: errorTypes },
+      { data: apiMetrics },
+      { data: recentLogs }
+    ] = await Promise.all([
+      supabase.from('error_logs')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', twentyFourHoursAgo.toISOString()),
+      supabase.from('error_logs')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', sevenDaysAgo.toISOString()),
+      supabase.from('error_logs')
+        .select('error_type')
+        .gte('created_at', sevenDaysAgo.toISOString()),
+      supabase.from('api_performance_metrics')
+        .select('endpoint, duration, status')
+        .gte('created_at', twentyFourHoursAgo.toISOString())
+        .order('created_at', { ascending: false })
+        .limit(50),
+      supabase.from('error_logs')
+        .select('error_type, error_message, created_at, url')
+        .order('created_at', { ascending: false })
+        .limit(10)
+    ]);
+
+    return {
+      errorSummary: {
+        last24Hours: recentErrors || 0,
+        last7Days: weeklyErrors || 0,
+        trend: recentErrors && weeklyErrors ? (recentErrors / (weeklyErrors / 7)).toFixed(2) : '0'
+      },
+      errorTypes: errorTypes?.reduce((acc, error) => {
+        acc[error.error_type] = (acc[error.error_type] || 0) + 1;
+        return acc;
+      }, {}) || {},
+      apiPerformance: {
+        averageResponseTime: apiMetrics?.reduce((sum, metric) => sum + metric.duration, 0) / (apiMetrics?.length || 1) || 0,
+        errorRate: apiMetrics?.filter(m => m.status >= 400).length / (apiMetrics?.length || 1) * 100 || 0
+      },
+      recentErrors: recentLogs || []
+    };
+  });
 }
 
 async function buildOptimizedContext(message: string, intent: any, knowledgeItems: any[], dynamicData: any, sessionId?: string) {
