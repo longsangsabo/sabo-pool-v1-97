@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Building, UserCheck, CheckCircle } from 'lucide-react';
+import { Users, Building, CheckCircle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -60,7 +60,7 @@ const AdminUserManagement = () => {
         <TabsContent value="users" className="mt-6">
           <Card>
             <CardContent className="p-6">
-              <AdminUsers />
+              <AdminUsers skipAdminCheck={true} />
             </CardContent>
           </Card>
         </TabsContent>

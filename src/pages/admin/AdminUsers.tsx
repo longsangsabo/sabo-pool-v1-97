@@ -34,7 +34,7 @@ import AdminLayout from '@/components/AdminLayout';
 import { useAdminCheck } from '@/hooks/useAdminCheck';
 import { useAdminUsers, type AdminUser } from '@/hooks/useAdminUsers';
 
-const AdminUsers = () => {
+const AdminUsers = ({ skipAdminCheck = false }: { skipAdminCheck?: boolean } = {}) => {
   const { isAdmin, isLoading: adminLoading } = useAdminCheck();
   const { users, isLoading: usersLoading, updateUserBan, updateUserRole, isUpdatingBan, isUpdatingRole } = useAdminUsers();
   const { t } = useLanguage();
@@ -43,6 +43,28 @@ const AdminUsers = () => {
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [banDialogOpen, setBanDialogOpen] = useState(false);
   const [banReason, setBanReason] = useState('');
+
+  // Skip admin check if component is used inside AdminUserManagement
+  if (!skipAdminCheck) {
+    if (adminLoading) {
+      return (
+        <div className='flex items-center justify-center h-64'>
+          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-primary'></div>
+        </div>
+      );
+    }
+
+    if (!isAdmin) {
+      return (
+        <div className='flex items-center justify-center h-64'>
+          <div className='text-center'>
+            <h2 className='text-2xl font-bold text-foreground mb-4'>{t('common.access_denied')}</h2>
+            <p className='text-muted-foreground'>{t('common.no_permission')}</p>
+          </div>
+        </div>
+      );
+    }
+  }
 
   // Filter users based on search and status
   const filteredUsers = users.filter(user => {
@@ -93,7 +115,7 @@ const AdminUsers = () => {
     });
   };
 
-  if (adminLoading || usersLoading) {
+  if (!skipAdminCheck && (adminLoading || usersLoading)) {
     return (
       <div className='flex items-center justify-center h-64'>
         <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500'></div>
@@ -101,13 +123,10 @@ const AdminUsers = () => {
     );
   }
 
-  if (!isAdmin) {
+  if (usersLoading) {
     return (
       <div className='flex items-center justify-center h-64'>
-        <div className='text-center'>
-          <h2 className='text-2xl font-bold text-gray-900 mb-4'>{t('common.access_denied')}</h2>
-          <p className='text-gray-600'>{t('common.no_permission')}</p>
-        </div>
+        <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500'></div>
       </div>
     );
   }
