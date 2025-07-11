@@ -146,10 +146,10 @@ const LazyAdminDashboard = createLazyComponent(
   "AdminDashboard"
 );
 
-const LazyAdminUsers = createLazyComponent(
-  () => import("./pages/admin/AdminUsers"),
-  <PageLoadingFallback pageTitle="Admin Users" />,
-  "AdminUsers"
+const LazyAdminUserManagement = createLazyComponent(
+  () => import("./pages/admin/AdminUserManagement"),
+  <PageLoadingFallback pageTitle="Quản lý người dùng & CLB" />,
+  "AdminUserManagement"
 );
 
 const LazyAdminTournaments = createLazyComponent(
@@ -243,7 +243,7 @@ const App = () => {
                           
                           {/* Admin routes - only load when accessed */}
                           <Route path="/admin" element={<LazyAdminDashboard />} />
-                          <Route path="/admin/users" element={<LazyAdminUsers />} />
+                          <Route path="/admin/users" element={<LazyAdminUserManagement />} />
                           <Route path="/admin/tournaments" element={<LazyAdminTournaments />} />
                           
                           {/* Auth routes - critical but separate bundle */}
