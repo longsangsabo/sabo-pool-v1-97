@@ -11,9 +11,10 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useTournaments } from '@/hooks/useTournaments';
+import { TournamentService } from '@/services/TournamentService';
 import BracketGenerator from '@/components/tournament/BracketGenerator';
 import { TournamentPlayerManagement } from './TournamentPlayerManagement';
 import { TournamentMatchManagement } from './TournamentMatchManagement';
@@ -25,7 +26,7 @@ import TournamentDashboard from './TournamentDashboard';
 import { Tournament } from '@/types/common';
 
 const EnhancedTournamentManager = () => {
-  const { tournaments, loading, createTournament } = useTournaments();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
@@ -38,6 +39,29 @@ const EnhancedTournamentManager = () => {
     active: 0,
     completed: 0,
     totalPrizePool: 0
+  });
+
+  // Sử dụng React Query để fetch tournaments
+  const { data: tournaments = [], isLoading: loading, error } = useQuery({
+    queryKey: ['admin-tournaments'],
+    queryFn: async () => {
+      const result = await TournamentService.getTournaments({ showDeleted: false });
+      // Chuyển đổi dữ liệu để phù hợp
+      return result.tournaments.map(t => ({
+        ...t,
+        first_prize: t.prize_pool ? Math.floor(t.prize_pool * 0.5) : 0,
+        second_prize: t.prize_pool ? Math.floor(t.prize_pool * 0.3) : 0,
+        third_prize: t.prize_pool ? Math.floor(t.prize_pool * 0.2) : 0,
+        organizer_id: t.created_by || '',
+        club: t.club ? {
+          ...t.club,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        } : undefined
+      })) as unknown as Tournament[];
+    },
+    staleTime: 30 * 1000, // 30 seconds
+    gcTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Real-time tournament updates
@@ -63,8 +87,8 @@ const EnhancedTournamentManager = () => {
           }
         }
         
-        // Refresh data
-        window.location.reload();
+        // Invalidate và refetch dữ liệu thay vì reload trang
+        queryClient.invalidateQueries({ queryKey: ['admin-tournaments'] });
       })
       .subscribe();
 
@@ -72,7 +96,7 @@ const EnhancedTournamentManager = () => {
       console.log('Cleaning up tournament subscription');
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [queryClient]);
 
   // Calculate real-time stats
   useEffect(() => {
@@ -93,53 +117,75 @@ const EnhancedTournamentManager = () => {
     }
   }, [tournaments]);
 
-  const handleStartTournament = async (tournamentId: string) => {
-    try {
+  // Mutations để thực hiện các thao tác mà không reload trang
+  const startTournamentMutation = useMutation({
+    mutationFn: async (tournamentId: string) => {
       const { error } = await supabase
         .from('tournaments')
         .update({ status: 'ongoing' })
         .eq('id', tournamentId);
-
       if (error) throw error;
+    },
+    onSuccess: () => {
       toast.success('Giải đấu đã bắt đầu!');
-    } catch (error) {
+      queryClient.invalidateQueries({ queryKey: ['admin-tournaments'] });
+    },
+    onError: (error) => {
       console.error('Error starting tournament:', error);
       toast.error('Có lỗi khi bắt đầu giải đấu');
     }
+  });
+
+  const handleStartTournament = (tournamentId: string) => {
+    startTournamentMutation.mutate(tournamentId);
   };
 
-  const handlePauseTournament = async (tournamentId: string) => {
-    try {
+  const pauseTournamentMutation = useMutation({
+    mutationFn: async (tournamentId: string) => {
       const { error } = await supabase
         .from('tournaments')
         .update({ status: 'upcoming' })
         .eq('id', tournamentId);
-
       if (error) throw error;
+    },
+    onSuccess: () => {
       toast.success('Giải đấu đã tạm dừng!');
-    } catch (error) {
+      queryClient.invalidateQueries({ queryKey: ['admin-tournaments'] });
+    },
+    onError: (error) => {
       console.error('Error pausing tournament:', error);
       toast.error('Có lỗi khi tạm dừng giải đấu');
     }
+  });
+
+  const handlePauseTournament = (tournamentId: string) => {
+    pauseTournamentMutation.mutate(tournamentId);
   };
 
-  const handleCompleteTournament = async (tournamentId: string) => {
-    try {
+  const completeTournamentMutation = useMutation({
+    mutationFn: async (tournamentId: string) => {
       const { error } = await supabase
         .from('tournaments')
         .update({ status: 'completed' })
         .eq('id', tournamentId);
-
       if (error) throw error;
+    },
+    onSuccess: () => {
       toast.success('Giải đấu đã hoàn thành!');
-    } catch (error) {
+      queryClient.invalidateQueries({ queryKey: ['admin-tournaments'] });
+    },
+    onError: (error) => {
       console.error('Error completing tournament:', error);
       toast.error('Có lỗi khi hoàn thành giải đấu');
     }
+  });
+
+  const handleCompleteTournament = (tournamentId: string) => {
+    completeTournamentMutation.mutate(tournamentId);
   };
 
-  const handleOpenRegistration = async (tournamentId: string) => {
-    try {
+  const openRegistrationMutation = useMutation({
+    mutationFn: async (tournamentId: string) => {
       const { error } = await supabase
         .from('tournaments')
         .update({ 
@@ -147,17 +193,24 @@ const EnhancedTournamentManager = () => {
           management_status: 'open' 
         })
         .eq('id', tournamentId);
-
       if (error) throw error;
+    },
+    onSuccess: () => {
       toast.success('Đăng ký giải đấu đã được mở!');
-    } catch (error) {
+      queryClient.invalidateQueries({ queryKey: ['admin-tournaments'] });
+    },
+    onError: (error) => {
       console.error('Error opening registration:', error);
       toast.error('Có lỗi khi mở đăng ký');
     }
+  });
+
+  const handleOpenRegistration = (tournamentId: string) => {
+    openRegistrationMutation.mutate(tournamentId);
   };
 
-  const handleCloseRegistration = async (tournamentId: string) => {
-    try {
+  const closeRegistrationMutation = useMutation({
+    mutationFn: async (tournamentId: string) => {
       const { error } = await supabase
         .from('tournaments')
         .update({ 
@@ -165,13 +218,20 @@ const EnhancedTournamentManager = () => {
           management_status: 'locked' 
         })
         .eq('id', tournamentId);
-
       if (error) throw error;
+    },
+    onSuccess: () => {
       toast.success('Đăng ký giải đấu đã được đóng!');
-    } catch (error) {
+      queryClient.invalidateQueries({ queryKey: ['admin-tournaments'] });
+    },
+    onError: (error) => {
       console.error('Error closing registration:', error);
       toast.error('Có lỗi khi đóng đăng ký');
     }
+  });
+
+  const handleCloseRegistration = (tournamentId: string) => {
+    closeRegistrationMutation.mutate(tournamentId);
   };
 
   const handleGenerateBracket = async (tournamentId: string) => {
@@ -179,26 +239,28 @@ const EnhancedTournamentManager = () => {
     setShowBracketModal(true);
   };
 
-  const handleDeleteTournament = async (tournamentId: string, tournamentName: string) => {
-    if (!confirm(`Bạn có chắc chắn muốn xóa giải đấu "${tournamentName}"?\n\nHành động này không thể hoàn tác!`)) {
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('tournaments')
-        .delete()
-        .eq('id', tournamentId);
-
-      if (error) throw error;
+  const deleteTournamentMutation = useMutation({
+    mutationFn: async ({ tournamentId, tournamentName }: { tournamentId: string, tournamentName: string }) => {
+      // Sử dụng TournamentService để xóa (soft delete)
+      const success = await TournamentService.deleteTournament(tournamentId, false);
+      if (!success) throw new Error('Failed to delete tournament');
+      return { tournamentId, tournamentName };
+    },
+    onSuccess: ({ tournamentName }) => {
       toast.success(`Đã xóa giải đấu "${tournamentName}" thành công!`);
-      
-      // Refresh data after deletion
-      window.location.reload();
-    } catch (error) {
+      queryClient.invalidateQueries({ queryKey: ['admin-tournaments'] });
+    },
+    onError: (error) => {
       console.error('Error deleting tournament:', error);
       toast.error('Có lỗi khi xóa giải đấu');
     }
+  });
+
+  const handleDeleteTournament = (tournamentId: string, tournamentName: string) => {
+    if (!confirm(`Bạn có chắc chắn muốn xóa giải đấu "${tournamentName}"?\n\nGiải đấu sẽ được ẩn khỏi danh sách công khai.`)) {
+      return;
+    }
+    deleteTournamentMutation.mutate({ tournamentId, tournamentName });
   };
 
   const filteredTournaments = tournaments?.filter(tournament => {
@@ -430,9 +492,9 @@ const EnhancedTournamentManager = () => {
                       </Button>
                     </div>
 
-                    {/* Tournament Control Buttons */}
-                    <div className='flex gap-2'>
-                      {tournament.status === 'upcoming' && (
+                     {/* Tournament Control Buttons */}
+                     <div className='flex gap-2'>
+                       {(tournament.status as string) === 'upcoming' && (
                         <Button
                           onClick={() => handleOpenRegistration(tournament.id)}
                           variant='default'
@@ -444,7 +506,7 @@ const EnhancedTournamentManager = () => {
                         </Button>
                       )}
                       
-                      {tournament.status === 'registration_open' && (
+                      {(tournament.status as string) === 'registration_open' && (
                         <>
                           <Button
                             onClick={() => handleCloseRegistration(tournament.id)}
@@ -467,7 +529,7 @@ const EnhancedTournamentManager = () => {
                         </>
                       )}
                       
-                      {tournament.status === 'registration_closed' && (
+                      {(tournament.status as string) === 'registration_closed' && (
                         <>
                           <Button
                             onClick={() => handleStartTournament(tournament.id)}
@@ -489,7 +551,7 @@ const EnhancedTournamentManager = () => {
                         </>
                       )}
                       
-                      {tournament.status === 'ongoing' && (
+                      {(tournament.status as string) === 'ongoing' && (
                         <>
                           <Button
                             onClick={() => handlePauseTournament(tournament.id)}

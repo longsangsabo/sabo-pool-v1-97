@@ -420,17 +420,67 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_performance_log: {
+        Row: {
+          automation_type: string
+          created_at: string | null
+          error_message: string | null
+          execution_time_ms: number | null
+          id: string
+          metadata: Json | null
+          success: boolean | null
+          tournament_id: string | null
+        }
+        Insert: {
+          automation_type: string
+          created_at?: string | null
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          metadata?: Json | null
+          success?: boolean | null
+          tournament_id?: string | null
+        }
+        Update: {
+          automation_type?: string
+          created_at?: string | null
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          metadata?: Json | null
+          success?: boolean | null
+          tournament_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_performance_log_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_analytics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automation_performance_log_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenges: {
         Row: {
           bet_points: number | null
           challenger_id: string
           club_id: string | null
           created_at: string
+          deleted_at: string | null
           expires_at: string | null
           handicap_05_rank: number | null
           handicap_1_rank: number | null
           id: string
           is_open_challenge: boolean | null
+          is_visible: boolean | null
           location: string | null
           message: string | null
           opponent_id: string | null
@@ -448,11 +498,13 @@ export type Database = {
           challenger_id: string
           club_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           expires_at?: string | null
           handicap_05_rank?: number | null
           handicap_1_rank?: number | null
           id?: string
           is_open_challenge?: boolean | null
+          is_visible?: boolean | null
           location?: string | null
           message?: string | null
           opponent_id?: string | null
@@ -470,11 +522,13 @@ export type Database = {
           challenger_id?: string
           club_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           expires_at?: string | null
           handicap_05_rank?: number | null
           handicap_1_rank?: number | null
           id?: string
           is_open_challenge?: boolean | null
+          is_visible?: boolean | null
           location?: string | null
           message?: string | null
           opponent_id?: string | null
@@ -569,7 +623,9 @@ export type Database = {
           address: string
           club_name: string
           created_at: string
+          deleted_at: string | null
           id: string
+          is_visible: boolean | null
           number_of_tables: number | null
           operating_hours: Json | null
           phone: string
@@ -584,7 +640,9 @@ export type Database = {
           address: string
           club_name: string
           created_at?: string
+          deleted_at?: string | null
           id?: string
+          is_visible?: boolean | null
           number_of_tables?: number | null
           operating_hours?: Json | null
           phone: string
@@ -599,7 +657,9 @@ export type Database = {
           address?: string
           club_name?: string
           created_at?: string
+          deleted_at?: string | null
           id?: string
+          is_visible?: boolean | null
           number_of_tables?: number | null
           operating_hours?: Json | null
           phone?: string
@@ -1170,11 +1230,13 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           current_participants: number | null
+          deleted_at: string | null
           description: string | null
           end_date: string
           entry_fee: number | null
           event_type: string
           id: string
+          is_visible: boolean | null
           location: string | null
           max_participants: number | null
           name: string
@@ -1190,11 +1252,13 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           current_participants?: number | null
+          deleted_at?: string | null
           description?: string | null
           end_date: string
           entry_fee?: number | null
           event_type: string
           id?: string
+          is_visible?: boolean | null
           location?: string | null
           max_participants?: number | null
           name: string
@@ -1210,11 +1274,13 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           current_participants?: number | null
+          deleted_at?: string | null
           description?: string | null
           end_date?: string
           entry_fee?: number | null
           event_type?: string
           id?: string
+          is_visible?: boolean | null
           location?: string | null
           max_participants?: number | null
           name?: string
@@ -1274,6 +1340,87 @@ export type Database = {
           player_id?: string
           updated_at?: string | null
           wins?: number | null
+        }
+        Relationships: []
+      }
+      file_cleanup_config: {
+        Row: {
+          auto_cleanup_enabled: boolean | null
+          bucket_name: string
+          cleanup_schedule: string | null
+          created_at: string | null
+          enabled: boolean | null
+          id: string
+          last_cleanup_at: string | null
+          max_file_age_days: number | null
+          retention_days: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          auto_cleanup_enabled?: boolean | null
+          bucket_name: string
+          cleanup_schedule?: string | null
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string
+          last_cleanup_at?: string | null
+          max_file_age_days?: number | null
+          retention_days?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          auto_cleanup_enabled?: boolean | null
+          bucket_name?: string
+          cleanup_schedule?: string | null
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string
+          last_cleanup_at?: string | null
+          max_file_age_days?: number | null
+          retention_days?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      file_cleanup_logs: {
+        Row: {
+          action_type: string
+          bucket_name: string
+          created_at: string | null
+          created_by: string | null
+          errors: Json | null
+          execution_time_ms: number | null
+          files_deleted: number
+          files_found: number
+          id: string
+          orphaned_files: Json | null
+          total_size: number
+        }
+        Insert: {
+          action_type: string
+          bucket_name: string
+          created_at?: string | null
+          created_by?: string | null
+          errors?: Json | null
+          execution_time_ms?: number | null
+          files_deleted?: number
+          files_found?: number
+          id?: string
+          orphaned_files?: Json | null
+          total_size?: number
+        }
+        Update: {
+          action_type?: string
+          bucket_name?: string
+          created_at?: string | null
+          created_by?: string | null
+          errors?: Json | null
+          execution_time_ms?: number | null
+          files_deleted?: number
+          files_found?: number
+          id?: string
+          orphaned_files?: Json | null
+          total_size?: number
         }
         Relationships: []
       }
@@ -1447,6 +1594,13 @@ export type Database = {
             columns: ["match_id"]
             isOneToOne: false
             referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_streams_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_analytics"
             referencedColumns: ["id"]
           },
           {
@@ -1663,8 +1817,10 @@ export type Database = {
           club_id: string | null
           created_at: string | null
           created_by: string | null
+          deleted_at: string | null
           duration_minutes: number | null
           id: string
+          is_visible: boolean | null
           loser_id: string | null
           match_date: string
           match_format: string
@@ -1700,8 +1856,10 @@ export type Database = {
           club_id?: string | null
           created_at?: string | null
           created_by?: string | null
+          deleted_at?: string | null
           duration_minutes?: number | null
           id?: string
+          is_visible?: boolean | null
           loser_id?: string | null
           match_date?: string
           match_format?: string
@@ -1737,8 +1895,10 @@ export type Database = {
           club_id?: string | null
           created_at?: string | null
           created_by?: string | null
+          deleted_at?: string | null
           duration_minutes?: number | null
           id?: string
+          is_visible?: boolean | null
           loser_id?: string | null
           match_date?: string
           match_format?: string
@@ -1783,6 +1943,13 @@ export type Database = {
             columns: ["match_id"]
             isOneToOne: false
             referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_results_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_analytics"
             referencedColumns: ["id"]
           },
           {
@@ -1870,6 +2037,13 @@ export type Database = {
             columns: ["club_id"]
             isOneToOne: false
             referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matches_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_analytics"
             referencedColumns: ["id"]
           },
           {
@@ -2803,8 +2977,10 @@ export type Database = {
           created_at: string | null
           current_rank_id: string | null
           daily_challenges: number | null
+          deleted_at: string | null
           elo_points: number | null
           id: string
+          is_visible: boolean | null
           performance_quality: number | null
           player_id: string | null
           rank_points: number | null
@@ -2823,8 +2999,10 @@ export type Database = {
           created_at?: string | null
           current_rank_id?: string | null
           daily_challenges?: number | null
+          deleted_at?: string | null
           elo_points?: number | null
           id?: string
+          is_visible?: boolean | null
           performance_quality?: number | null
           player_id?: string | null
           rank_points?: number | null
@@ -2843,8 +3021,10 @@ export type Database = {
           created_at?: string | null
           current_rank_id?: string | null
           daily_challenges?: number | null
+          deleted_at?: string | null
           elo_points?: number | null
           id?: string
+          is_visible?: boolean | null
           performance_quality?: number | null
           player_id?: string | null
           rank_points?: number | null
@@ -3031,7 +3211,9 @@ export type Database = {
         Row: {
           content: string
           created_at: string
+          deleted_at: string | null
           id: string
+          is_visible: boolean | null
           likes_count: number
           parent_comment_id: string | null
           post_id: string
@@ -3041,7 +3223,9 @@ export type Database = {
         Insert: {
           content: string
           created_at?: string
+          deleted_at?: string | null
           id?: string
+          is_visible?: boolean | null
           likes_count?: number
           parent_comment_id?: string | null
           post_id: string
@@ -3051,7 +3235,9 @@ export type Database = {
         Update: {
           content?: string
           created_at?: string
+          deleted_at?: string | null
           id?: string
+          is_visible?: boolean | null
           likes_count?: number
           parent_comment_id?: string | null
           post_id?: string
@@ -3411,6 +3597,7 @@ export type Database = {
           city: string | null
           club_id: string | null
           created_at: string
+          deleted_at: string | null
           display_name: string | null
           district: string | null
           elo: number | null
@@ -3421,6 +3608,7 @@ export type Database = {
           id: string
           is_admin: boolean | null
           is_demo_user: boolean | null
+          is_visible: boolean | null
           last_activity_check: string | null
           member_since: string | null
           membership_expires_at: string | null
@@ -3449,6 +3637,7 @@ export type Database = {
           city?: string | null
           club_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           display_name?: string | null
           district?: string | null
           elo?: number | null
@@ -3459,6 +3648,7 @@ export type Database = {
           id?: string
           is_admin?: boolean | null
           is_demo_user?: boolean | null
+          is_visible?: boolean | null
           last_activity_check?: string | null
           member_since?: string | null
           membership_expires_at?: string | null
@@ -3487,6 +3677,7 @@ export type Database = {
           city?: string | null
           club_id?: string | null
           created_at?: string
+          deleted_at?: string | null
           display_name?: string | null
           district?: string | null
           elo?: number | null
@@ -3497,6 +3688,7 @@ export type Database = {
           id?: string
           is_admin?: boolean | null
           is_demo_user?: boolean | null
+          is_visible?: boolean | null
           last_activity_check?: string | null
           member_since?: string | null
           membership_expires_at?: string | null
@@ -3923,6 +4115,13 @@ export type Database = {
             columns: ["season_id"]
             isOneToOne: false
             referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "season_tournaments_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_analytics"
             referencedColumns: ["id"]
           },
           {
@@ -4623,6 +4822,13 @@ export type Database = {
             foreignKeyName: "tournament_brackets_tournament_id_fkey"
             columns: ["tournament_id"]
             isOneToOne: true
+            referencedRelation: "tournament_analytics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_brackets_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: true
             referencedRelation: "tournaments"
             referencedColumns: ["id"]
           },
@@ -4742,6 +4948,13 @@ export type Database = {
             foreignKeyName: "tournament_matches_tournament_id_fkey"
             columns: ["tournament_id"]
             isOneToOne: false
+            referencedRelation: "tournament_analytics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_matches_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
             referencedRelation: "tournaments"
             referencedColumns: ["id"]
           },
@@ -4751,6 +4964,60 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      tournament_progression: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          metadata: Json | null
+          stage: string
+          started_at: string | null
+          status: string
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          stage: string
+          started_at?: string | null
+          status?: string
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          stage?: string
+          started_at?: string | null
+          status?: string
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_progression_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_analytics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_progression_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -4810,6 +5077,13 @@ export type Database = {
             foreignKeyName: "tournament_qualifications_qualified_from_tournament_id_fkey"
             columns: ["qualified_from_tournament_id"]
             isOneToOne: false
+            referencedRelation: "tournament_analytics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_qualifications_qualified_from_tournament_id_fkey"
+            columns: ["qualified_from_tournament_id"]
+            isOneToOne: false
             referencedRelation: "tournaments"
             referencedColumns: ["id"]
           },
@@ -4857,6 +5131,13 @@ export type Database = {
             foreignKeyName: "tournament_realtime_stats_tournament_id_fkey"
             columns: ["tournament_id"]
             isOneToOne: true
+            referencedRelation: "tournament_analytics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_realtime_stats_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: true
             referencedRelation: "tournaments"
             referencedColumns: ["id"]
           },
@@ -4869,7 +5150,9 @@ export type Database = {
           bracket_position: number | null
           check_in_time: string | null
           created_at: string | null
+          deleted_at: string | null
           id: string
+          is_visible: boolean | null
           notes: string | null
           payment_confirmed_at: string | null
           payment_date: string | null
@@ -4889,7 +5172,9 @@ export type Database = {
           bracket_position?: number | null
           check_in_time?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           id?: string
+          is_visible?: boolean | null
           notes?: string | null
           payment_confirmed_at?: string | null
           payment_date?: string | null
@@ -4909,7 +5194,9 @@ export type Database = {
           bracket_position?: number | null
           check_in_time?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           id?: string
+          is_visible?: boolean | null
           notes?: string | null
           payment_confirmed_at?: string | null
           payment_date?: string | null
@@ -4937,6 +5224,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "tournament_registrations_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_analytics"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "tournament_registrations_tournament_id_fkey"
@@ -4988,6 +5282,13 @@ export type Database = {
           tournament_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "tournament_results_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_analytics"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tournament_results_tournament_id_fkey"
             columns: ["tournament_id"]
@@ -5075,6 +5376,13 @@ export type Database = {
             foreignKeyName: "tournament_seeding_tournament_id_fkey"
             columns: ["tournament_id"]
             isOneToOne: false
+            referencedRelation: "tournament_analytics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_seeding_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
             referencedRelation: "tournaments"
             referencedColumns: ["id"]
           },
@@ -5157,6 +5465,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "tournament_workflow_steps_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_analytics"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tournament_workflow_steps_tournament_id_fkey"
             columns: ["tournament_id"]
@@ -5917,6 +6232,83 @@ export type Database = {
         }
         Relationships: []
       }
+      tournament_analytics: {
+        Row: {
+          bracket_generated: boolean | null
+          completed_matches: number | null
+          created_at: string | null
+          current_participants: number | null
+          entry_fee: number | null
+          fill_percentage: number | null
+          id: string | null
+          max_participants: number | null
+          name: string | null
+          net_revenue: number | null
+          prize_pool: number | null
+          registration_duration_hours: number | null
+          status: string | null
+          tier_level: number | null
+          time_in_registration_hours: number | null
+          total_matches: number | null
+          total_revenue: number | null
+          tournament_duration_hours: number | null
+          tournament_type: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          bracket_generated?: never
+          completed_matches?: never
+          created_at?: string | null
+          current_participants?: number | null
+          entry_fee?: number | null
+          fill_percentage?: never
+          id?: string | null
+          max_participants?: number | null
+          name?: string | null
+          net_revenue?: never
+          prize_pool?: number | null
+          registration_duration_hours?: never
+          status?: string | null
+          tier_level?: number | null
+          time_in_registration_hours?: never
+          total_matches?: never
+          total_revenue?: never
+          tournament_duration_hours?: never
+          tournament_type?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          bracket_generated?: never
+          completed_matches?: never
+          created_at?: string | null
+          current_participants?: number | null
+          entry_fee?: number | null
+          fill_percentage?: never
+          id?: string | null
+          max_participants?: number | null
+          name?: string | null
+          net_revenue?: never
+          prize_pool?: number | null
+          registration_duration_hours?: never
+          status?: string | null
+          tier_level?: number | null
+          time_in_registration_hours?: never
+          total_matches?: never
+          total_revenue?: never
+          tournament_duration_hours?: never
+          tournament_type?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournaments_tier_level_fkey"
+            columns: ["tier_level"]
+            isOneToOne: false
+            referencedRelation: "tournament_tiers"
+            referencedColumns: ["tier_level"]
+          },
+        ]
+      }
     }
     Functions: {
       admin_add_users_to_tournament: {
@@ -5973,7 +6365,15 @@ export type Database = {
         }
         Returns: Json
       }
+      auto_progress_match_winner: {
+        Args: { p_match_id: string; p_winner_id: string }
+        Returns: Json
+      }
       auto_update_tournament_status: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      auto_update_tournament_statuses: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
@@ -6021,6 +6421,14 @@ export type Database = {
       binary_quantize: {
         Args: { "": string } | { "": unknown }
         Returns: unknown
+      }
+      bulk_restore: {
+        Args: { table_name: string; entity_ids: string[]; admin_id?: string }
+        Returns: Json
+      }
+      bulk_soft_delete: {
+        Args: { table_name: string; entity_ids: string[]; admin_id?: string }
+        Returns: Json
       }
       calculate_achievement_points: {
         Args: { placement: string }
@@ -6100,6 +6508,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      check_data_integrity: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       check_rank_promotion: {
         Args: { p_player_id: string }
         Returns: boolean
@@ -6108,6 +6520,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      check_tournament_bracket_consistency: {
+        Args: { p_tournament_id: string }
+        Returns: Json
+      }
       cleanup_expired_challenges: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -6115,6 +6531,10 @@ export type Database = {
       cleanup_old_data: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      cleanup_orphaned_data: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       club_confirm_payment: {
         Args: {
@@ -6205,6 +6625,10 @@ export type Database = {
         Args: { p_tournament_id: string }
         Returns: Json
       }
+      create_tournament_results: {
+        Args: { p_tournament_id: string }
+        Returns: Json
+      }
       credit_spa_points: {
         Args:
           | {
@@ -6247,6 +6671,10 @@ export type Database = {
         Args: { club_profile_id: string; admin_id: string }
         Returns: Json
       }
+      enhanced_tournament_status_automation: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       example_function: {
         Args: { param1: string }
         Returns: string
@@ -6269,6 +6697,18 @@ export type Database = {
       }
       generate_complete_tournament_bracket: {
         Args: { p_tournament_id: string; p_seeding_method?: string }
+        Returns: Json
+      }
+      generate_consistent_tournament_bracket: {
+        Args: {
+          p_tournament_id: string
+          p_seeding_method?: string
+          p_force_regenerate?: boolean
+        }
+        Returns: Json
+      }
+      generate_next_tournament_round: {
+        Args: { p_tournament_id: string; p_completed_round: number }
         Returns: Json
       }
       generate_referral_code: {
@@ -6355,6 +6795,10 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: Json
       }
+      get_soft_delete_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_time_multiplier: {
         Args: Record<PropertyKey, never>
         Returns: number
@@ -6419,6 +6863,10 @@ export type Database = {
         Args: { "": unknown[] }
         Returns: number
       }
+      has_admin_role: {
+        Args: { user_uuid?: string }
+        Returns: boolean
+      }
       hnsw_bit_support: {
         Args: { "": unknown }
         Returns: unknown
@@ -6435,8 +6883,16 @@ export type Database = {
         Args: { "": unknown }
         Returns: unknown
       }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_current_user_admin: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_round_completed: {
+        Args: { p_tournament_id: string; p_round_number: number }
         Returns: boolean
       }
       ivfflat_bit_support: {
@@ -6459,9 +6915,24 @@ export type Database = {
         Args: { "": string } | { "": unknown } | { "": unknown }
         Returns: string
       }
+      log_automation_performance: {
+        Args: {
+          p_automation_type: string
+          p_tournament_id?: string
+          p_execution_time_ms?: number
+          p_success?: boolean
+          p_error_message?: string
+          p_metadata?: Json
+        }
+        Returns: string
+      }
       mark_notifications_read: {
         Args: { notification_ids: string[] }
         Returns: undefined
+      }
+      migrate_deleted_records: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
       optimize_leaderboard_query: {
         Args: {
@@ -6557,6 +7028,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      restore_entity: {
+        Args: {
+          table_name: string
+          entity_id: string
+          restored_by_user_id?: string
+        }
+        Returns: boolean
+      }
       seed_demo_users: {
         Args: Record<PropertyKey, never>
         Returns: Json
@@ -6575,6 +7054,16 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      soft_delete_entity: {
+        Args:
+          | { table_name: string; entity_id: string }
+          | {
+              table_name: string
+              entity_id: string
+              deleted_by_user_id?: string
+            }
+        Returns: boolean
+      }
       sparsevec_out: {
         Args: { "": unknown }
         Returns: unknown
@@ -6590,6 +7079,23 @@ export type Database = {
       system_health_check: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      track_tournament_progression: {
+        Args: {
+          p_tournament_id: string
+          p_stage: string
+          p_status?: string
+          p_metadata?: Json
+        }
+        Returns: string
+      }
+      trigger_file_cleanup: {
+        Args: {
+          p_bucket_name?: string
+          p_dry_run?: boolean
+          p_admin_id?: string
+        }
+        Returns: Json
       }
       update_monthly_leaderboard: {
         Args: Record<PropertyKey, never>
