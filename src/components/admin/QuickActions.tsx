@@ -35,7 +35,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
       icon: Building2,
       color: 'text-yellow-600',
       bgColor: 'bg-yellow-50',
-      onClick: () => navigate('/admin/clubs'),
+      onClick: () => navigate('/admin/users'),
       urgent: pendingClubs > 0
     },
     {

@@ -10,117 +10,185 @@ import ErrorBoundary from "@/components/ui/error-boundary";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AvatarProvider } from "@/contexts/AvatarContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import { MonitoringProvider } from "@/contexts/MonitoringProvider";
 import MainLayout from "@/components/MainLayout";
 import DailyNotificationSystem from "@/components/DailyNotificationSystem";
 import RealtimeNotificationSystem from "@/components/RealtimeNotificationSystem";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { createLazyComponent, PageLoadingFallback } from "@/components/ui/lazy-components";
 
-// Import components directly instead of lazy loading to avoid loading issues
-import SimpleDashboard from "./pages/SimpleDashboard";
-import SimpleBookingPage from "./pages/SimpleBookingPage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import ForgotPasswordPage from "./pages/ForgotPasswordPage";
-import AuthCallbackPage from "./pages/AuthCallbackPage";
-import SimpleClubHomePage from "./pages/SimpleClubHomePage";
-import SimpleClubBookingPage from "./pages/SimpleClubBookingPage";
-import SimpleClubAboutPage from "./pages/SimpleClubAboutPage";
-import SimpleClubContactPage from "./pages/SimpleClubContactPage";
-import SystemAuditPage from "./pages/SystemAuditPage";
-import TestPage from "./pages/TestPage";
-import EnhancedLoginPage from "./pages/EnhancedLoginPage";
-import EnhancedRegisterPage from "./pages/EnhancedRegisterPage";
-import EnhancedChallengesPageV2 from "./pages/EnhancedChallengesPageV2";
-import CreateTournamentExample from "./pages/CreateTournamentExample";
-
-// Import all other pages
-import AboutPage from "./pages/AboutPage";
-import AnalyticsPage from "./pages/AnalyticsPage";
-import AuthTestPage from "./pages/AuthTestPage";
-import BlogPage from "./pages/BlogPage";
-import ChallengesPage from "./pages/ChallengesPage";
-import ChatPage from "./pages/ChatPage";
-import ClubDetailPage from "./pages/ClubDetailPage";
-import ClubsPage from "./pages/ClubsPage";
-
-import Dashboard from "./pages/Dashboard";
-import DashboardPage from "./pages/DashboardPage";
-import PublicProfilePage from "./pages/PublicProfilePage";
-import AuthWrapper from "./components/AuthWrapper";
-import DashboardOverview from "./pages/DashboardOverview";
-import DiscoveryPage from "./pages/DiscoveryPage";
-import EnhancedChallengesPage from "./pages/EnhancedChallengesPage";
-import EnhancedDiscoveryPage from "./pages/EnhancedDiscoveryPage";
-import EnhancedLeaderboardPage from "./pages/EnhancedLeaderboardPage";
-import EnhancedMarketplacePage from "./pages/EnhancedMarketplacePage";
-import FAQPage from "./pages/FAQPage";
-import FeedPage from "./pages/FeedPage";
-import HelpPage from "./pages/HelpPage";
-import Index from "./pages/Index";
-import InboxPage from "./pages/InboxPage";
-import LeaderboardPage from "./pages/LeaderboardPage";
-import NotificationsPage from "./pages/NotificationsPage";
-import LiveStreamPage from "./pages/LiveStreamPage";
-import MarketplacePage from "./pages/MarketplacePage";
-import MatchHistoryPage from "./pages/MatchHistoryPage";
-import MembershipPage from "./pages/MembershipPage";
-import NotFound from "./pages/NotFound";
-import PaymentClubMembershipPage from "./pages/PaymentClubMembershipPage";
-import PaymentMembershipPage from "./pages/PaymentMembershipPage";
-import PaymentResultPage from "./pages/PaymentResultPage";
-import PaymentSuccessPage from "./pages/PaymentSuccessPage";
-import PrivacyPage from "./pages/PrivacyPage";
-import ProfilePage from "./pages/ProfilePage";
-import RankingPage from "./pages/RankingPage";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
-import SecurityPage from "./pages/SecurityPage";
-import SettingsPage from "./pages/SettingsPage";
-import SocialFeedPage from "./pages/SocialFeedPage";
-import SystemHealthPage from "./pages/SystemHealthPage";
-import TermsPage from "./pages/TermsPage";
-import TournamentDiscoveryPage from "./pages/TournamentDiscoveryPage";
-import TournamentsPage from "./pages/TournamentsPage";
-import WalletPage from "./pages/WalletPage";
-import SiteMapPage from "./pages/SiteMapPage";
-import PracticeFinderPage from "./pages/PracticeFinderPage";
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminUsers from "./pages/admin/AdminUsers";
-import AdminTournaments from "./pages/admin/AdminTournaments";
-import AdminTransactions from "./pages/admin/AdminTransactions";
-import AdminClubs from "./pages/admin/AdminClubs";
-import AdminAnalytics from "./pages/admin/AdminAnalytics";
-import AdminGameConfig from "./pages/admin/AdminGameConfig";
-import AdminAutomation from "./pages/admin/AdminAutomation";
-import AdminDevelopment from "./pages/admin/AdminDevelopment";
-import AdminSettings from "./pages/admin/AdminSettings";
-import AdminTestRanking from "./pages/admin/AdminTestRanking";
-import AdminLayout from "./components/AdminLayout";
-import AdminAIAssistant from "./pages/admin/AdminAIAssistant";
-import ClubManagementPage from "./pages/ClubManagementPage";
-import ClubRegistrationPage from "./pages/ClubRegistrationPage";
-import TournamentDetailsPage from "./pages/TournamentDetailsPage";
-import { AdminMonitoringPage } from "./pages/admin/AdminMonitoringPage";
-
-// Enhanced loading fallback with LoadingSpinner
-const LoadingFallback = () => (
-  <div className="min-h-screen flex items-center justify-center bg-background">
-    <LoadingSpinner size="lg" text="Đang tải trang..." />
-  </div>
-);
-
+// Optimized Query Client with enhanced caching strategy
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000,
-      retry: 1,
+      staleTime: 10 * 60 * 1000, // 10 minutes for stable data
+      gcTime: 15 * 60 * 1000, // 15 minutes garbage collection
+      retry: (failureCount, error: any) => {
+        // Don't retry 4xx errors
+        if (error?.status >= 400 && error?.status < 500) return false;
+        return failureCount < 2;
+      },
       refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
+    },
+    mutations: {
+      retry: 1,
     },
   },
 });
 
+// Lazy load all page components with optimized loading states
+const LazySimpleDashboard = createLazyComponent(
+  () => import("./pages/SimpleDashboard"),
+  <PageLoadingFallback pageTitle="Dashboard" />,
+  "SimpleDashboard"
+);
+
+const LazyTournamentsPage = createLazyComponent(
+  () => import("./pages/TournamentsPage"),
+  <PageLoadingFallback pageTitle="Tournaments" />,
+  "TournamentsPage"
+);
+
+const LazyTournamentDetailsPage = createLazyComponent(
+  () => import("./pages/TournamentDetailsPage"),
+  <PageLoadingFallback pageTitle="Tournament Details" />,
+  "TournamentDetailsPage"
+);
+
+const LazyEnhancedChallengesPageV2 = createLazyComponent(
+  () => import("./pages/EnhancedChallengesPageV2"),
+  <PageLoadingFallback pageTitle="Challenges" />,
+  "EnhancedChallengesPageV2"
+);
+
+const LazyLeaderboardPage = createLazyComponent(
+  () => import("./pages/LeaderboardPage"),
+  <PageLoadingFallback pageTitle="Leaderboard" />,
+  "LeaderboardPage"
+);
+
+const LazyEnhancedLeaderboardPage = createLazyComponent(
+  () => import("./pages/EnhancedLeaderboardPage"),
+  <PageLoadingFallback pageTitle="Enhanced Leaderboard" />,
+  "EnhancedLeaderboardPage"
+);
+
+const LazyClubsPage = createLazyComponent(
+  () => import("./pages/ClubsPage"),
+  <PageLoadingFallback pageTitle="Clubs" />,
+  "ClubsPage"
+);
+
+const LazyClubDetailPage = createLazyComponent(
+  () => import("./pages/ClubDetailPage"),
+  <PageLoadingFallback pageTitle="Club Details" />,
+  "ClubDetailPage"
+);
+
+const LazyProfilePage = createLazyComponent(
+  () => import("./pages/ProfilePage"),
+  <PageLoadingFallback pageTitle="Profile" />,
+  "ProfilePage"
+);
+
+const LazyDashboardPage = createLazyComponent(
+  () => import("./pages/DashboardPage"),
+  <PageLoadingFallback pageTitle="Dashboard" />,
+  "DashboardPage"
+);
+
+const LazySettingsPage = createLazyComponent(
+  () => import("./pages/SettingsPage"),
+  <PageLoadingFallback pageTitle="Settings" />,
+  "SettingsPage"
+);
+
+const LazyNotificationsPage = createLazyComponent(
+  () => import("./pages/NotificationsPage"),
+  <PageLoadingFallback pageTitle="Notifications" />,
+  "NotificationsPage"
+);
+
+// Auth pages with specific loading states
+const LazyLoginPage = createLazyComponent(
+  () => import("./pages/LoginPage"),
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="w-full max-w-md space-y-6 px-4">
+      <div className="h-8 bg-muted animate-pulse rounded" />
+      <div className="space-y-4">
+        <div className="h-10 bg-muted animate-pulse rounded" />
+        <div className="h-10 bg-muted animate-pulse rounded" />
+        <div className="h-10 bg-muted animate-pulse rounded" />
+      </div>
+    </div>
+  </div>,
+  "LoginPage"
+);
+
+const LazyRegisterPage = createLazyComponent(
+  () => import("./pages/RegisterPage"),
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="w-full max-w-md space-y-6 px-4">
+      <div className="h-8 bg-muted animate-pulse rounded" />
+      <div className="space-y-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="h-10 bg-muted animate-pulse rounded" />
+        ))}
+      </div>
+    </div>
+  </div>,
+  "RegisterPage"
+);
+
+// Admin pages - load only when needed
+const LazyAdminDashboard = createLazyComponent(
+  () => import("./pages/AdminDashboard"),
+  <PageLoadingFallback pageTitle="Admin Dashboard" />,
+  "AdminDashboard"
+);
+
+const LazyAdminUserManagement = createLazyComponent(
+  () => import("./pages/admin/AdminUserManagement"),
+  <PageLoadingFallback pageTitle="Quản lý người dùng & CLB" />,
+  "AdminUserManagement"
+);
+
+const LazyAdminTournaments = createLazyComponent(
+  () => import("./pages/admin/AdminTournaments"),
+  <PageLoadingFallback pageTitle="Admin Tournaments" />,
+  "AdminTournaments"
+);
+
+// Other frequently used pages
+const LazyMarketplacePage = createLazyComponent(
+  () => import("./pages/MarketplacePage"),
+  <PageLoadingFallback pageTitle="Marketplace" />,
+  "MarketplacePage"
+);
+
+const LazyWalletPage = createLazyComponent(
+  () => import("./pages/WalletPage"),
+  <PageLoadingFallback pageTitle="Wallet" />,
+  "WalletPage"
+);
+
+const LazyMatchHistoryPage = createLazyComponent(
+  () => import("./pages/MatchHistoryPage"),
+  <PageLoadingFallback pageTitle="Match History" />,
+  "MatchHistoryPage"
+);
+
+// Less frequently used pages - lazy load with smaller priority
+const LazyAboutPage = createLazyComponent(() => import("./pages/AboutPage"));
+const LazyFAQPage = createLazyComponent(() => import("./pages/FAQPage"));
+const LazyHelpPage = createLazyComponent(() => import("./pages/HelpPage"));
+const LazyPrivacyPage = createLazyComponent(() => import("./pages/PrivacyPage"));
+const LazyTermsPage = createLazyComponent(() => import("./pages/TermsPage"));
+
+// Auth wrapper with optimization
+import AuthWrapper from "./components/AuthWrapper";
+
 const App = () => {
-  console.log("App component is loading...");
+  console.log("Optimized App component loading...");
 
   return (
     <ErrorBoundary>
@@ -129,144 +197,76 @@ const App = () => {
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
             <TooltipProvider>
               <AuthProvider>
-                <MonitoringProvider>
-                  <AvatarProvider>
+                <AvatarProvider>
                   <LanguageProvider>
-                <BrowserRouter>
-                  <RealtimeNotificationSystem />
-                  <Suspense fallback={<LoadingFallback />}>
-                    <Routes>
-                      <Route path="/" element={<MainLayout />}>
-                        {/* Routes with navigation */}
-                        {/* Trang chính */}
-                        <Route index element={<Index />} />
-                        <Route path="dashboard" element={<AuthWrapper><DashboardPage /></AuthWrapper>} />
-                        <Route path="dashboard-overview" element={<DashboardOverview />} />
-                        <Route path="index" element={<Index />} />
-                        
-                        {/* Social & Feed */}
-                        <Route path="feed" element={<FeedPage />} />
-                        <Route path="social-feed" element={<SocialFeedPage />} />
-                        <Route path="discovery" element={<DiscoveryPage />} />
-                        <Route path="enhanced-discovery" element={<EnhancedDiscoveryPage />} />
-                        
-                        {/* Tournaments & Challenges */}
-                        <Route path="tournaments" element={<TournamentsPage />} />
-                        <Route path="tournaments/:id" element={<TournamentDetailsPage />} />
-                        <Route path="tournament-discovery" element={<TournamentDiscoveryPage />} />
-                        <Route path="tournament-example" element={<CreateTournamentExample />} />
-                        
-                        <Route path="challenges" element={<EnhancedChallengesPageV2 />} />
-                        <Route path="challenges-v2" element={<EnhancedChallengesPageV2 />} />
-                        <Route path="enhanced-challenges" element={<EnhancedChallengesPage />} />
-                        
-                        {/* Clubs & Membership */}
-                        <Route path="clubs" element={<ClubsPage />} />
-                        <Route path="club/:id" element={<ClubDetailPage />} />
-                        <Route path="club-registration" element={<ClubRegistrationPage />} />
-                        <Route path="membership" element={<MembershipPage />} />
-                        
-                        {/* Leaderboard & Ranking */}
-                        <Route path="leaderboard" element={<LeaderboardPage />} />
-                        <Route path="enhanced-leaderboard" element={<EnhancedLeaderboardPage />} />
-                        <Route path="ranking" element={<RankingPage />} />
-                        
-                        {/* Marketplace & Wallet */}
-                        <Route path="marketplace" element={<MarketplacePage />} />
-                        <Route path="enhanced-marketplace" element={<EnhancedMarketplacePage />} />
-                        <Route path="wallet" element={<WalletPage />} />
-                        
-                        {/* Payment */}
-                        <Route path="payment-membership" element={<PaymentMembershipPage />} />
-                        <Route path="payment-club-membership" element={<PaymentClubMembershipPage />} />
-                        <Route path="payment-result" element={<PaymentResultPage />} />
-                        <Route path="payment-success" element={<PaymentSuccessPage />} />
-                        
-                        {/* Profile & Settings */}
-                        <Route path="profile" element={<AuthWrapper><ProfilePage /></AuthWrapper>} />
-                        <Route path="players/:userId" element={<PublicProfilePage />} />
-                        <Route path="settings" element={<SettingsPage />} />
-                        <Route path="security" element={<SecurityPage />} />
-                        
-                        {/* Chat & History */}
-                        <Route path="chat" element={<ChatPage />} />
-                        <Route path="matches" element={<MatchHistoryPage />} />
-                        <Route path="my-matches" element={<MatchHistoryPage />} />
-                        <Route path="live-stream" element={<LiveStreamPage />} />
-                        <Route path="notifications" element={<AuthWrapper><NotificationsPage /></AuthWrapper>} />
-                        <Route path="inbox" element={<AuthWrapper><InboxPage /></AuthWrapper>} />
-                        
-                        {/* Information pages */}
-                        <Route path="about" element={<AboutPage />} />
-                        <Route path="help" element={<HelpPage />} />
-                        <Route path="faq" element={<FAQPage />} />
-                        <Route path="blog" element={<BlogPage />} />
-                        <Route path="terms" element={<TermsPage />} />
-                        <Route path="privacy" element={<PrivacyPage />} />
-                        
-                        {/* Admin & Analytics */}
-                        <Route path="analytics" element={<AnalyticsPage />} />
-                        <Route path="system-health" element={<SystemHealthPage />} />
-                        <Route path="system-audit" element={<SystemAuditPage />} />
-                        
-                        {/* Test page */}
-                        <Route path="test" element={<TestPage />} />
-                        <Route path="sitemap" element={<SiteMapPage />} />
-                        <Route path="practice" element={<AuthWrapper><PracticeFinderPage /></AuthWrapper>} />
-                        <Route path="club-management" element={<AuthWrapper><ClubManagementPage /></AuthWrapper>} />
-                      </Route>
-                      
-                       {/* Admin routes - nested with AdminLayout wrapper */}
-                       <Route path="/admin" element={<AdminLayout />}>
-                        <Route index element={<AdminDashboard />} />
-                        <Route path="users" element={<AdminUsers />} />
-                        <Route path="tournaments" element={<AdminTournaments />} />
-                        <Route path="transactions" element={<AdminTransactions />} />
-                        <Route path="clubs" element={<AdminClubs />} />
-                        <Route path="analytics" element={<AdminAnalytics />} />
-                        <Route path="game-config" element={<AdminGameConfig />} />
-                        <Route path="ai-assistant" element={<AdminAIAssistant />} />
-                        <Route path="automation" element={<AdminAutomation />} />
-                        <Route path="development" element={<AdminDevelopment />} />
-                        <Route path="settings" element={<AdminSettings />} />
-                        <Route path="test-ranking" element={<AdminTestRanking />} />
-                        <Route path="monitoring" element={<AdminMonitoringPage />} />
-                      </Route>
-                      
-                      {/* Auth routes - standalone without layout */}
-                      <Route path="/login" element={<LoginPage />} />
-                      <Route path="/register" element={<RegisterPage />} />
-                      <Route path="/auth/login" element={<LoginPage />} />
-                      <Route path="/auth/register" element={<EnhancedRegisterPage />} />
-                      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                      <Route path="/reset-password" element={<ResetPasswordPage />} />
-                      <Route path="/auth/callback" element={<AuthCallbackPage />} />
-                      <Route path="/auth-test" element={<AuthTestPage />} />
-                      
-                      {/* Simple Club Pages - standalone without layout */}
-                      <Route path="/simple-club" element={<SimpleClubHomePage />} />
-                      <Route path="/simple-booking" element={<SimpleClubBookingPage />} />
-                      <Route path="/simple-about" element={<SimpleClubAboutPage />} />
-                      <Route path="/simple-contact" element={<SimpleClubContactPage />} />
-                      <Route path="/booking" element={<SimpleBookingPage />} />
-                      
-                      <Route path="*" element={
-                        <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
-                          <div className="text-center">
-                            <h1 className="text-2xl mb-4">Trang không tìm thấy</h1>
-                            <a href="/" className="text-primary hover:underline">Về trang chủ</a>
-                          </div>
-                        </div>
-                      } />
-                    </Routes>
-                  </Suspense>
-                  <DailyNotificationSystem />
-                  <Toaster />
-                  <Sonner />
-                </BrowserRouter>
-                </LanguageProvider>
+                    <BrowserRouter>
+                      <RealtimeNotificationSystem />
+                      <Suspense fallback={<PageLoadingFallback />}>
+                        <Routes>
+                          <Route path="/" element={<MainLayout />}>
+                            {/* Core app routes */}
+                            <Route index element={<LazySimpleDashboard />} />
+                            <Route path="dashboard" element={<AuthWrapper><LazyDashboardPage /></AuthWrapper>} />
+                            
+                            {/* Tournaments - high priority */}
+                            <Route path="tournaments" element={<LazyTournamentsPage />} />
+                            <Route path="tournaments/:id" element={<LazyTournamentDetailsPage />} />
+                            
+                            {/* Challenges - high priority */}
+                            <Route path="challenges" element={<LazyEnhancedChallengesPageV2 />} />
+                            
+                            {/* Leaderboard - medium priority */}
+                            <Route path="leaderboard" element={<LazyLeaderboardPage />} />
+                            <Route path="enhanced-leaderboard" element={<LazyEnhancedLeaderboardPage />} />
+                            
+                            {/* Clubs - medium priority */}
+                            <Route path="clubs" element={<LazyClubsPage />} />
+                            <Route path="club/:id" element={<LazyClubDetailPage />} />
+                            
+                            {/* User pages - medium priority */}
+                            <Route path="profile" element={<AuthWrapper><LazyProfilePage /></AuthWrapper>} />
+                            <Route path="settings" element={<LazySettingsPage />} />
+                            <Route path="notifications" element={<AuthWrapper><LazyNotificationsPage /></AuthWrapper>} />
+                            
+                            {/* Marketplace & Financial - medium priority */}
+                            <Route path="marketplace" element={<LazyMarketplacePage />} />
+                            <Route path="wallet" element={<LazyWalletPage />} />
+                            <Route path="matches" element={<LazyMatchHistoryPage />} />
+                            
+                            {/* Static/Info pages - low priority */}
+                            <Route path="about" element={<LazyAboutPage />} />
+                            <Route path="help" element={<LazyHelpPage />} />
+                            <Route path="faq" element={<LazyFAQPage />} />
+                            <Route path="privacy" element={<LazyPrivacyPage />} />
+                            <Route path="terms" element={<LazyTermsPage />} />
+                          </Route>
+                          
+                          {/* Admin routes - only load when accessed */}
+                          <Route path="/admin" element={<LazyAdminDashboard />} />
+                          <Route path="/admin/users" element={<LazyAdminUserManagement />} />
+                          <Route path="/admin/tournaments" element={<LazyAdminTournaments />} />
+                          
+                          {/* Auth routes - critical but separate bundle */}
+                          <Route path="/login" element={<LazyLoginPage />} />
+                          <Route path="/register" element={<LazyRegisterPage />} />
+                          
+                          {/* Fallback */}
+                          <Route path="*" element={
+                            <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+                              <div className="text-center">
+                                <h1 className="text-2xl mb-4">Trang không tìm thấy</h1>
+                                <a href="/" className="text-primary hover:underline">Về trang chủ</a>
+                              </div>
+                            </div>
+                          } />
+                        </Routes>
+                      </Suspense>
+                      <DailyNotificationSystem />
+                      <Toaster />
+                      <Sonner />
+                    </BrowserRouter>
+                  </LanguageProvider>
                 </AvatarProvider>
-                </MonitoringProvider>
               </AuthProvider>
             </TooltipProvider>
           </ThemeProvider>
