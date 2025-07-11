@@ -1,2 +1,2 @@
-import AdminUsers from './admin/AdminUsers';
-export default AdminUsers;
+import AdminUserManagement from './admin/AdminUserManagement';
+export default AdminUserManagement;

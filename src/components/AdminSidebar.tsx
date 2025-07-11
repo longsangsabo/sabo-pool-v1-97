@@ -31,9 +31,8 @@ const AdminSidebar = ({ isMobile = false, onClose }: AdminSidebarProps = {}) => 
 
   const menuItems = [
     { icon: LayoutDashboard, key: 'admin.dashboard', path: '/admin' },
-    { icon: Users, key: 'admin.users', path: '/admin/users' },
+    { icon: Users, key: 'admin.user_management', path: '/admin/users' },
     { icon: Trophy, key: 'admin.tournaments', path: '/admin/tournaments' },
-    { icon: Building2, key: 'admin.clubs', path: '/admin/clubs' },
     { icon: CreditCard, key: 'admin.transactions', path: '/admin/transactions' },
     { icon: BarChart3, key: 'admin.analytics', path: '/admin/analytics' },
     { icon: Gamepad2, key: 'admin.game_config', path: '/admin/game-config' },

@@ -279,7 +279,7 @@ const AdminApprovedClubs = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold">Câu lạc bộ đã duyệt</h1>
+          <h2 className="text-xl font-bold">Câu lạc bộ đã duyệt</h2>
           <p className="text-gray-600">Quản lý các câu lạc bộ đã được phê duyệt</p>
         </div>
         <div className="flex gap-3 items-center">

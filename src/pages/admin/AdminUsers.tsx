@@ -146,7 +146,7 @@ const AdminUsers = () => {
       <div className='space-y-6'>
         <div className='flex justify-between items-center'>
           <div>
-            <h1 className='text-3xl font-bold text-gray-900'>{t('admin.user_management')}</h1>
+            <h2 className='text-xl font-bold text-gray-900'>{t('admin.user_management')}</h2>
             <p className='text-gray-600'>{t('admin.user_management_desc')}</p>
           </div>
         </div>

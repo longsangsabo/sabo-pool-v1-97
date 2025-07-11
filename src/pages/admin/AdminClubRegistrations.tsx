@@ -328,7 +328,7 @@ const AdminClubRegistrations = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold">Quản lý đăng ký câu lạc bộ</h1>
+          <h2 className="text-xl font-bold">Quản lý đăng ký câu lạc bộ</h2>
           <p className="text-gray-600">Xét duyệt các yêu cầu đăng ký câu lạc bộ ({registrations.length} đăng ký)</p>
           {statusFilter !== 'all' && (
             <p className="text-sm text-blue-600">Đang lọc: {
