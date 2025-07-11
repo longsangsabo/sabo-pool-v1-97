@@ -35,47 +35,59 @@ const AdminUserManagement = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Users className="w-6 h-6 text-primary" />
-        <h1 className="text-2xl font-bold text-foreground">Quản lý người dùng & CLB</h1>
+    <div className="p-6 space-y-6 bg-background min-h-screen">
+      <div className="flex items-center gap-3">
+        <Users className="w-8 h-8 text-primary" />
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Quản lý người dùng & CLB</h1>
+          <p className="text-muted-foreground">Quản lý người dùng, đăng ký CLB và CLB đã được duyệt</p>
+        </div>
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 h-12">
-          <TabsTrigger value="users" className="flex items-center gap-2 text-sm">
+        <TabsList className="grid w-full grid-cols-3 h-14 bg-muted rounded-lg p-1">
+          <TabsTrigger 
+            value="users" 
+            className="flex items-center gap-2 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+          >
             <Users className="w-4 h-4" />
             Người dùng
           </TabsTrigger>
-          <TabsTrigger value="club-registrations" className="flex items-center gap-2 text-sm">
+          <TabsTrigger 
+            value="club-registrations" 
+            className="flex items-center gap-2 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+          >
             <Building className="w-4 h-4" />
             Đăng ký CLB
           </TabsTrigger>
-          <TabsTrigger value="approved-clubs" className="flex items-center gap-2 text-sm">
+          <TabsTrigger 
+            value="approved-clubs" 
+            className="flex items-center gap-2 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+          >
             <CheckCircle className="w-4 h-4" />
             CLB đã duyệt
           </TabsTrigger>
         </TabsList>
         
         <TabsContent value="users" className="mt-6">
-          <Card>
-            <CardContent className="p-6">
+          <Card className="border-0 shadow-lg">
+            <CardContent className="p-0">
               <AdminUsers skipAdminCheck={true} />
             </CardContent>
           </Card>
         </TabsContent>
         
         <TabsContent value="club-registrations" className="mt-6">
-          <Card>
-            <CardContent className="p-6">
+          <Card className="border-0 shadow-lg">
+            <CardContent className="p-0">
               <AdminClubRegistrations />
             </CardContent>
           </Card>
         </TabsContent>
         
         <TabsContent value="approved-clubs" className="mt-6">
-          <Card>
-            <CardContent className="p-6">
+          <Card className="border-0 shadow-lg">
+            <CardContent className="p-0">
               <AdminApprovedClubs />
             </CardContent>
           </Card>
